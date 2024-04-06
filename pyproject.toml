@@ -39,3 +39,8 @@ Documentation = "https://readthedocs.org"
 Repository = "https://github.com/snowhare/python-gen-tries.git"
 Issues = "https://github.com/snowhare/python-gen-tries/issues"
 Changelog = "https://github.com/snowhare/python-gen-tries/blob/main/CHANGELOG.md"
+
+[tool.flake8]
+max-line-length = 120
+extend-ignore = ["E203"]
+max-complexity = 10

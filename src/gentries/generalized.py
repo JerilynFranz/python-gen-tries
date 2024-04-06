@@ -1,135 +1,115 @@
 from copy import copy
-from typing import Any, Dict, Iterator, Optional, Set
+from typing import Any, Dict, Iterator, Set
 
 
-class Trie:
-    """Implementation of a generalizedTrie data structure.
+from . import GeneralizedToken
 
-    This implementation is agnostic as to the type of tokens used
-    to key it. It only demands that the tokens be comparable and hashable.
+
+class GeneralizedTrie:
+    """Implementation of a general purpose trie.
+
+    Unlike many Trie implementations, which only support strings as entries,
+    and match only at the character level, it is agnostic as to the types of
+    tokens used to key it and thus much more general purpose.
+
+    It requires only that the indexed tokens be comparable and hashable. This
+    is verified at runtime using the GeneralizedToken protocol.
+
+    It can handle strings, bytes, lists, sequences, and iterables of token
+    objects. As long as the tokens used, whether characters in a string or
+    a list of objects, are comparable and hashable, it 'just works'.
+
+    The code emphasizes robustness and correctness.
 
     Usage:
-        trie: Trie = Trie()
-        trie_id = trie.add(tokens=['ape', 'green', 'apple'])
-
-    Raises:
-        TypeError: If passed a tokens argument that does not support iteration.
-        TypeError: If entries in the tokens argument do not support both
-                   __eq__() and __hash__().
-        TypeError: _description_
-        TypeError: _description_
-        TypeError: _description_
-        TypeError: _description_
-        TypeError: _description_
-        ValueError: _description_
-        ValueError: _description_
-        TypeError: _description_
-        TypeError: _description_
-        TypeError: _description_
-        ValueError: _description_
-        TypeError: _description_
-
-    Returns:
-       gentries.patrica.Trie: Instance of PatraciaTrie.
+        trie: GeneralizedTrie = GeneralizedTrie()
+        trie_id_1 = trie.add(['ape', 'green', 'apple'])
+        trie_id_2 = trie.add(['ape', 'green'])
+        matches = trie.match(['ape', 'green'])
     """
-    def __init__(self, /,
-                 **kwargs) -> None:
-        # pylint: disable=too-many-branches
+    def __init__(self):
         self._root_node: bool = True
-        self._node_token: Any = None
-        self._parent: Optional[Trie] = None
-        self._children: Dict[Any, Trie] = {}
-        self._trie_index: Dict[int, Trie] = {}
+        self._node_token: GeneralizedToken = None
+        self._parent: GeneralizedTrie = None
+        self._children: Dict[GeneralizedToken, GeneralizedTrie] = {}
+        self._trie_index: Dict[int, GeneralizedTrie] = {}
         self._trie_ids: Set[int] = set()
-        self._trie_id_counter: Dict[str, int]
+        self._trie_id_counter: Dict[str, int] = {'trie_number': 0}
 
-        if kwargs:
-            if 'root_node' in kwargs:
-                root_node: bool = kwargs['root_node']
-                if not isinstance(root_node, bool):
-                    raise TypeError(
-                        '[PT001] root_node arg must be type bool '
-                        'or a sub-class')
-                self._root_node = root_node
-            else:
-                raise KeyError('[PT002] missing root_node arg')
+    def _add_new_child(self, /,
+                       node_token: GeneralizedToken,
+                       tokens: Iterator) -> 'GeneralizedTrie':
+        """Creates and adds a new GeneralizedTrie node to the node's _children.
 
-            if 'node_token' in kwargs:
-                node_token: Any = kwargs['node_token']
-                try:
-                    self._validate_token(token=node_token)
-                except TypeError as err:
-                    raise TypeError(
-                        f'[PT003] node_token {err}') from err
-                self._node_token = node_token
-            else:
-                raise KeyError('[PT004] missing node_token arg')
+        The new node is initialized with the passed arguments.
 
-            if 'parent' in kwargs:
-                parent: Trie = kwargs['parent']
-                if not isinstance(parent, Trie):
-                    raise TypeError(
-                        '[PT003] parent arg must be of '
-                        'type Trie or a sub-class')
-            else:
-                raise KeyError('[PT004] missing parent arg')
+        Args:
+            node_token (GeneralizedToken): The node_token for the new child.
+            tokens (Iterator): Remaining tokens (if any) in the trie key.
 
-            if 'trie_index' in kwargs:
-                trie_index: Dict[int, Trie] = kwargs[
-                                                            'trie_index']
-                if not isinstance(trie_index, Dict):
-                    raise TypeError(
-                        '[PT005] trie_index arg must be of '
-                        'type Dict')
-                self._trie_index = trie_index
-            else:
-                raise KeyError('[PT006] missing trie_index arg')
+        Returns:
+            int: Id number of the new GeneralizedTrie key.
 
-            if 'trie_id_counter' in kwargs:
-                trie_id_counter = kwargs['trie_id_counter']
-                if not isinstance(trie_id_counter, Dict):
-                    raise TypeError(
-                        '[PT007] trie_id_counter arg must be a Dict or '
-                        'a sub-class')
-                if 'trie_number' not in trie_id_counter:
-                    raise ValueError(
-                        '[PT008] missing trie_number key in trie_id_counter '
-                        'arg')
-                if not isinstance(trie_id_counter['trie_number'], int):
-                    raise ValueError(
-                        '[PT009]trie_number key in trie_id_counter must be '
-                        'an int or sub-class')
-                if trie_id_counter['trie_number'] < 0:
-                    raise ValueError(
-                        '[PT010] trie_number value in trie_id_counter must be '
-                        'non-negative')
-                self._trie_id_counter = trie_id_counter
-            else:
-                raise KeyError('[PT011] missing trie_id_counter arg')
-        else:
-            self._trie_id_counter = {'trie_number': 0}
+        Raises:
+            AssertionError:
+                If node_token does not conform to the GeneralizedToken
+                protocol.
+            AssertionError:
+                If tokens are not an Iterator.
+            TypeError:
+                If entries in tokens do not conform to the GeneralizedToken
+                protocol.
+        """
+        # trunk-ignore(bandit/B101)
+        assert (
+            (isinstance(node_token, GeneralizedToken) and
+             isinstance(tokens, Iterator))), (
+             '[GTANC001] incorrect arguments passed to _add_new_child()')
+        new_child: GeneralizedTrie = GeneralizedTrie()
+        new_child._root_node = False
+        new_child._node_token = node_token
+        new_child._parent = self
+        new_child._trie_index = self._trie_index
+        new_child._trie_id_counter = self._trie_id_counter
+        trie_id: int = new_child.add(tokens)
+        self._children[trie_id] = new_child
+        return trie_id
 
     @property
     def _trie_number(self) -> int:
+        """Getter for the _trie_number property.
+
+        Returns:
+            int: the current _trie_number property value.
+        """
         return self._trie_id_counter('trie_number') + 1
 
     @_trie_number.setter
     def _trie_number(self, value: int) -> None:
-        if not isinstance(value, int):
-            raise TypeError(
-                '[PTTNS001] _trie_number must be of type int or a sub-class')
-        if value < 0:
-            raise ValueError('[PTTNS001] _trie_number must be non-negative')
+        """Setter for the _trie_number property.
+
+        Args:
+            value (int): non-negative integer value.
+
+        Raises:
+            AssertionError: If value is not of type int.
+            AssertionError: If value is negative."""
+        # trunk-ignore(bandit/B101)
+        assert isinstance(value, int), (
+            '[GTTNS001] attempted to set _trie_number to a non-int type value')
+        # trunk-ignore(bandit/B101)
+        assert value >= 0, (
+            '[GTTNS002] attempted to set _trie_number to a negative value')
         self._trie_id_counter['trie_number'] = value
 
-    def _validate_token(self, /, token: Any) -> None:
+    def _validate_token_protocol(self, token: GeneralizedToken) -> None:
         """Validates that the passed token supports __eq__ and __hash__.
 
         This is required to allow matching tokens and using them
-        as keys.
+        as keys in hashes.
 
         Args:
-            token (Any): Token for validation
+            token (Any):  for validation
 
         Raises:
             TypeError: If does not support __eq__ method
@@ -142,79 +122,86 @@ class Trie:
                 and callable(token.__hash__)):
             raise TypeError('missing a __hash__ method')
 
-    def add(self, tokens: Any) -> None:
+    def add(self, tokens: Any) -> int:
+        """Adds a trie key defined by the passed tokens to the trie.
+
+        Args:
+            tokens (Any): Must be an object that can be used in iteration and
+                          containing entries conforming to the GeneralizedToken
+                          protocol.
+
+        Raises:
+            TypeError: If tokens cannot be iterated on.
+            TypeError: If entries in tokens do not conform to the
+                       GeneralizedToken protocol.
+
+        Returns:
+            int: id number of the inserted trie key.
+        """
         if not isinstance(tokens, Iterator):
             try:
                 tokens = iter(tokens)
             except TypeError as err:
                 raise TypeError(
-                    '[PTAFBT001] tokens arg cannot '
+                    '[GTAFBT001] tokens arg cannot '
                     f'be iterated: {err}') from err
 
+        # When passed None, we have run out of tokens to iterate
         if tokens is None:
             new_trie_id: int = self._trie_number + 1
             self._trie_ids.add(new_trie_id)
             self._trie_number = new_trie_id
             self._trie_index[new_trie_id] = self
-            return
+            return new_trie_id
 
+        # We will always have at least one token here.
         first_token: Any = next(tokens)
-        try:
-            self._validate_token(token=first_token)
-        except TypeError as err:
-            raise TypeError('[PTAFBT005] entries in tokens arg must '
-                            f'support __eq__ and __hash__ methods: '
-                            f'{err}') from err
+        if not isinstance(first_token, GeneralizedToken):
+            raise TypeError(
+                '[GTAFBT002] entry in tokens arg does not support the '
+                'GeneralizedToken protocol')
 
+        # there is an existing child trie we can use
         if first_token in self._children:
             return self._children[first_token].add(tokens)
 
-        new_trie: Trie = Trie(
-                                    root_node=False,
-                                    node_token=first_token,
-                                    parent=self,
-                                    trie_index=self._trie_index,
-                                    trie_id_counter=self._trie_id_counter)
-        trie_id = new_trie.add(tokens)
-        self._children[first_token] = new_trie
-        return trie_id
+        # we need a new sub-trie
+        return self._add_new_child(node_token=first_token, tokens=tokens)
 
-    def remove(self, trie_id: int) -> bool:
-        """Remove the trie entry with the given trie_id from the trie.
+    def remove(self, trie_id: int):
+        """Remove the trie key with the passed trie_id from the trie.
 
         Args:
-            trie_id (int): id of the trie entry to remove.
+            trie_id (int): id of the trie key to remove.
 
         Raises:
             TypeError: if trie_id arg is not type int or an int sub-class
             ValueError: if trie_id arg is less than 1.
-
-        Returns:
-            bool: True if the trie entry was removed, False otherwise.
+            ValueError: if trie_id does not match the id of any trie keys.
         """
-        # pylint: disable=protected-access
         if not isinstance(trie_id, int):
             raise TypeError(
-                '[PTR001] trie_id arg must be type int or an int sub-class')
+                '[GTR001] trie_id arg must be type int or an int sub-class')
         if trie_id < 1:
             raise ValueError(
-                '[PTR002] trie_id arg cannot be less than 1')
+                '[GTR002] trie_id arg must be 1 or greater')
 
         # Not a known trie id
         if trie_id not in self._trie_index:
-            return False
+            raise ValueError(
+                '[GTR003] trie_id arg does not match any trie keys')
 
         # Find the node and delete its id from the trie index
-        trie_node: Trie = self._trie_index[trie_id]
+        trie_node: GeneralizedTrie = self._trie_index[trie_id]
         node_token: Any = trie_node._node_token
         del trie_node._trie_index[trie_id]
         trie_node._trie_index = None
-        parent_node: Trie = trie_node._parent
+        parent_node: GeneralizedTrie = trie_node._parent
         trie_node._parent = None
 
         # If the node still has other trie ids or children, return.
         if trie_node._trie_ids or trie_node._children:
-            return True
+            return
 
         # No trie ids or children are left for this node, so purge
         # nodes up the trie tree as needed. Explicitly cleaning up
@@ -228,11 +215,11 @@ class Trie:
             parent_node._trie_index = None
             parent_node._trie_id_counter = None
             node_token = parent_node._node_token
-            next_parent_node: Trie = parent_node._parent
+            next_parent_node: GeneralizedTrie = parent_node._parent
             parent_node._parent = None
             parent_node = next_parent_node
 
-        return True
+        return
 
     def match(self, tokens: Any) -> Set[int]:
         """Search the trie for all trie entries that match the given tokens.
@@ -241,21 +228,20 @@ class Trie:
             tokens (Any): Ordered tokens for matching.
 
         Returns:
-            Set[int]: Set of trie ids that match the given tokens.
+            Set[int]: Set of trie key ids that match the given tokens. This
+                      will be an empty set if there are no matches.
 
         Raises:
             TypeError: If tokens arg is not iterable.
-            TypeError: If entries in tokens arg do not support __eq__ and
-                       __hash__ methods.
+            TypeError: If entries in the tokens arg do not support the
+                       GeneralizedToken protocol.
         """
-        # pylint: disable=protected-access
         if not isinstance(tokens, Iterator):
             try:
                 tokens = iter(tokens)
             except TypeError as err:
                 raise TypeError(
-                    '[PTM001] tokens arg cannot '
-                    f'be iterated: {err}') from err
+                    f'[GTM001] tokens arg cannot be iterated: {err}') from err
 
         matched: Set[int] = copy(self._trie_ids) if self._trie_ids else set()
         token_entry = next(tokens, default=None)
