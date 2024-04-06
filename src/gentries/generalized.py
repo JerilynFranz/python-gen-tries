@@ -2,12 +2,14 @@ from copy import copy
 from typing import Any, Dict, Iterator, Optional, Set
 
 
-class PatriciaTrie:
-    """Implementation of a PATRICIA Trie data structure.
+class Trie:
+    """Implementation of a generalizedTrie data structure.
 
+    This implementation is agnostic as to the type of tokens used
+    to key it. It only demands that the tokens be comparable and hashable.
 
     Usage:
-        trie = PatriciaTrie()
+        trie: Trie = Trie()
         trie_id = trie.add(tokens=['ape', 'green', 'apple'])
 
     Raises:
@@ -28,16 +30,16 @@ class PatriciaTrie:
         TypeError: _description_
 
     Returns:
-       gentries.patrica.PatriciaTrie: Instance of PatraciaTrie.
+       gentries.patrica.Trie: Instance of PatraciaTrie.
     """
     def __init__(self, /,
                  **kwargs) -> None:
         # pylint: disable=too-many-branches
         self._root_node: bool = True
         self._node_token: Any = None
-        self._parent: Optional[PatriciaTrie] = None
-        self._children: Dict[Any, PatriciaTrie] = {}
-        self._trie_index: Dict[int, PatriciaTrie] = {}
+        self._parent: Optional[Trie] = None
+        self._children: Dict[Any, Trie] = {}
+        self._trie_index: Dict[int, Trie] = {}
         self._trie_ids: Set[int] = set()
         self._trie_id_counter: Dict[str, int]
 
@@ -64,16 +66,16 @@ class PatriciaTrie:
                 raise KeyError('[PT004] missing node_token arg')
 
             if 'parent' in kwargs:
-                parent: PatriciaTrie = kwargs['parent']
-                if not isinstance(parent, PatriciaTrie):
+                parent: Trie = kwargs['parent']
+                if not isinstance(parent, Trie):
                     raise TypeError(
                         '[PT003] parent arg must be of '
-                        'type PatriciaTrie or a sub-class')
+                        'type Trie or a sub-class')
             else:
                 raise KeyError('[PT004] missing parent arg')
 
             if 'trie_index' in kwargs:
-                trie_index: Dict[int, PatriciaTrie] = kwargs[
+                trie_index: Dict[int, Trie] = kwargs[
                                                             'trie_index']
                 if not isinstance(trie_index, Dict):
                     raise TypeError(
@@ -114,9 +116,10 @@ class PatriciaTrie:
     @_trie_number.setter
     def _trie_number(self, value: int) -> None:
         if not isinstance(value, int):
-            raise TypeError('_trie_number must be of type int or a sub-class')
+            raise TypeError(
+                '[PTTNS001] _trie_number must be of type int or a sub-class')
         if value < 0:
-            raise ValueError('_trie_number must be non-negative')
+            raise ValueError('[PTTNS001] _trie_number must be non-negative')
         self._trie_id_counter['trie_number'] = value
 
     def _validate_token(self, /, token: Any) -> None:
@@ -166,7 +169,7 @@ class PatriciaTrie:
         if first_token in self._children:
             return self._children[first_token].add(tokens)
 
-        new_trie: PatriciaTrie = PatriciaTrie(
+        new_trie: Trie = Trie(
                                     root_node=False,
                                     node_token=first_token,
                                     parent=self,
@@ -192,21 +195,21 @@ class PatriciaTrie:
         # pylint: disable=protected-access
         if not isinstance(trie_id, int):
             raise TypeError(
-                '[PTRF001] trie_id arg must be type int or an int sub-class')
+                '[PTR001] trie_id arg must be type int or an int sub-class')
         if trie_id < 1:
             raise ValueError(
-                '[PTRF002] trie_id arg cannot be less than 1')
+                '[PTR002] trie_id arg cannot be less than 1')
 
         # Not a known trie id
         if trie_id not in self._trie_index:
             return False
 
         # Find the node and delete its id from the trie index
-        trie_node: PatriciaTrie = self._trie_index[trie_id]
+        trie_node: Trie = self._trie_index[trie_id]
         node_token: Any = trie_node._node_token
         del trie_node._trie_index[trie_id]
         trie_node._trie_index = None
-        parent_node: PatriciaTrie = trie_node._parent
+        parent_node: Trie = trie_node._parent
         trie_node._parent = None
 
         # If the node still has other trie ids or children, return.
@@ -225,7 +228,7 @@ class PatriciaTrie:
             parent_node._trie_index = None
             parent_node._trie_id_counter = None
             node_token = parent_node._node_token
-            next_parent_node: PatriciaTrie = parent_node._parent
+            next_parent_node: Trie = parent_node._parent
             parent_node._parent = None
             parent_node = next_parent_node
 
@@ -251,7 +254,7 @@ class PatriciaTrie:
                 tokens = iter(tokens)
             except TypeError as err:
                 raise TypeError(
-                    '[PTAFBT001] tokens arg cannot '
+                    '[PTM001] tokens arg cannot '
                     f'be iterated: {err}') from err
 
         matched: Set[int] = copy(self._trie_ids) if self._trie_ids else set()
