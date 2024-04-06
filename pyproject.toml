@@ -1,0 +1,41 @@
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gen-tries"
+authors = [
+    {name = "Jerilyn Franz"}
+]
+maintainers = [
+    {name = "Jerilyn Franz"}
+]
+description = "Package of multiple trie implementations"
+readme = "README.md"
+keywords = ["trie"]
+licence = { file = "LICENSE" }
+version = "0.0.1"
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+
+]
+requires-python = ">=3.8"
+dependencies = [
+    'importlib-metadata; python_version>="3.8"'
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/snowhare/python-gen-tries""
+Documentation = "https://readthedocs.org"
+Repository = "https://github.com/snowhare/python-gen-tries.git"
+Issues = "https://github.com/snowhare/python-gen-tries/issues"
+Changelog = "https://github.com/snowhare/python-gen-tries/blob/main/CHANGELOG.md"
