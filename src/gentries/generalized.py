@@ -1,6 +1,6 @@
 from copy import copy
+from textwrap import indent
 from typing import Any, Dict, Iterator, Set
-
 
 from . import GeneralizedToken
 
@@ -12,8 +12,14 @@ class GeneralizedTrie:
     and match only at the character level, it is agnostic as to the types of
     tokens used to key it and thus much more general purpose.
 
-    It requires only that the indexed tokens be comparable and hashable. This
-    is verified at runtime using the GeneralizedToken protocol.
+    It requires only that the indexed tokens be comparable for equality
+    and hashable. This is verified at runtime using the GeneralizedToken
+    protocol.
+
+    This generally means that only immutable values can be used as tokens.
+    i.e: a frozenset() works as a token, but a set() does not. Tokens
+    in a trie key do NOT have to all be the same type as long as they can be
+    compared for equality.
 
     It can handle strings, bytes, lists, sequences, and iterables of token
     objects. As long as the tokens used, whether characters in a string or
@@ -21,11 +27,35 @@ class GeneralizedTrie:
 
     The code emphasizes robustness and correctness.
 
-    Usage:
+    Usage Examples:
+
+    Example 1:
+        from gentries.generalized import GeneralizedTrie
+
         trie: GeneralizedTrie = GeneralizedTrie()
         trie_id_1 = trie.add(['ape', 'green', 'apple'])
         trie_id_2 = trie.add(['ape', 'green'])
-        matches = trie.match(['ape', 'green'])
+        matches = trie.token_prefixes(['ape', 'green'])
+
+    Example 2:
+        from gentries.generalized import GeneralizedTrie
+
+        # Create a trie to store website URLs
+        url_trie = GeneralizedTrie()
+
+        # Add some URLs with different components (protocol, domain, path)
+        url_trie.add(["https", "com", "example", "www", "/", "products", "clothing"])
+        url_trie.add(["http", "org", "example", "blog", "/" "2023", "10", "best-laptops"])
+        url_trie.add(["ftp", "net", "example", "ftp", "/", "data", "images"])
+
+        # Find all https URLs with "example.com" domain
+        prefixes = url_trie.key_prefixes(["https", "com", "example"])
+        print(f"Found URL prefixes: {prefixes}")  # Output: Found URL prefixes: {1}
+
+        # Check if a specific URL exists (including all path components)
+        url_id = url_trie.add(["http", "org", "example", "blog", "/", "2023", "10", "best-laptops"])
+        print(f"URL exists: {url_id}")  # Output: URL exists: 3
+
     """
     def __init__(self):
         self._root_node: bool = True
@@ -72,7 +102,7 @@ class GeneralizedTrie:
         new_child._trie_index = self._trie_index
         new_child._trie_id_counter = self._trie_id_counter
         trie_id: int = new_child.add(tokens)
-        self._children[trie_id] = new_child
+        self._children[node_token] = new_child
         return trie_id
 
     @property
@@ -82,7 +112,7 @@ class GeneralizedTrie:
         Returns:
             int: the current _trie_number property value.
         """
-        return self._trie_id_counter('trie_number') + 1
+        return self._trie_id_counter['trie_number']
 
     @_trie_number.setter
     def _trie_number(self, value: int) -> None:
@@ -101,26 +131,6 @@ class GeneralizedTrie:
         assert value >= 0, (
             '[GTTNS002] attempted to set _trie_number to a negative value')
         self._trie_id_counter['trie_number'] = value
-
-    def _validate_token_protocol(self, token: GeneralizedToken) -> None:
-        """Validates that the passed token supports __eq__ and __hash__.
-
-        This is required to allow matching tokens and using them
-        as keys in hashes.
-
-        Args:
-            token (Any):  for validation
-
-        Raises:
-            TypeError: If does not support __eq__ method
-            TypeError: If does not support __hash__ method
-        """
-        if not (hasattr(token, '__eq__')
-                and callable(token.__eq__)):
-            raise TypeError('missing an __eq__ method')
-        if not (hasattr(token, '__hash__')
-                and callable(token.__hash__)):
-            raise TypeError('missing a __hash__ method')
 
     def add(self, tokens: Any) -> int:
         """Adds a trie key defined by the passed tokens to the trie.
@@ -146,19 +156,20 @@ class GeneralizedTrie:
                     '[GTAFBT001] tokens arg cannot '
                     f'be iterated: {err}') from err
 
-        # When passed None, we have run out of tokens to iterate
-        if tokens is None:
+        first_token: Any = next(tokens, None)
+        # if first_token is None, we have run out of tokens to iterate
+        if first_token is None:
+            if self._root_node:
+                raise ValueError('[GTAFBT002] empty tokens key passed')
             new_trie_id: int = self._trie_number + 1
             self._trie_ids.add(new_trie_id)
             self._trie_number = new_trie_id
             self._trie_index[new_trie_id] = self
             return new_trie_id
 
-        # We will always have at least one token here.
-        first_token: Any = next(tokens)
         if not isinstance(first_token, GeneralizedToken):
             raise TypeError(
-                '[GTAFBT002] entry in tokens arg does not support the '
+                '[GTAFBT003] entry in tokens arg does not support the '
                 'GeneralizedToken protocol')
 
         # there is an existing child trie we can use
@@ -221,15 +232,30 @@ class GeneralizedTrie:
 
         return
 
-    def match(self, tokens: Any) -> Set[int]:
-        """Search the trie for all trie entries that match the given tokens.
+    def token_prefixes(self, tokens: Any) -> Set[int]:
+        """Returns the ids of all trie keys that are a prefix of the tokens.
+
+        Searches the trie for all trie keys that are prefix subsets
+        of the tokens and returns their ids.
+
+        Example:
+            trie: GeneralizedTrie = GeneralizedTrie()
+            keys: List[str] = ['abcdef', 'abc', 'a', 'qrs']
+            trie_keys_index: Dict[int, str] = {}
+            for entry in keys:
+                trie_key_index[trie.add(entry)] = entry
+            matches: Set[int] = trie.prefix_key_ids('abc')
+
+            # matches now contains the set {2, 3}, corresponding
+            # to the trie keys 'abc' and 'a'
 
         Args:
             tokens (Any): Ordered tokens for matching.
 
         Returns:
-            Set[int]: Set of trie key ids that match the given tokens. This
-                      will be an empty set if there are no matches.
+            Set[int]: Set of ids for trie keys that are prefixes of
+                      the tokens. This will be an empty set if there
+                      are no matches.
 
         Raises:
             TypeError: If tokens arg is not iterable.
@@ -244,10 +270,27 @@ class GeneralizedTrie:
                     f'[GTM001] tokens arg cannot be iterated: {err}') from err
 
         matched: Set[int] = copy(self._trie_ids) if self._trie_ids else set()
-        token_entry = next(tokens, default=None)
-        while token_entry is not None:
-            if token_entry in self._children:
-                matched = matched.union(
-                    self._children[token_entry].match(tokens=tokens))
-            token_entry = next(tokens, default=None)
+        token_entry = next(tokens, None)
+        if token_entry in self._children:
+            matched = matched.union(
+                self._children[token_entry].token_prefixes(tokens))
         return matched
+
+    def __str__(self) -> str:
+        output: str = ['{']
+        if self._root_node:
+            output.append(f'  trie number = {self._trie_number}')
+        output.append(f'  node token = {self._node_token}')
+        trie_ids: str = str(self._trie_ids) if self._trie_ids else '{}'
+        output.append(f'  trie ids = {trie_ids}')
+        output.append('  children = {')
+        for child_key, child_value in self._children.items():
+            output.append(
+                f'    {child_key} = ' +
+                indent(str(child_value), '    ').lstrip())
+        output.append('  }')
+        if self._root_node:
+            output.append(f'  trie index = {self._trie_index.keys()}')
+        trie_ids: str = str(self._trie_ids) if self._trie_ids else '{}'
+        output.append('}')
+        return '\n'.join(output)
