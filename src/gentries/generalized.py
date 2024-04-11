@@ -68,14 +68,14 @@ class GeneralizedTrie:
 
     def _add_new_child(self, /,
                        node_token: GeneralizedToken,
-                       tokens: Iterator) -> 'GeneralizedTrie':
+                       trie_key: Iterator) -> 'GeneralizedTrie':
         """Creates and adds a new GeneralizedTrie node to the node's _children.
 
         The new node is initialized with the passed arguments.
 
         Args:
             node_token (GeneralizedToken): The node_token for the new child.
-            tokens (Iterator): Remaining tokens (if any) in the trie key.
+            trie_key (Iterator): Remaining tokens (if any) in the trie key.
 
         Returns:
             int: Id number of the new GeneralizedTrie key.
@@ -85,15 +85,15 @@ class GeneralizedTrie:
                 If node_token does not conform to the GeneralizedToken
                 protocol.
             AssertionError:
-                If tokens are not an Iterator.
+                If trie_key is not an Iterator.
             TypeError:
-                If entries in tokens do not conform to the GeneralizedToken
+                If entries in trie_key do not conform to the GeneralizedToken
                 protocol.
         """
         # trunk-ignore(bandit/B101)
         assert (
             (isinstance(node_token, GeneralizedToken) and
-             isinstance(tokens, Iterator))), (
+             isinstance(trie_key, Iterator))), (
              '[GTANC001] incorrect arguments passed to _add_new_child()')
         new_child: GeneralizedTrie = GeneralizedTrie()
         new_child._root_node = False
@@ -101,7 +101,7 @@ class GeneralizedTrie:
         new_child._parent = self
         new_child._trie_index = self._trie_index
         new_child._trie_id_counter = self._trie_id_counter
-        trie_id: int = new_child.add(tokens)
+        trie_id: int = new_child.add(trie_key)
         self._children[node_token] = new_child
         return trie_id
 
@@ -132,35 +132,35 @@ class GeneralizedTrie:
             '[GTTNS002] attempted to set _trie_number to a negative value')
         self._trie_id_counter['trie_number'] = value
 
-    def add(self, tokens: Any) -> int:
-        """Adds a trie key defined by the passed tokens to the trie.
+    def add(self, trie_key: Any) -> int:
+        """Adds a trie key defined by the passed trie_key to the trie.
 
         Args:
-            tokens (Any): Must be an object that can be used in iteration and
-                          containing entries conforming to the GeneralizedToken
-                          protocol.
+            trie_key (Any): Must be an object that can be used in iteration and
+                            containing entries conforming to the GeneralizedToken
+                            protocol.
 
         Raises:
-            TypeError: If tokens cannot be iterated on.
-            TypeError: If entries in tokens do not conform to the
+            TypeError: If trie_key cannot be iterated on.
+            TypeError: If entries in trie_key do not conform to the
                        GeneralizedToken protocol.
 
         Returns:
             int: id number of the inserted trie key.
         """
-        if not isinstance(tokens, Iterator):
+        if not isinstance(trie_key, Iterator):
             try:
-                tokens = iter(tokens)
+                trie_key = iter(trie_key)
             except TypeError as err:
                 raise TypeError(
-                    '[GTAFBT001] tokens arg cannot '
+                    '[GTAFBT001] trie_key arg cannot '
                     f'be iterated: {err}') from err
 
-        first_token: Any = next(tokens, None)
-        # if first_token is None, we have run out of tokens to iterate
+        first_token: Any = next(trie_key, None)
+        # if first_token is None, we have run out of tokens in the trie key to iterate
         if first_token is None:
             if self._root_node:
-                raise ValueError('[GTAFBT002] empty tokens key passed')
+                raise ValueError('[GTAFBT002] empty trie_key passed')
             new_trie_id: int = self._trie_number + 1
             self._trie_ids.add(new_trie_id)
             self._trie_number = new_trie_id
@@ -169,15 +169,15 @@ class GeneralizedTrie:
 
         if not isinstance(first_token, GeneralizedToken):
             raise TypeError(
-                '[GTAFBT003] entry in tokens arg does not support the '
+                '[GTAFBT003] entry in trie_key arg does not support the '
                 'GeneralizedToken protocol')
 
         # there is an existing child trie we can use
         if first_token in self._children:
-            return self._children[first_token].add(tokens)
+            return self._children[first_token].add(trie_key)
 
         # we need a new sub-trie
-        return self._add_new_child(node_token=first_token, tokens=tokens)
+        return self._add_new_child(node_token=first_token, trie_key=trie_key)
 
     def remove(self, trie_id: int):
         """Remove the trie key with the passed trie_id from the trie.
@@ -250,16 +250,16 @@ class GeneralizedTrie:
             # to the trie keys 'abc' and 'a'
 
         Args:
-            tokens (Any): Ordered tokens for matching.
+            tokens (Any): Ordered trie_key for matching.
 
         Returns:
             Set[int]: Set of ids for trie keys that are prefixes of
-                      the tokens. This will be an empty set if there
+                      the trie_key. This will be an empty set if there
                       are no matches.
 
         Raises:
-            TypeError: If tokens arg is not iterable.
-            TypeError: If entries in the tokens arg do not support the
+            TypeError: If trie_key arg is not iterable.
+            TypeError: If entries in the trie_key arg do not support the
                        GeneralizedToken protocol.
         """
         if not isinstance(tokens, Iterator):
@@ -267,7 +267,7 @@ class GeneralizedTrie:
                 tokens = iter(tokens)
             except TypeError as err:
                 raise TypeError(
-                    f'[GTM001] tokens arg cannot be iterated: {err}') from err
+                    f'[GTM001] trie_key arg cannot be iterated: {err}') from err
 
         matched: Set[int] = copy(self._trie_ids) if self._trie_ids else set()
         token_entry = next(tokens, None)
@@ -276,7 +276,21 @@ class GeneralizedTrie:
                 self._children[token_entry].token_prefixes(tokens))
         return matched
 
+    def __len__(self) -> int:
+        """Returns the number of keys in the trie.
+
+        Usage:
+            n_trie_keys: int = len(trie)
+
+        Returns:
+            (int) number of keys in the trie.
+        """
+        return len(self._trie_ids)
+
     def __str__(self) -> str:
+        """Generates a stringified version of the trie for visual examination.
+
+        The output IS NOT executable code but more in the nature of debug support."""
         output: str = ['{']
         if self._root_node:
             output.append(f'  trie number = {self._trie_number}')
