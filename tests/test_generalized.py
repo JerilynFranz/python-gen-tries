@@ -22,42 +22,49 @@ class TestConfig(NamedTuple):
     exception_tag: Optional[str] = None
 
 
+def run_tests_list(self, tests_list: List[TestConfig]) -> None:
+    for test in tests_list:
+        run_test(self, test)
+
+
 def run_test(self, entry: TestConfig) -> None:
-    test_description: str = (
-        f'{entry.name}')
-    errors: List[str] = []
-    try:
-        found: Any = entry.action(*entry.args, **entry.kwargs)
-        if entry.exception:
-            errors.append('returned result instead of raising exception')
+    with self.subTest(msg=entry.name):
+        test_description: str = (
+            f'{entry.name}')
+        errors: List[str] = []
+        try:
+            found: Any = entry.action(*entry.args, **entry.kwargs)
+            if entry.exception:
+                errors.append('returned result instead of raising exception')
 
-        else:
-            if entry.validate_result and not entry.validate_result(found):
-                errors.append(f'failed result validation: found={found}')
-            if entry.validate_obj and not entry.validate_obj(entry.obj):
-                errors.append(f'failed object validation: obj={entry.obj}')
-            if (not isinstance(entry.expected, Ignore)
-                    and entry.expected != found):
-                errors.append(f'expected={entry.expected}, found={found}')
-    except Exception as err:  # pylint: disable=broad-exception-caught
-        if entry.exception is None:
-            errors.append(
-                f'Did not expect exception. Caught exception {repr(err)}')
-            errors.append('stacktrace = ')
-            errors.append('\n'.join(traceback.format_tb(tb=err.__traceback__)))
-
-        if not (entry.exception and isinstance(err, entry.exception)):
-            errors.append(
-                f'Unexpected exception type: expected={entry.exception}, '
-                f'found = {repr(err)}')
-
-        elif entry.exception_tag:
-            if str(err).find(entry.exception_tag) == -1:
+            else:
+                if entry.validate_result and not entry.validate_result(found):
+                    errors.append(f'failed result validation: found={found}')
+                if entry.validate_obj and not entry.validate_obj(entry.obj):
+                    errors.append(f'failed object validation: obj={entry.obj}')
+                if (not isinstance(entry.expected, Ignore)
+                        and entry.expected != found):
+                    errors.append(f'expected={entry.expected}, found={found}')
+        except Exception as err:  # pylint: disable=broad-exception-caught
+            if entry.exception is None:
                 errors.append(
-                    f'correct exception type, but tag {entry.exception_tag}'
-                    f'not found: {repr(err)}')
-    if errors:
-        self.fail(msg=test_description + ': ' + '\n'.join(errors))
+                    f'Did not expect exception. Caught exception {repr(err)}')
+                errors.append('stacktrace = ')
+                errors.append('\n'.join(
+                    traceback.format_tb(tb=err.__traceback__)))
+
+            if not (entry.exception and isinstance(err, entry.exception)):
+                errors.append(
+                    f'Unexpected exception type: expected={entry.exception}, '
+                    f'found = {repr(err)}')
+
+            elif entry.exception_tag:
+                if str(err).find(entry.exception_tag) == -1:
+                    errors.append(
+                        f'correct exception type, but tag '
+                        f'{entry.exception_tag} not found: {repr(err)}')
+        if errors:
+            self.fail(msg=test_description + ': ' + '\n'.join(errors))
 
 
 class TestGeneralizedTrie(unittest.TestCase):
@@ -79,9 +86,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 kwargs={'filter_id': 1},
                 exception=TypeError)
         ]
-        for test in tests:
-            with self.subTest(msg=test.name):
-                run_test(self, entry=test)
+        run_tests_list(self, tests)
 
     def test_add(self) -> None:
         trie: GeneralizedTrie = GeneralizedTrie()
@@ -124,9 +129,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 kwargs={'tokens': [frozenset([1]), 3, 4, 5]},
                 expected=5),
         ]
-        for test in tests:
-            with self.subTest(msg=test.name):
-                run_test(self, entry=test)
+        run_tests_list(self, tests)
 
     def test_token_prefixes(self) -> None:
         trie: GeneralizedTrie = GeneralizedTrie()
@@ -222,9 +225,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 kwargs={'tokens': [frozenset([1]), 3, 4, 5]},
                 expected=set([6])),
         ]
-        for test in tests:
-            with self.subTest(msg=test.name):
-                run_test(self, entry=test)
+        run_tests_list(self, tests)
 
 
 if __name__ == '__main__':
