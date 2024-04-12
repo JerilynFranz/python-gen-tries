@@ -82,13 +82,11 @@ class GeneralizedTrie:
 
         Raises:
             AssertionError:
-                If node_token does not conform to the GeneralizedToken
-                protocol.
+                If node_token does not conform to the GeneralizedToken protocol.
             AssertionError:
                 If trie_key is not an Iterator.
             TypeError:
-                If entries in trie_key do not conform to the GeneralizedToken
-                protocol.
+                If entries in trie_key do not conform to the GeneralizedToken protocol.
         """
         # trunk-ignore(bandit/B101)
         assert (
@@ -125,11 +123,9 @@ class GeneralizedTrie:
             AssertionError: If value is not of type int.
             AssertionError: If value is negative."""
         # trunk-ignore(bandit/B101)
-        assert isinstance(value, int), (
-            '[GTTNS001] attempted to set _trie_number to a non-int type value')
+        assert isinstance(value, int), '[GTTNS001] attempted to set _trie_number to a non-int type value'
         # trunk-ignore(bandit/B101)
-        assert value >= 0, (
-            '[GTTNS002] attempted to set _trie_number to a negative value')
+        assert value >= 0, '[GTTNS002] attempted to set _trie_number to a negative value'
         self._trie_id_counter['trie_number'] = value
 
     def add(self, trie_key: Any) -> int:
@@ -153,8 +149,7 @@ class GeneralizedTrie:
                 trie_key = iter(trie_key)
             except TypeError as err:
                 raise TypeError(
-                    '[GTAFBT001] trie_key arg cannot '
-                    f'be iterated: {err}') from err
+                    f'[GTAFBT001] trie_key arg cannot be iterated: {err}') from err
 
         first_token: Any = next(trie_key, None)
         # if first_token is None, we have run out of tokens in the trie key to iterate
@@ -169,8 +164,7 @@ class GeneralizedTrie:
 
         if not isinstance(first_token, GeneralizedToken):
             raise TypeError(
-                '[GTAFBT003] entry in trie_key arg does not support the '
-                'GeneralizedToken protocol')
+                '[GTAFBT003] entry in trie_key arg does not support the GeneralizedToken protocol')
 
         # there is an existing child trie we can use
         if first_token in self._children:
@@ -179,16 +173,16 @@ class GeneralizedTrie:
         # we need a new sub-trie
         return self._add_new_child(node_token=first_token, trie_key=trie_key)
 
-    def remove(self, trie_id: int):
+    def remove(self, trie_id: int) -> None:
         """Remove the trie key with the passed trie_id from the trie.
 
         Args:
             trie_id (int): id of the trie key to remove.
 
         Raises:
-            TypeError: if trie_id arg is not type int or an int sub-class
-            ValueError: if trie_id arg is less than 1.
-            ValueError: if trie_id does not match the id of any trie keys.
+            TypeError: trie_id arg is not type int or an int sub-class
+            ValueError: trie_id arg is less than 1.
+            KeyError: trie_id does not match the id of any trie keys.
         """
         if not isinstance(trie_id, int):
             raise TypeError(
@@ -199,37 +193,31 @@ class GeneralizedTrie:
 
         # Not a known trie id
         if trie_id not in self._trie_index:
-            raise ValueError(
-                '[GTR003] trie_id arg does not match any trie keys')
+            raise KeyError(
+                '[GTR003] trie_id arg does not match any trie key ids')
 
         # Find the node and delete its id from the trie index
         trie_node: GeneralizedTrie = self._trie_index[trie_id]
-        node_token: Any = trie_node._node_token
         del trie_node._trie_index[trie_id]
-        trie_node._trie_index = None
-        parent_node: GeneralizedTrie = trie_node._parent
-        trie_node._parent = None
 
-        # If the node still has other trie ids or children, return.
+        # Remove the id from the node
+        trie_node._trie_ids.remove(trie_id)
+
+        # If the node still has other trie ids or children, we're done: return
         if trie_node._trie_ids or trie_node._children:
             return
 
-        # No trie ids or children are left for this node, so purge
-        # nodes up the trie tree as needed. Explicitly cleaning up
-        # references to prevent generating orphans.
-        while parent_node:
-            if node_token in parent_node._children:
-                del parent_node._children[node_token]
-            if parent_node._children or parent_node._trie_ids:
-                break
-            # Nothing left here. Purge and move up.
-            parent_node._trie_index = None
-            parent_node._trie_id_counter = None
-            node_token = parent_node._node_token
-            next_parent_node: GeneralizedTrie = parent_node._parent
-            parent_node._parent = None
-            parent_node = next_parent_node
-
+        # No trie ids or children are left for this node, so prune
+        # nodes up the trie tree as needed.
+        node_token: Any = trie_node._node_token
+        trie_node = trie_node._parent
+        while trie_node is not None:
+            del trie_node._children[node_token]
+            # If the node still has other trie ids or children, we're done: return
+            if trie_node._trie_ids or trie_node._children:
+                return
+            node_token = trie_node._node_token
+            trie_node = trie_node._parent
         return
 
     def token_prefixes(self, tokens: Any) -> Set[int]:
@@ -285,7 +273,7 @@ class GeneralizedTrie:
         Returns:
             (int) number of keys in the trie.
         """
-        return len(self._trie_ids)
+        return len(self._trie_index)
 
     def __str__(self) -> str:
         """Generates a stringified version of the trie for visual examination.
@@ -294,14 +282,17 @@ class GeneralizedTrie:
         output: str = ['{']
         if self._root_node:
             output.append(f'  trie number = {self._trie_number}')
+        else:
+            if self._parent._root_node:
+                output.append('  parent = root node')
+            else:
+                output.append(f'  parent = {self._parent._node_token}')
         output.append(f'  node token = {self._node_token}')
         trie_ids: str = str(self._trie_ids) if self._trie_ids else '{}'
         output.append(f'  trie ids = {trie_ids}')
         output.append('  children = {')
         for child_key, child_value in self._children.items():
-            output.append(
-                f'    {child_key} = ' +
-                indent(str(child_value), '    ').lstrip())
+            output.append(f'    {child_key} = ' + indent(str(child_value), '    ').lstrip())
         output.append('  }')
         if self._root_node:
             output.append(f'  trie index = {self._trie_index.keys()}')
