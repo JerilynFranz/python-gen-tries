@@ -241,9 +241,9 @@ class TestGeneralizedTrie(unittest.TestCase):
                 args=[[frozenset([1]), 3, 4, 5]],
                 expected=set([6])),
             TestConfig(
-                name="[TTP017] trie.prefixes(tokens=[frozenset([1]), 3, 4, 5])",
+                name="[TTP017] trie.prefixes(trie_key=[frozenset([1]), 3, 4, 5])",
                 action=trie.prefixes,
-                kwargs={'tokens': [frozenset([1]), 3, 4, 5]},
+                kwargs={'trie_key': [frozenset([1]), 3, 4, 5]},
                 expected=set([6])),
             TestConfig(
                 name="[TTP018] trie.prefixes()",
@@ -267,7 +267,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 args=['abc'],
                 expected=1),
             TestConfig(
-                name="[TR002] trie.tokens_prefix('abcde')",
+                name="[TR002] trie.prefixes('abcde')",
                 action=trie.prefixes,
                 args=['abcde'],
                 expected=set([1])),
@@ -316,7 +316,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 exception=KeyError,
                 exception_tag='[GTR003]'),
             TestConfig(
-                name="[TR011] trie.tokens_prefix('abcde')",
+                name="[TR011] trie.prefixes('abcde')",
                 action=trie.prefixes,
                 args=['abcde'],
                 expected=set())

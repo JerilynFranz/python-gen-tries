@@ -8,22 +8,22 @@ from . import GeneralizedToken, InvalidTokenError
 class GeneralizedTrie:
     """Implementation of a general purpose trie.
 
-    Unlike many Trie implementations, which only support strings as entries
-    and match only at the character level, it is agnostic as to the types of
-    tokens used to key it and thus much more general purpose.
+    Unlike many Trie implementations, which only support strings as keys
+    and token match only at the character level, it is agnostic as to the
+    types of tokens used to key it and thus much more general purpose.
 
     It requires only that the indexed tokens be comparable for equality
     and hashable. This is verified at runtime using the GeneralizedToken
     protocol.
 
-    This generally means that only immutable values can be used as tokens.
-    i.e: a frozenset() works as a token, but a set() does not. Tokens
-    in a trie key do NOT have to all be the same type as long as they can be
-    compared for equality.
+    This generally means that only immutable values can be used as tokens
+    in a trie key. i.e: a frozenset() works as a token, but a set() does not.
+    Tokens in a trie key do NOT have to all be the same type as long as they
+    can be compared for equality.
 
     It can handle strings, bytes, lists, sequences, and iterables of token
-    objects. As long as the tokens used, whether characters in a string or
-    a list of objects, are comparable and hashable, it 'just works'.
+    objects as keys for the trie. As long as the tokens used, whether characters
+    in a string or frozensets in a list, are comparable and hashable, it 'just works'.
 
     The code emphasizes robustness and correctness.
 
@@ -67,7 +67,7 @@ class GeneralizedTrie:
         """Creates and adds a new GeneralizedTrie node to the node's _children.
 
         The new node is initialized with the passed arguments. This is used
-        recursively by the add() method to actually add a trie key to the trie.
+        recursively by the add() method to actually add the trie key to the trie.
 
         Args:
             node_token (GeneralizedToken):
@@ -233,11 +233,11 @@ class GeneralizedTrie:
             parent_node = node._parent
         return
 
-    def prefixes(self, tokens: Any) -> Set[int]:
-        """Returns the ids of all trie keys that are a prefix of the tokens.
+    def prefixes(self, trie_key: Any) -> Set[int]:
+        """Returns the ids of all keys in the trie that are a prefix of the passed trie_key.
 
         Searches the trie for all trie keys that are prefix matches
-        for the tokens and returns their ids as a set.
+        for the trie_key and returns their ids as a set.
 
         Usage:
             trie: GeneralizedTrie = GeneralizedTrie()
@@ -258,41 +258,41 @@ class GeneralizedTrie:
                 print(f'{trie_id}: {trie_keys_index[trie_id]}')
 
         Args:
-            tokens (Any):
-                trie_key for matching.
+            trie_key (Any):
+                trie key for matching.
 
         Returns:
             Set[int]:
                 Set of ids for trie keys that are prefixes of
-                the tokens. This will be an empty set if there
+                the trie_key. This will be an empty set if there
                 are no matches.
 
         Raises:
             TypeError:
-                If tokens arg is not iterable.
+                If trie_key arg is not iterable.
             InvalidTokenError:
-                If entries in the tokens arg do not support the
+                If entries in the trie_key arg do not support the
                 GeneralizedToken protocol.
         """
-        if not isinstance(tokens, Iterator):
+        if not isinstance(trie_key, Iterator):
             try:
-                tokens = iter(tokens)
+                trie_key = iter(trie_key)
             except TypeError as err:
                 raise TypeError(
                     f'[GTM001] trie_key arg cannot be iterated: {err}') from err
 
         matched: Set[int] = copy(self._trie_ids) if self._trie_ids else set()
-        token_entry = next(tokens, None)
+        token_entry = next(trie_key, None)
         if token_entry in self._children:
             matched = matched.union(
-                self._children[token_entry].prefixes(tokens))
+                self._children[token_entry].prefixes(trie_key))
         return matched
 
-    def suffixes(self, tokens: Any) -> Set[int]:
-        """Returns the ids of all trie keys that are suffixs of the tokens.
+    def suffixes(self, trie_key: Any) -> Set[int]:
+        """Returns the ids of all trie keys that are suffixs of the trie_key.
 
         Searches the trie for all trie keys that are suffix matches for
-        the tokens and returns their ids as a set.
+        the trie_key and returns their ids as a set.
 
         Usage:
             trie: GeneralizedTrie = GeneralizedTrie()
@@ -313,38 +313,38 @@ class GeneralizedTrie:
 
 
         Args:
-            tokens (Any):
+            trie_key (Any):
                 trie_key for matching.
 
         Returns:
             Set[int]:
                 Set of ids for trie keys that are suffix matchs for
-                the tokens. This will be an empty set if there
+                the trie_key. This will be an empty set if there
                 are no matches.
 
         Raises:
             TypeError:
-                If tokens arg is not iterable.
+                If trie_key arg is not iterable.
             InvalidTokenError:
-                If entries in the tokens arg do not support the
+                If entries in the trie_key arg do not support the
                 GeneralizedToken protocol.
         """
-        if not isinstance(tokens, Iterator):
+        if not isinstance(trie_key, Iterator):
             try:
-                tokens = iter(tokens)
+                trie_key = iter(trie_key)
             except TypeError as err:
                 raise TypeError(
                     f'[GTM001] trie_key arg cannot be iterated: {err}') from err
 
         matched: Set[int] = copy(self._trie_ids) if self._trie_ids else set()
-        token_entry = next(tokens, None)
+        token_entry = next(trie_key, None)
         if token_entry in self._children:
             matched = matched.union(
-                self._children[token_entry].prefixes(tokens))
+                self._children[token_entry].prefixes(trie_key))
         return matched
 
-    def __contains__(self, tokens: Any) -> Set[int]:
-        """Returns True if the trie contains a key matching the tokens.
+    def __contains__(self, trie_key: Any) -> Set[int]:
+        """Returns True if the trie contains a key matching the trie_key.
 
         Usage:
             trie: GeneralizedTrie = GeneralizedTrie()
@@ -357,35 +357,35 @@ class GeneralizedTrie:
                 print('abc is in the trie')
 
         Args:
-            tokens (Any):
+            trie_key (Any):
                 trie key for matching.
 
         Returns:
             bool:
                 (False):
-                    Trie does not contain a key matching the tokens.
+                    Trie does not contain a key matching the trie_key.
                 (True):
-                    Trie contains a key matching the tokens.
+                    Trie contains a key matching the trie_key.
 
         Raises:
             TypeError:
-                If tokens arg is not iterable.
+                If trie_key arg is not iterable.
             InvalidTokenError:
-                If entries in the tokens arg do not support the
+                If entries in the trie_key arg do not support the
                 GeneralizedToken protocol.
         """
-        if not isinstance(tokens, Iterator):
+        if not isinstance(trie_key, Iterator):
             try:
-                tokens = iter(tokens)
+                trie_key = iter(trie_key)
             except TypeError as err:
                 raise TypeError(
                     f'[GTM001] trie_key arg cannot be iterated: {err}') from err
 
         matched: Set[int] = copy(self._trie_ids) if self._trie_ids else set()
-        token_entry = next(tokens, None)
+        token_entry = next(trie_key, None)
         if token_entry in self._children:
             matched = matched.union(
-                self._children[token_entry].prefixes(tokens))
+                self._children[token_entry].prefixes(trie_key))
         return matched
 
     def __len__(self) -> int:
