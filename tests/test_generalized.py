@@ -2,7 +2,7 @@ import traceback
 from typing import Any, Callable, Dict, List, NamedTuple, Optional
 import unittest
 
-from gentries.generalized import GeneralizedTrie, InvalidTokenError
+from gentries.generalized import GeneralizedTrie
 
 
 class NoExpectedValue():
@@ -137,7 +137,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA010] trie.add(set([1]), 3, 4, 5])",
                 action=trie.add,
                 args=[[set([1]), 3, 4, 5]],
-                exception=InvalidTokenError,
+                exception=TypeError,
                 exception_tag='[GTAFBT003]'),
             TestConfig(
                 name="[TA011] trie.add(key=[1, 3, 4, 7])",
@@ -246,11 +246,16 @@ class TestGeneralizedTrie(unittest.TestCase):
                 kwargs={'trie_key': [frozenset([1]), 3, 4, 5]},
                 expected=set([6])),
             TestConfig(
-                name="[TTP018] trie.prefixes()",
+                name="[TTP018] trie.prefixes(trie_key=[set([1]), 3, 4, 5])",
+                action=trie.prefixes,
+                kwargs={'trie_key': [set([1]), 3, 4, 5]},
+                exception=TypeError),
+            TestConfig(
+                name="[TTP019] trie.prefixes()",
                 action=trie.prefixes,
                 exception=TypeError),
             TestConfig(
-                name="[TTP019] trie.prefixes(None)",
+                name="[TTP020] trie.prefixes(None)",
                 action=trie.prefixes,
                 args=[None],
                 exception=TypeError,
