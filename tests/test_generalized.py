@@ -229,31 +229,25 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TTP014] trie.add(frozenset([1]), 3, 4, 5])",
                 action=trie.add,
                 args=[[frozenset([1]), 3, 4, 5]],
-                kwargs={},
                 expected=6),
             TestConfig(
                 name="[TTP015] trie.token_prefixes([frozenset([1]), 3, 4, 5])",
                 action=trie.token_prefixes,
                 args=[[frozenset([1]), 3, 4, 5]],
-                kwargs={},
                 expected=set([6])),
             TestConfig(
                 name="[TTP017] trie.token_prefixes(tokens=[frozenset([1]), 3, 4, 5])",
                 action=trie.token_prefixes,
-                args=[],
                 kwargs={'tokens': [frozenset([1]), 3, 4, 5]},
                 expected=set([6])),
             TestConfig(
                 name="[TTP018] trie.token_prefixes()",
                 action=trie.token_prefixes,
-                args=[],
-                kwargs={},
                 exception=TypeError),
             TestConfig(
                 name="[TTP019] trie.token_prefixes(None)",
                 action=trie.token_prefixes,
                 args=[None],
-                kwargs={},
                 exception=TypeError,
                 exception_tag='[GTM001]'),
         ]
