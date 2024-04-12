@@ -2,7 +2,7 @@ import traceback
 from typing import Any, Callable, Dict, List, NamedTuple, Optional
 import unittest
 
-from gentries.generalized import GeneralizedTrie
+from gentries.generalized import GeneralizedTrie, InvalidTokenError
 
 
 class NoExpectedValue():
@@ -137,7 +137,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA010] trie.add(set([1]), 3, 4, 5])",
                 action=trie.add,
                 args=[[set([1]), 3, 4, 5]],
-                exception=TypeError,
+                exception=InvalidTokenError,
                 exception_tag='[GTAFBT003]'),
             TestConfig(
                 name="[TA011] trie.add(key=[1, 3, 4, 7])",
@@ -161,7 +161,7 @@ class TestGeneralizedTrie(unittest.TestCase):
         ]
         run_tests_list(self, tests)
 
-    def test_token_prefixes(self) -> None:
+    def test_prefixes(self) -> None:
         trie: GeneralizedTrie = GeneralizedTrie()
         tests: List[TestConfig] = [
             TestConfig(
@@ -186,33 +186,33 @@ class TestGeneralizedTrie(unittest.TestCase):
                 args=['abc'],
                 expected=4),
             TestConfig(
-                name="[TTP005] trie.token_prefixes(['tree', 'value', 'ape'])",
-                action=trie.token_prefixes,
+                name="[TTP005] trie.prefixes(['tree', 'value', 'ape'])",
+                action=trie.prefixes,
                 args=[['tree', 'value', 'ape']],
                 expected=set([1, 2])),
             TestConfig(
-                name="[TTP006] trie.token_prefixes(['tree', 'value'])",
-                action=trie.token_prefixes,
+                name="[TTP006] trie.prefixes(['tree', 'value'])",
+                action=trie.prefixes,
                 args=[['tree', 'value']],
                 expected=set([2])),
             TestConfig(
-                name="[TTP007] trie.token_prefixes('a')",
-                action=trie.token_prefixes,
+                name="[TTP007] trie.prefixes('a')",
+                action=trie.prefixes,
                 args=['a'],
                 expected=set()),
             TestConfig(
-                name="[TTP008] trie.token_prefixes('abc')",
-                action=trie.token_prefixes,
+                name="[TTP008] trie.prefixes('abc')",
+                action=trie.prefixes,
                 args=['abc'],
                 expected=set([4])),
             TestConfig(
-                name="[TTP009] trie.token_prefixes('abcd')",
-                action=trie.token_prefixes,
+                name="[TTP009] trie.prefixes('abcd')",
+                action=trie.prefixes,
                 args=['abcd'],
                 expected=set([4])),
             TestConfig(
-                name="[TTP010] trie.token_prefixes(['abc'])",
-                action=trie.token_prefixes,
+                name="[TTP010] trie.prefixes(['abc'])",
+                action=trie.prefixes,
                 args=[['abc']],
                 expected=set()),
             TestConfig(
@@ -221,13 +221,13 @@ class TestGeneralizedTrie(unittest.TestCase):
                 args=[[1, 3, 4]],
                 expected=5),
             TestConfig(
-                name="[TTP012] trie.token_prefixes([1, 3, 4, 5, 6, ])",
-                action=trie.token_prefixes,
+                name="[TTP012] trie.prefixes([1, 3, 4, 5, 6, ])",
+                action=trie.prefixes,
                 args=[[1, 3, 4, 5, 6]],
                 expected=set([5])),
             TestConfig(
-                name="[TTP013] trie.token_prefixes(['a', 3, 4, 5])",
-                action=trie.token_prefixes,
+                name="[TTP013] trie.prefixes(['a', 3, 4, 5])",
+                action=trie.prefixes,
                 args=[['a', 3, 4, 5]],
                 expected=set()),
             TestConfig(
@@ -236,22 +236,22 @@ class TestGeneralizedTrie(unittest.TestCase):
                 args=[[frozenset([1]), 3, 4, 5]],
                 expected=6),
             TestConfig(
-                name="[TTP015] trie.token_prefixes([frozenset([1]), 3, 4, 5])",
-                action=trie.token_prefixes,
+                name="[TTP015] trie.prefixes([frozenset([1]), 3, 4, 5])",
+                action=trie.prefixes,
                 args=[[frozenset([1]), 3, 4, 5]],
                 expected=set([6])),
             TestConfig(
-                name="[TTP017] trie.token_prefixes(tokens=[frozenset([1]), 3, 4, 5])",
-                action=trie.token_prefixes,
+                name="[TTP017] trie.prefixes(tokens=[frozenset([1]), 3, 4, 5])",
+                action=trie.prefixes,
                 kwargs={'tokens': [frozenset([1]), 3, 4, 5]},
                 expected=set([6])),
             TestConfig(
-                name="[TTP018] trie.token_prefixes()",
-                action=trie.token_prefixes,
+                name="[TTP018] trie.prefixes()",
+                action=trie.prefixes,
                 exception=TypeError),
             TestConfig(
-                name="[TTP019] trie.token_prefixes(None)",
-                action=trie.token_prefixes,
+                name="[TTP019] trie.prefixes(None)",
+                action=trie.prefixes,
                 args=[None],
                 exception=TypeError,
                 exception_tag='[GTM001]'),
@@ -268,7 +268,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 expected=1),
             TestConfig(
                 name="[TR002] trie.tokens_prefix('abcde')",
-                action=trie.token_prefixes,
+                action=trie.prefixes,
                 args=['abcde'],
                 expected=set([1])),
             TestConfig(
@@ -317,7 +317,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 exception_tag='[GTR003]'),
             TestConfig(
                 name="[TR011] trie.tokens_prefix('abcde')",
-                action=trie.token_prefixes,
+                action=trie.prefixes,
                 args=['abcde'],
                 expected=set())
         ]
