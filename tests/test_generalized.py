@@ -165,101 +165,226 @@ class TestGeneralizedTrie(unittest.TestCase):
         trie: GeneralizedTrie = GeneralizedTrie()
         tests: List[TestConfig] = [
             TestConfig(
-                name="[TTP001] trie.add(['tree', 'value', 'ape'])",
+                name="[TP001] trie.add(['tree', 'value', 'ape'])",
                 action=trie.add,
                 args=[['tree', 'value', 'ape']],
                 expected=1),
             TestConfig(
-                name="[TTP002] trie.add(['tree', 'value']",
+                name="[TP002] trie.add(['tree', 'value']",
                 action=trie.add,
                 args=[['tree', 'value']],
                 expected=2),
             TestConfig(
-                name="[TTP003] trie.add('abcdef')",
+                name="[TP003] trie.add('abcdef')",
                 action=trie.add,
                 args=['abcdef'],
                 kwargs={},
                 expected=3),
             TestConfig(
-                name="[TTP004] trie.add('abc')",
+                name="[TP004] trie.add('abc')",
                 action=trie.add,
                 args=['abc'],
                 expected=4),
             TestConfig(
-                name="[TTP005] trie.prefixes(['tree', 'value', 'ape'])",
+                name="[TP005] trie.prefixes(['tree', 'value', 'ape'])",
                 action=trie.prefixes,
                 args=[['tree', 'value', 'ape']],
                 expected=set([1, 2])),
             TestConfig(
-                name="[TTP006] trie.prefixes(['tree', 'value'])",
+                name="[TP006] trie.prefixes(['tree', 'value'])",
                 action=trie.prefixes,
                 args=[['tree', 'value']],
                 expected=set([2])),
             TestConfig(
-                name="[TTP007] trie.prefixes('a')",
+                name="[TP007] trie.prefixes('a')",
                 action=trie.prefixes,
                 args=['a'],
                 expected=set()),
             TestConfig(
-                name="[TTP008] trie.prefixes('abc')",
+                name="[TP008] trie.prefixes('abc')",
                 action=trie.prefixes,
                 args=['abc'],
                 expected=set([4])),
             TestConfig(
-                name="[TTP009] trie.prefixes('abcd')",
+                name="[TP009] trie.prefixes('abcd')",
                 action=trie.prefixes,
                 args=['abcd'],
                 expected=set([4])),
             TestConfig(
-                name="[TTP010] trie.prefixes(['abc'])",
+                name="[TP010] trie.prefixes(['abc'])",
                 action=trie.prefixes,
                 args=[['abc']],
                 expected=set()),
             TestConfig(
-                name="[TTP011] trie.add([1,3,4])",
+                name="[TP011] trie.add([1,3,4])",
                 action=trie.add,
                 args=[[1, 3, 4]],
                 expected=5),
             TestConfig(
-                name="[TTP012] trie.prefixes([1, 3, 4, 5, 6, ])",
+                name="[TP012] trie.prefixes([1, 3, 4, 5, 6, ])",
                 action=trie.prefixes,
                 args=[[1, 3, 4, 5, 6]],
                 expected=set([5])),
             TestConfig(
-                name="[TTP013] trie.prefixes(['a', 3, 4, 5])",
+                name="[TP013] trie.prefixes(['a', 3, 4, 5])",
                 action=trie.prefixes,
                 args=[['a', 3, 4, 5]],
                 expected=set()),
             TestConfig(
-                name="[TTP014] trie.add(frozenset([1]), 3, 4, 5])",
+                name="[TP014] trie.add(frozenset([1]), 3, 4, 5])",
                 action=trie.add,
                 args=[[frozenset([1]), 3, 4, 5]],
                 expected=6),
             TestConfig(
-                name="[TTP015] trie.prefixes([frozenset([1]), 3, 4, 5])",
+                name="[TP015] trie.prefixes([frozenset([1]), 3, 4, 5])",
                 action=trie.prefixes,
                 args=[[frozenset([1]), 3, 4, 5]],
                 expected=set([6])),
             TestConfig(
-                name="[TTP017] trie.prefixes(trie_key=[frozenset([1]), 3, 4, 5])",
+                name="[TP016] trie.prefixes(trie_key=[frozenset([1]), 3, 4, 5])",
                 action=trie.prefixes,
                 kwargs={'trie_key': [frozenset([1]), 3, 4, 5]},
                 expected=set([6])),
             TestConfig(
-                name="[TTP018] trie.prefixes(trie_key=[set([1]), 3, 4, 5])",
+                name="[TP017] trie.prefixes(trie_key=[set([1]), 3, 4, 5])",
                 action=trie.prefixes,
                 kwargs={'trie_key': [set([1]), 3, 4, 5]},
                 exception=TypeError),
             TestConfig(
-                name="[TTP019] trie.prefixes()",
+                name="[TP018] trie.prefixes()",
                 action=trie.prefixes,
                 exception=TypeError),
             TestConfig(
-                name="[TTP020] trie.prefixes(None)",
+                name="[TP019] trie.prefixes(None)",
                 action=trie.prefixes,
                 args=[None],
                 exception=TypeError,
                 exception_tag='[GTM001]'),
+        ]
+        run_tests_list(self, tests)
+
+    def test_suffixes(self) -> None:
+        trie: GeneralizedTrie = GeneralizedTrie()
+        tests: List[TestConfig] = [
+            TestConfig(
+                name="[TS001] trie.add(['tree', 'value', 'ape'])",
+                action=trie.add,
+                args=[['tree', 'value', 'ape']],
+                expected=1),
+            TestConfig(
+                name="[TS002] trie.add(['tree', 'value']",
+                action=trie.add,
+                args=[['tree', 'value']],
+                expected=2),
+            TestConfig(
+                name="[TS003] trie.add('abcdef')",
+                action=trie.add,
+                args=['abcdef'],
+                kwargs={},
+                expected=3),
+            TestConfig(
+                name="[TS004] trie.add('abc')",
+                action=trie.add,
+                args=['abc'],
+                expected=4),
+            TestConfig(
+                name="[TS005] trie.suffixes(['tree', 'value', 'ape'])",
+                action=trie.suffixes,
+                args=[['tree', 'value', 'ape']],
+                expected=set([1])),
+            TestConfig(
+                name="[TS006] trie.suffixes(['tree', 'value'])",
+                action=trie.suffixes,
+                args=[['tree', 'value']],
+                expected=set([1, 2])),
+            TestConfig(
+                name="[TS007] trie.suffixes('a')",
+                action=trie.suffixes,
+                args=['a'],
+                expected=set([3, 4])),
+            TestConfig(
+                name="[TS008] trie.suffixes('abc')",
+                action=trie.suffixes,
+                args=['abc'],
+                expected=set([3, 4])),
+            TestConfig(
+                name="[TS009] trie.suffixes('abcd')",
+                action=trie.suffixes,
+                args=['abcd'],
+                expected=set([3])),
+            TestConfig(
+                name="[TS010] trie.suffixes(['abc'])",
+                action=trie.suffixes,
+                args=[['abc']],
+                expected=set()),
+            TestConfig(
+                name="[TS011] trie.add([1,3,4])",
+                action=trie.add,
+                args=[[1, 3, 4]],
+                expected=5),
+            TestConfig(
+                name="[TS012] trie.suffixes([1, 3, 4, 5, 6])",
+                action=trie.suffixes,
+                args=[[1, 3, 4, 5, 6]],
+                expected=set()),
+            TestConfig(
+                name="[TS013] trie.suffixes(['a', 3, 4, 5])",
+                action=trie.suffixes,
+                args=[['a', 3, 4, 5]],
+                expected=set()),
+            TestConfig(
+                name="[TS014] trie.add(frozenset([1]), 3, 4, 5])",
+                action=trie.add,
+                args=[[frozenset([1]), 3, 4, 5]],
+                expected=6),
+            TestConfig(
+                name="[TS015] trie.suffixes([frozenset([1]), 3, 4, 5])",
+                action=trie.suffixes,
+                args=[[frozenset([1]), 3, 4, 5]],
+                expected=set([6])),
+            TestConfig(
+                name="[TS017] trie.suffixes(trie_key=[frozenset([1]), 3, 4, 5])",
+                action=trie.suffixes,
+                kwargs={'trie_key': [frozenset([1]), 3, 4, 5]},
+                expected=set([6])),
+            TestConfig(
+                name="[TS018] trie.suffixes(trie_key=[set([1]), 3, 4, 5])",
+                action=trie.suffixes,
+                kwargs={'trie_key': [set([1]), 3, 4, 5]},
+                exception=TypeError),
+            TestConfig(
+                name="[TS019] trie.suffixes()",
+                action=trie.suffixes,
+                exception=TypeError),
+            TestConfig(
+                name="[TS020] trie.suffixes(None)",
+                action=trie.suffixes,
+                args=[None],
+                exception=TypeError,
+                exception_tag='[GTS001]'),
+            TestConfig(
+                name="[TS021] trie.suffixes(depth=1)",
+                action=trie.suffixes,
+                kwargs={'depth': 1},
+                exception=TypeError),
+            TestConfig(
+                name="[TS022] trie.suffixes(trie_key='a', depth='b')",
+                action=trie.suffixes,
+                kwargs={'trie_key': 'a', 'depth': 'b'},
+                exception=TypeError,
+                exception_tag='[GTS002]'),
+            TestConfig(
+                name="[TS023] trie.suffixes(trie_key='a', depth=-2)",
+                action=trie.suffixes,
+                kwargs={'trie_key': 'a', 'depth': -2},
+                exception=ValueError,
+                exception_tag='[GTS003]'),
+            TestConfig(
+                name="[TS023] trie.suffixes(trie_key=[set(['a'], 'b']))",
+                action=trie.suffixes,
+                kwargs={'trie_key': [set('a'), 'b']},
+                exception=TypeError,
+                exception_tag='[GTS004]'),
         ]
         run_tests_list(self, tests)
 

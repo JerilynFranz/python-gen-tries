@@ -356,13 +356,13 @@ class GeneralizedTrie:
         token: Any = next(trie_key, None)
         if not isinstance(token, GeneralizedToken):
             raise TypeError('[GTS004] token found that does not conform to GeneralizedToken protocol')
-        if token is None:
-            return self._contained_ids(depth)
-        if token in self._children:
+        if token is None:  # found the match
+            return self._contained_ids(ids=set(), depth=depth)
+        if token in self._children:  # looking for match
             return self._children[token].suffixes(trie_key, depth)
-        return set()
+        return set()  # no match
 
-    def _contained_ids(self, depth: int = -1) -> Set[int]:
+    def _contained_ids(self, ids: set[int], depth: int = -1) -> Set[int]:
         """Returns a set contains all trie key ids defined for this node and/or its children up to the requested depth.
                     * A negative (-1 or lower) depth includes ALL ids for this node and all children nodes.
                     * A depth of 0 includes ONLY the ids for this node.
@@ -375,13 +375,16 @@ class GeneralizedTrie:
                 Set containing the ids of all contained trie keys.
         """
         # trunk-ignore(bandit/B101)
-        assert isinstance(depth, int), "[GTCI001] depth must be an int or sub-class"
-        contained_ids: Set[int] = set()
-        if self._trie_ids:
-            contained_ids.add(copy(self._trie_ids))
-        for token in self._children and depth:
-            contained_ids.add(self._children[token]._contained_ids(depth - 1))
-        return contained_ids
+        assert isinstance(ids, set), "[GTCI001] ids arg must be a set or sub-class"
+        # trunk-ignore(bandit/B101)
+        assert isinstance(depth, int), "[GTCI002] depth arg must be an int or sub-class"
+        for trie_id in self._trie_ids:
+            ids.add(trie_id)
+        if depth:
+            depth -= 1
+            for token in self._children:
+                self._children[token]._contained_ids(ids, depth)
+        return ids
 
     def __contains__(self, trie_key: Any) -> Set[int]:
         """Returns True if the trie contains a key matching the trie_key.
