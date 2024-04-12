@@ -153,6 +153,11 @@ class TestGeneralizedTrie(unittest.TestCase):
                 action=trie.add,
                 args=[['a'], ['b']],
                 exception=TypeError),
+            TestConfig(
+                name="[TA014] len(trie)",
+                action=len,
+                args=[trie],
+                expected=6),
         ]
         run_tests_list(self, tests)
 
@@ -267,24 +272,51 @@ class TestGeneralizedTrie(unittest.TestCase):
                 args=['abcde'],
                 expected=set([1])),
             TestConfig(
-                name="[TR003] trie.remove(2)",
+                name="[TR003] len(trie)",
+                action=len,
+                args=[trie],
+                expected=1),
+            TestConfig(
+                name="[TR004] trie.remove(2)",
                 action=trie.remove,
                 args=[2],
                 exception=KeyError,
                 exception_tag='[GTR003]'),
             TestConfig(
-                name="[TR003] trie.remove(1)",
+                name="[TR005] len(trie)",
+                action=len,
+                args=[trie],
+                expected=1),
+            TestConfig(
+                name="[TR006] trie.remove(1)",
                 action=trie.remove,
                 args=[1],
                 expected=None),
             TestConfig(
-                name="[TR004] trie.remove(1)",
+                name="[TR007] len(trie)",
+                action=len,
+                args=[trie],
+                expected=0),
+            TestConfig(
+                name="[TR008] trie.remove('abc')",
+                action=trie.remove,
+                args=['abc'],
+                exception=TypeError,
+                exception_tag='[GTR001]'),
+            TestConfig(
+                name="[TR009] trie.remove(0)",
+                action=trie.remove,
+                args=[0],
+                exception=KeyError,
+                exception_tag='[GTR002]'),
+            TestConfig(
+                name="[TR010] trie.remove(1)",
                 action=trie.remove,
                 args=[1],
                 exception=KeyError,
                 exception_tag='[GTR003]'),
             TestConfig(
-                name="[TR005] trie.tokens_prefix('abcde')",
+                name="[TR011] trie.tokens_prefix('abcde')",
                 action=trie.token_prefixes,
                 args=['abcde'],
                 expected=set())

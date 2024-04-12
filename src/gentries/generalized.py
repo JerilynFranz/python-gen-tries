@@ -188,7 +188,7 @@ class GeneralizedTrie:
             raise TypeError(
                 '[GTR001] trie_id arg must be type int or an int sub-class')
         if trie_id < 1:
-            raise ValueError(
+            raise KeyError(
                 '[GTR002] trie_id arg must be 1 or greater')
 
         # Not a known trie id
