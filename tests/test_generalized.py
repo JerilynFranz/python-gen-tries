@@ -5,7 +5,9 @@ import unittest
 from gentries.generalized import GeneralizedTrie
 
 
-class Ignore():
+class NoExpectedValue():
+    """This is used to distinguish between having an expected return value
+    of None and and not expecting a value."""
     pass
 
 
@@ -14,7 +16,7 @@ class TestConfig(NamedTuple):
     action: Callable
     args: List[Any] = list()
     kwargs: Dict[str, Any] = dict()
-    expected: Any = Ignore()
+    expected: Any = NoExpectedValue()
     obj: Optional[Any] = None
     validate_obj: Optional[Callable] = None
     validate_result: Optional[Callable] = None
@@ -42,7 +44,7 @@ def run_test(self, entry: TestConfig) -> None:
                     errors.append(f'failed result validation: found={found}')
                 if entry.validate_obj and not entry.validate_obj(entry.obj):
                     errors.append(f'failed object validation: obj={entry.obj}')
-                if (not isinstance(entry.expected, Ignore)
+                if (not isinstance(entry.expected, NoExpectedValue)
                         and entry.expected != found):
                     errors.append(f'expected={entry.expected}, found={found}')
         except Exception as err:  # pylint: disable=broad-exception-caught
@@ -74,13 +76,10 @@ class TestGeneralizedTrie(unittest.TestCase):
              TestConfig(
                 name='[TCT001] create GeneralizedTrie()',
                 action=GeneralizedTrie,
-                args=[],
-                kwargs={},
                 validate_result=lambda found: isinstance(found, GeneralizedTrie)),
              TestConfig(
                 name='[TCT002] create GeneralizedTrie(filter_id=1)',
                 action=GeneralizedTrie,
-                args=[],
                 kwargs={'filter_id': 1},
                 exception=TypeError)
         ]
@@ -99,13 +98,11 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA002] trie.add(['tree', 'value']",
                 action=trie.add,
                 args=[['tree', 'value']],
-                kwargs={},
                 expected=2),
             TestConfig(
                 name="[TA003] trie.add('abcdef')",
                 action=trie.add,
                 args=['abcdef'],
-                kwargs={},
                 expected=3),
             TestConfig(
                 name="[TA004] trie.add(1, 3, 4, 5])",
@@ -123,46 +120,38 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA007] trie.add(frozenset([1]), 3, 4, 5])",
                 action=trie.add,
                 args=[[frozenset([1]), 3, 4, 6]],
-                kwargs={},
                 expected=6),
             TestConfig(
                 name="[TA008] trie.add(1)",
                 action=trie.add,
                 args=[1],
-                kwargs={},
                 exception=TypeError,
                 exception_tag='[GTAFBT001]'),
             TestConfig(
                 name="[TA009] trie.add([])",
                 action=trie.add,
                 args=[[]],
-                kwargs={},
                 exception=ValueError,
                 exception_tag='[GTAFBT002]'),
             TestConfig(
                 name="[TA010] trie.add(set([1]), 3, 4, 5])",
                 action=trie.add,
                 args=[[set([1]), 3, 4, 5]],
-                kwargs={},
                 exception=TypeError,
                 exception_tag='[GTAFBT003]'),
             TestConfig(
                 name="[TA011] trie.add(key=[1, 3, 4, 7])",
                 action=trie.add,
-                args=[],
                 kwargs={'key': [1, 3, 4, 7]},
                 exception=TypeError),
             TestConfig(
                 name="[TA012] trie.add()",
                 action=trie.add,
-                args=[],
-                kwargs={},
                 exception=TypeError),
             TestConfig(
                 name="[TA013] trie.add(['a'], ['b'])",
                 action=trie.add,
                 args=[['a'], ['b']],
-                kwargs={},
                 exception=TypeError),
         ]
         run_tests_list(self, tests)
@@ -174,13 +163,11 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TTP001] trie.add(['tree', 'value', 'ape'])",
                 action=trie.add,
                 args=[['tree', 'value', 'ape']],
-                kwargs={},
                 expected=1),
             TestConfig(
                 name="[TTP002] trie.add(['tree', 'value']",
                 action=trie.add,
                 args=[['tree', 'value']],
-                kwargs={},
                 expected=2),
             TestConfig(
                 name="[TTP003] trie.add('abcdef')",
@@ -192,61 +179,51 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TTP004] trie.add('abc')",
                 action=trie.add,
                 args=['abc'],
-                kwargs={},
                 expected=4),
             TestConfig(
                 name="[TTP005] trie.token_prefixes(['tree', 'value', 'ape'])",
                 action=trie.token_prefixes,
                 args=[['tree', 'value', 'ape']],
-                kwargs={},
                 expected=set([1, 2])),
             TestConfig(
                 name="[TTP006] trie.token_prefixes(['tree', 'value'])",
                 action=trie.token_prefixes,
                 args=[['tree', 'value']],
-                kwargs={},
                 expected=set([2])),
             TestConfig(
                 name="[TTP007] trie.token_prefixes('a')",
                 action=trie.token_prefixes,
                 args=['a'],
-                kwargs={},
                 expected=set()),
             TestConfig(
                 name="[TTP008] trie.token_prefixes('abc')",
                 action=trie.token_prefixes,
                 args=['abc'],
-                kwargs={},
                 expected=set([4])),
             TestConfig(
                 name="[TTP009] trie.token_prefixes('abcd')",
                 action=trie.token_prefixes,
                 args=['abcd'],
-                kwargs={},
                 expected=set([4])),
             TestConfig(
                 name="[TTP010] trie.token_prefixes(['abc'])",
                 action=trie.token_prefixes,
                 args=[['abc']],
-                kwargs={},
                 expected=set()),
             TestConfig(
                 name="[TTP011] trie.add([1,3,4])",
                 action=trie.add,
                 args=[[1, 3, 4]],
-                kwargs={},
                 expected=5),
             TestConfig(
                 name="[TTP012] trie.token_prefixes([1, 3, 4, 5, 6, ])",
                 action=trie.token_prefixes,
                 args=[[1, 3, 4, 5, 6]],
-                kwargs={},
                 expected=set([5])),
             TestConfig(
                 name="[TTP013] trie.token_prefixes(['a', 3, 4, 5])",
                 action=trie.token_prefixes,
                 args=[['a', 3, 4, 5]],
-                kwargs={},
                 expected=set()),
             TestConfig(
                 name="[TTP014] trie.add(frozenset([1]), 3, 4, 5])",
@@ -299,20 +276,17 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TR003] trie.remove(2)",
                 action=trie.remove,
                 args=[2],
-                kwargs={},
                 exception=KeyError,
                 exception_tag='[GTR003]'),
             TestConfig(
                 name="[TR003] trie.remove(1)",
                 action=trie.remove,
                 args=[1],
-                kwargs={},
                 expected=None),
             TestConfig(
                 name="[TR004] trie.remove(1)",
                 action=trie.remove,
                 args=[1],
-                kwargs={},
                 exception=KeyError,
                 exception_tag='[GTR003]'),
             TestConfig(
@@ -322,7 +296,6 @@ class TestGeneralizedTrie(unittest.TestCase):
                 expected=set())
         ]
         run_tests_list(self, tests)
-        print(str(trie))
 
 
 if __name__ == '__main__':
