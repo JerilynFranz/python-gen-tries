@@ -5,7 +5,7 @@ from typing import Any, Dict, Iterator, Set
 from . import GeneralizedToken
 
 
-class GeneralizedTrie:
+class GeneralizedTrie:          # pylint: disable=too-many-instance-attributes
     """Implementation of a general purpose trie.
 
     Unlike many Trie implementations, which only support strings as keys
@@ -52,6 +52,7 @@ class GeneralizedTrie:
         prefixes = url_trie.prefixes(["https", "com", "example"])
         print(f"Found URL prefixes: {prefixes}")  # Output: Found URL prefixes: {1}
     """
+
     def __init__(self):
         self._root_node: bool = True
         self._node_token: GeneralizedToken = None
@@ -61,8 +62,7 @@ class GeneralizedTrie:
         self._trie_ids: Set[int] = set()
         self._trie_id_counter: Dict[str, int] = {'trie_number': 0}
 
-    def _add_new_child(self, /,
-                       node_token: GeneralizedToken,
+    def _add_new_child(self, /, node_token: GeneralizedToken,
                        trie_key: Iterator) -> int:
         """Creates and adds a new GeneralizedTrie node to the node's _children.
 
@@ -87,11 +87,11 @@ class GeneralizedTrie:
             TypeError:
                 If entries in trie_key do not conform to the GeneralizedToken protocol.
         """
+        # pylint: disable=protected-access
         # trunk-ignore(bandit/B101)
-        assert (
-            (isinstance(node_token, GeneralizedToken) and
-             isinstance(trie_key, Iterator))), (
-             '[GTANC001] incorrect arguments passed to _add_new_child()')
+        assert ((isinstance(node_token, GeneralizedToken) and isinstance(
+            trie_key, Iterator))), (
+                '[GTANC001] incorrect arguments passed to _add_new_child()')
         new_child: GeneralizedTrie = GeneralizedTrie()
         new_child._root_node = False
         new_child._node_token = node_token
@@ -126,7 +126,9 @@ class GeneralizedTrie:
                 If value is negative.
         """
         # trunk-ignore(bandit/B101)
-        assert isinstance(value, int), '[GTTNS001] attempted to set _trie_number to a non-int type value'
+        assert isinstance(
+            value, int
+        ), '[GTTNS001] attempted to set _trie_number to a non-int type value'
         # trunk-ignore(bandit/B101)
         assert value >= 0, '[GTTNS002] attempted to set _trie_number to a negative value'
         self._trie_id_counter['trie_number'] = value
@@ -155,7 +157,8 @@ class GeneralizedTrie:
                 trie_key = iter(trie_key)
             except TypeError as err:
                 raise TypeError(
-                    f'[GTAFBT001] trie_key arg is not iterable: {err}') from err
+                    f'[GTAFBT001] trie_key arg is not iterable: {err}'
+                ) from err
 
         first_token: Any = next(trie_key, None)
         # if first_token is None, we have run out of tokens in the trie key to iterate
@@ -170,7 +173,8 @@ class GeneralizedTrie:
 
         if not isinstance(first_token, GeneralizedToken):
             raise TypeError(
-                '[GTAFBT003] entry in trie_key arg does not support the GeneralizedToken protocol')
+                '[GTAFBT003] entry in trie_key arg does not support the GeneralizedToken protocol'
+            )
 
         # there is an existing child trie we can use
         if first_token in self._children:
@@ -193,12 +197,12 @@ class GeneralizedTrie:
             KeyError:
                 trie_id does not match the id of any trie keys.
         """
+        # pylint: disable=protected-access
         if not isinstance(trie_id, int):
             raise TypeError(
                 '[GTR001] trie_id arg must be type int or an int sub-class')
         if trie_id < 1:
-            raise KeyError(
-                '[GTR002] trie_id arg must be 1 or greater')
+            raise KeyError('[GTR002] trie_id arg must be 1 or greater')
 
         # Not a known trie id
         if trie_id not in self._trie_index:
@@ -279,13 +283,13 @@ class GeneralizedTrie:
                 trie_key = iter(trie_key)
             except TypeError as err:
                 raise TypeError(
-                    f'[GTM001] trie_key arg cannot be iterated: {err}') from err
+                    f'[GTM001] trie_key arg cannot be iterated: {err}'
+                ) from err
 
         matched: Set[int] = copy(self._trie_ids) if self._trie_ids else set()
         token: Any = next(trie_key, None)
         if token in self._children:
-            matched = matched.union(
-                self._children[token].prefixes(trie_key))
+            matched = matched.union(self._children[token].prefixes(trie_key))
         return matched
 
     def suffixes(self, trie_key: Any, depth: int = -1) -> Set[int]:
@@ -320,7 +324,8 @@ class GeneralizedTrie:
 
                 The depth determines how many 'layers' deeper into the trie
                 to look for ids:
-                    * A depth of -1 (default) includes ALL ids for the exact match and all children nodes.
+                    * A depth of -1 (default) includes ALL ids for the exact match and all children
+                      nodes.
                     * A depth of 0 only includes the ids for the *exact* match for the trie key.
                     * A depth of 1 includes ids for the exact match and the next layer down.
                     * A depth of 2 includes ids for the exact match and the next two layers down.
@@ -347,15 +352,19 @@ class GeneralizedTrie:
                 trie_key = iter(trie_key)
             except TypeError as err:
                 raise TypeError(
-                    f'[GTS001] trie_key arg cannot be iterated: {err}') from err
+                    f'[GTS001] trie_key arg cannot be iterated: {err}'
+                ) from err
 
         if not isinstance(depth, int):
-            raise TypeError('[GTS002] depth must be of type int or a sub-class')
+            raise TypeError(
+                '[GTS002] depth must be of type int or a sub-class')
         if depth < -1:
             raise ValueError('[GTS003] depth cannot be less than -1')
         token: Any = next(trie_key, None)
         if not isinstance(token, GeneralizedToken):
-            raise TypeError('[GTS004] token found that does not conform to GeneralizedToken protocol')
+            raise TypeError(
+                '[GTS004] token found that does not conform to GeneralizedToken protocol'
+            )
         if token is None:  # found the match
             return self._contained_ids(ids=set(), depth=depth)
         if token in self._children:  # looking for match
@@ -363,8 +372,10 @@ class GeneralizedTrie:
         return set()  # no match
 
     def _contained_ids(self, ids: set[int], depth: int = -1) -> Set[int]:
-        """Returns a set contains all trie key ids defined for this node and/or its children up to the requested depth.
-                    * A negative (-1 or lower) depth includes ALL ids for this node and all children nodes.
+        """Returns a set contains all trie key ids defined for this node and/or its children up to
+           the requested depth.
+                    * A negative (-1 or lower) depth includes ALL ids for this node and all children
+                      nodes.
                     * A depth of 0 includes ONLY the ids for this node.
                     * A depth of 1 includes ids for this node and its direct child nodes.
                     * A depth of 2 includes ids for this node and the next two layers below it.
@@ -375,15 +386,18 @@ class GeneralizedTrie:
                 Set containing the ids of all contained trie keys.
         """
         # trunk-ignore(bandit/B101)
-        assert isinstance(ids, set), "[GTCI001] ids arg must be a set or sub-class"
+        assert isinstance(ids,
+                          set), "[GTCI001] ids arg must be a set or sub-class"
         # trunk-ignore(bandit/B101)
-        assert isinstance(depth, int), "[GTCI002] depth arg must be an int or sub-class"
+        assert isinstance(
+            depth, int), "[GTCI002] depth arg must be an int or sub-class"
         for trie_id in self._trie_ids:
             ids.add(trie_id)
         if depth:
             depth -= 1
-            for token in self._children:
-                self._children[token]._contained_ids(ids, depth)
+            for node in self._children.values():
+                # pylint: disable=protected-access
+                node._contained_ids(ids, depth)
         return ids
 
     def __contains__(self, trie_key: Any) -> Set[int]:
@@ -447,7 +461,8 @@ class GeneralizedTrie:
         output.append(f'  trie ids = {trie_ids}')
         output.append('  children = {')
         for child_key, child_value in self._children.items():
-            output.append(f'    {child_key} = ' + indent(str(child_value), '    ').lstrip())
+            output.append(f'    {child_key} = ' +
+                          indent(str(child_value), '    ').lstrip())
         output.append('  }')
         if self._root_node:
             output.append(f'  trie index = {self._trie_index.keys()}')

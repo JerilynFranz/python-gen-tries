@@ -19,7 +19,7 @@ class GeneralizedToken(Protocol):
         else:
             print("token does not support the GeneralizedToken protocol")
     """
-    def __eq__(self) -> bool:
+    def __eq__(self, value) -> bool:
         ...
 
     def __hash__(self) -> int:
@@ -28,4 +28,3 @@ class GeneralizedToken(Protocol):
 
 class InvalidTokenError(Exception):
     """Raised when a token does not conform to the GeneralizedToken protocol"""
-    ...
