@@ -1,8 +1,9 @@
 """Tests for the gentries.generalized module."""
 
+from textwrap import dedent
 import traceback
-import unittest
 from typing import Any, Callable, Dict, List, NamedTuple, Optional
+import unittest
 
 from gentries.generalized import GeneralizedTrie
 
@@ -547,9 +548,102 @@ class TestGeneralizedTrie(unittest.TestCase):
                 exception=KeyError,
                 exception_tag="[GTR002]",
             ),
+            TestConfig(
+                name="[TR020] trie.add('qrstuv')",
+                action=trie.add,
+                args=['qrstuv'],
+                expected=10,
+            ),
+            TestConfig(
+                name="[TR021] trie.remove(10)",
+                action=trie.remove,
+                args=[10],
+                expected=None,
+            ),
+            TestConfig(
+                name="[TR022] len(trie)",
+                action=len,
+                args=[trie],
+                expected=6,
+            ),
         ]
         run_tests_list(self, tests)
 
+    def test_str(self) -> None:
+        trie: GeneralizedTrie = GeneralizedTrie()
+        trie.add('ab')
+        found: str = dedent(str(trie))
+        expected: str = dedent("""\
+        {
+          trie number = 1
+          node token = None
+          children = {
+            a = {
+              parent = root node
+              node token = a
+              children = {
+                b = {
+                  parent = a
+                  node token = b
+                  trie id = 1
+                }
+              }
+            }
+          }
+          trie index = dict_keys([1])
+        }""")
+        self.assertEqual(found, expected, msg='[TSTR001] str(trie)')
+
+    def test_contains(self) -> None:
+        trie: GeneralizedTrie = GeneralizedTrie()
+        tests: List[TestConfig] = [
+            TestConfig(
+                name="[TC001] trie.__contains__('a')",
+                action=trie.__contains__,
+                args=['a'],
+                expected=False
+            ),
+            TestConfig(
+                name="[TC002] trie.add('a')", action=trie.add, args=["a"], expected=1
+            ),
+            TestConfig(
+                name="[TC003] trie.__contains__('a')",
+                action=trie.__contains__,
+                args=['a'],
+                expected=True
+            ),
+            TestConfig(
+                name="[TC004] trie.remove(1)", action=trie.remove, args=[1], expected=None
+            ),
+            TestConfig(
+                name="[TC006] trie.__contains__('a')",
+                action=trie.__contains__,
+                args=['a'],
+                expected=False
+            ),
+        ]
+        run_tests_list(self, tests)
+
+    def test_bool(self) -> None:
+        trie: GeneralizedTrie = GeneralizedTrie()
+        tests: List[TestConfig] = [
+            TestConfig(
+                name="[TB001] bool(trie)", action=bool, args=[trie], expected=False
+            ),
+            TestConfig(
+                name="[TB002] trie.add('a')", action=trie.add, args=["a"], expected=1
+            ),
+            TestConfig(
+                name="[TB003] bool(trie)", action=bool, args=[trie], expected=True
+            ),
+            TestConfig(
+                name="[TB004] trie.remove(1)", action=trie.remove, args=[1], expected=None
+            ),
+            TestConfig(
+                name="[TB003] bool(trie)", action=bool, args=[trie], expected=False
+            ),
+        ]
+        run_tests_list(self, tests)
 
 if __name__ == "__main__":
     unittest.main()
