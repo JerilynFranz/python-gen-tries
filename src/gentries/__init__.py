@@ -1,4 +1,4 @@
-from typing import runtime_checkable, Protocol
+from typing import Any, runtime_checkable, Protocol
 
 
 @runtime_checkable
@@ -19,7 +19,7 @@ class GeneralizedToken(Protocol):
         else:
             print("token does not support the GeneralizedToken protocol")
     """
-    def __eq__(self, value) -> bool:
+    def __eq__(self, value: Any) -> bool:
         ...
 
     def __hash__(self) -> int:

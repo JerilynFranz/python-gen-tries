@@ -37,5 +37,6 @@
   "python.envFile": "${workspaceFolder}/.env",
   "python.analysis.typeCheckingMode": "strict",
   "python.terminal.launchArgs": [],
-  "python.testing.cwd": "${workspaceFolder}"
+  "python.testing.cwd": "${workspaceFolder}",
+  "python.testing.autoTestDiscoverOnSaveEnabled": true
 }

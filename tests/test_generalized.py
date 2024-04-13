@@ -15,8 +15,8 @@ class NoExpectedValue:  # pylint: disable=too-few-public-methods
 class TestConfig(NamedTuple):
     name: str
     action: Callable  # type: ignore
-    args: List[Any] = list()
-    kwargs: Dict[str, Any] = dict()
+    args: List[Any] = []
+    kwargs: Dict[str, Any] = {}
     expected: Any = NoExpectedValue()
     obj: Optional[Any] = None
     validate_obj: Optional[Callable] = None  # type: ignore
