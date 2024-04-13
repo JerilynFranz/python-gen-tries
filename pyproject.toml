@@ -34,7 +34,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
-Homepage = "https://github.com/snowhare/python-gen-tries""
+Homepage = "https://github.com/snowhare/python-gen-tries"
 Documentation = "https://readthedocs.org"
 Repository = "https://github.com/snowhare/python-gen-tries.git"
 Issues = "https://github.com/snowhare/python-gen-tries/issues"
