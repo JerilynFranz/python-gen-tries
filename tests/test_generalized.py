@@ -645,5 +645,6 @@ class TestGeneralizedTrie(unittest.TestCase):
         ]
         run_tests_list(self, tests)
 
+
 if __name__ == "__main__":
     unittest.main()

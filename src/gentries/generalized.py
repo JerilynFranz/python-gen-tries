@@ -56,7 +56,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         print(f"Found URL prefixes: {prefixes}")  # Output: Found URL prefixes: {1}
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._root_node: bool = True
         self._node_token: Optional[GeneralizedToken] = None
         self._parent: Optional[GeneralizedTrie] = None
