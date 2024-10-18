@@ -104,39 +104,6 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         self._children[node_token] = new_child
         return trie_id
 
-    @property
-    def _trie_number(self) -> int:
-        """Getter for the _trie_number property.
-
-        Returns:
-            int:
-                the current _trie_number property value.
-        """
-        return self._trie_id_counter["trie_number"]
-
-    @_trie_number.setter
-    def _trie_number(self, value: int) -> None:
-        """Setter for the _trie_number property.
-
-        Args:
-            value (int): non-negative integer value.
-
-        Raises:
-            AssertionError:
-                If value is not of type int.
-            AssertionError:
-                If value is negative.
-        """
-        # trunk-ignore(bandit/B101)
-        assert isinstance(
-            value, int
-        ), "[GTTNS001] attempted to set _trie_number to a non-int type value"
-        # trunk-ignore(bandit/B101)
-        assert (
-            value >= 0
-        ), "[GTTNS002] attempted to set _trie_number to a negative value"
-        self._trie_id_counter["trie_number"] = value
-
     def add(self, trie_key: Iterator[GeneralizedToken]) -> int:
         """Adds a trie key defined by the passed trie_key to the trie.
 
@@ -173,9 +140,9 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             if self._trie_id:
                 return self._trie_id
             # new trie key
-            new_trie_id: int = self._trie_number + 1
+            new_trie_id: int = self._trie_id_counter["trie_number"] + 1
             self._trie_id = new_trie_id
-            self._trie_number = new_trie_id
+            self._trie_id_counter["trie_number"] = new_trie_id
             self._trie_index[new_trie_id] = self
             return new_trie_id
 
@@ -460,7 +427,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         The output IS NOT executable code but more in the nature of debug support."""
         output: List[str] = ["{"]
         if self._root_node:
-            output.append(f"  trie number = {self._trie_number}")
+            output.append(f"  trie number = {self._trie_id_counter['trie_number']}")
         elif self._parent:
             if self._parent._root_node:
                 output.append("  parent = root node")
