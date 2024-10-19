@@ -2,10 +2,10 @@
 
 from textwrap import dedent
 import traceback
-from typing import Any, Callable, Dict, List, NamedTuple, Optional
+from typing import Any, Callable, NamedTuple, Optional
 import unittest
 
-from gentries.generalized import GeneralizedTrie
+from gentries import GeneralizedKey, GeneralizedTrie, GeneralizedToken  # pylint: disable=import-error
 
 
 class NoExpectedValue:  # pylint: disable=too-few-public-methods
@@ -16,17 +16,18 @@ class NoExpectedValue:  # pylint: disable=too-few-public-methods
 class TestConfig(NamedTuple):
     name: str
     action: Callable  # type: ignore
-    args: List[Any] = []
-    kwargs: Dict[str, Any] = {}
+    args: list[Any] = []
+    kwargs: dict[str, Any] = {}
     expected: Any = NoExpectedValue()
     obj: Optional[Any] = None
     validate_obj: Optional[Callable] = None  # type: ignore
     validate_result: Optional[Callable] = None  # type: ignore
     exception: Optional[type[Exception]] = None
     exception_tag: Optional[str] = None
+    display_on_fail: Optional[Callable] = None  # type: ignore
 
 
-def run_tests_list(self, tests_list: List[TestConfig]) -> None:  # type: ignore
+def run_tests_list(self, tests_list: list[TestConfig]) -> None:  # type: ignore
     for test in tests_list:
         run_test(self, test)  # type: ignore
 
@@ -34,7 +35,7 @@ def run_tests_list(self, tests_list: List[TestConfig]) -> None:  # type: ignore
 def run_test(self, entry: TestConfig) -> None:  # type: ignore
     with self.subTest(msg=entry.name):  # type: ignore
         test_description: str = f"{entry.name}"
-        errors: List[str] = []
+        errors: list[str] = []
         try:
             found: Any = entry.action(*entry.args, **entry.kwargs)  # type: ignore
             if entry.exception:
@@ -50,6 +51,8 @@ def run_test(self, entry: TestConfig) -> None:  # type: ignore
                     and entry.expected != found
                 ):
                     errors.append(f"expected={entry.expected}, found={found}")
+                    if isinstance(entry.display_on_fail, Callable):  # type: ignore
+                        errors.append(entry.display_on_fail())  # type: ignore
         except Exception as err:  # pylint: disable=broad-exception-caught
             if entry.exception is None:
                 errors.append(f"Did not expect exception. Caught exception {repr(err)}")
@@ -72,10 +75,37 @@ def run_test(self, entry: TestConfig) -> None:  # type: ignore
             self.fail(msg=test_description + ": " + "\n".join(errors))  # type: ignore
 
 
+class TestGeneralizedToken(unittest.TestCase):
+    def test_supported_builtin_types(self) -> None:
+        good_types: list[Any] = [
+            'a',
+            str('ab'),
+            frozenset('abc'),
+            tuple(['a', 'b', 'c', 'd']),
+            int(1),
+            float(2.0),
+            complex(3.0, 4.0),
+            bytes(456),
+        ]
+        for key in good_types:
+            with self.subTest(msg=f'key = {key}'):  # type: ignore
+                self.assertIsInstance(key, GeneralizedToken)
+
+    def test_unsupported_builtin_types(self) -> None:
+        bad_types: list[Any] = [
+            set('a'),
+            list(['a', 'b']),
+            dict({'a': 1, 'b': 2, 'c': 3}),
+        ]
+        for key in bad_types:
+            with self.subTest(msg=f'key = {key}'):  # type: ignore
+                self.assertNotIsInstance(key, GeneralizedToken)
+
+
 class TestGeneralizedTrie(unittest.TestCase):
 
     def test_create_trie(self) -> None:
-        tests: List[TestConfig] = [
+        tests: list[TestConfig] = [
             TestConfig(
                 name="[TCT001] create GeneralizedTrie()",
                 action=GeneralizedTrie,
@@ -91,8 +121,8 @@ class TestGeneralizedTrie(unittest.TestCase):
         run_tests_list(self, tests)
 
     def test_add(self) -> None:
-        trie: GeneralizedTrie = GeneralizedTrie()
-        tests: List[TestConfig] = [
+        trie = GeneralizedTrie()
+        tests: list[TestConfig] = [
             TestConfig(
                 name="[TA001] trie.add(['tree', 'value', 'ape'])",
                 action=trie.add,
@@ -101,93 +131,151 @@ class TestGeneralizedTrie(unittest.TestCase):
                 expected=1,
             ),
             TestConfig(
-                name="[TA002] trie.add(['tree', 'value']",
+                name="[TA002] str(trie)",
+                action=trie.__str__,
+                expected=dedent("""\
+                {
+                  trie number = 1
+                  node token = None
+                  children = {
+                    'tree' = {
+                      parent = root node
+                      node token = 'tree'
+                      children = {
+                        'value' = {
+                          parent = 'tree'
+                          node token = 'value'
+                          children = {
+                            'ape' = {
+                              parent = 'value'
+                              node token = 'ape'
+                              trie id = 1
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                  trie index = dict_keys([1])
+                }"""),
+            ),
+            TestConfig(
+                name="[TA003] trie.add(['tree', 'value']",
                 action=trie.add,
                 args=[["tree", "value"]],
                 expected=2,
             ),
             TestConfig(
-                name="[TA003] trie.add('abcdef')",
+                name="[TA004] str(trie)",
+                action=trie.__str__,
+                expected=dedent("""\
+                {
+                  trie number = 2
+                  node token = None
+                  children = {
+                    'tree' = {
+                      parent = root node
+                      node token = 'tree'
+                      children = {
+                        'value' = {
+                          parent = 'tree'
+                          node token = 'value'
+                          trie id = 2
+                          children = {
+                            'ape' = {
+                              parent = 'value'
+                              node token = 'ape'
+                              trie id = 1
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                  trie index = dict_keys([1, 2])
+                }""")),
+            TestConfig(
+                name="[TA005] trie.add('abcdef')",
                 action=trie.add,
                 args=["abcdef"],
                 expected=3,
             ),
             TestConfig(
-                name="[TA004] trie.add(1, 3, 4, 5])",
+                name="[TA006] trie.add([1, 3, 4, 5])",
                 action=trie.add,
                 args=[[1, 3, 4, 5]],
                 kwargs={},
                 expected=4,
             ),
             TestConfig(
-                name="[TA006] trie.add(frozenset([1]), 3, 4, 5])",
+                name="[TA007] trie.add(frozenset([1]), 3, 4, 5])",
                 action=trie.add,
                 args=[[frozenset([1]), 3, 4, 5]],
                 kwargs={},
                 expected=5,
             ),
             TestConfig(
-                name="[TA007] trie.add(frozenset([1]), 3, 4, 5])",
+                name="[TA008] trie.add(frozenset([1]), 3, 4, 5])",
                 action=trie.add,
                 args=[[frozenset([1]), 3, 4, 6]],
                 expected=6,
             ),
             TestConfig(
-                name="[TA008] trie.add(1)",
+                name="[TA009] trie.add(1)",
                 action=trie.add,
                 args=[1],
                 exception=TypeError,
                 exception_tag="[GTAFBT001]",
             ),
             TestConfig(
-                name="[TA009] trie.add([])",
+                name="[TA010] trie.add([])",
                 action=trie.add,
                 args=[[]],
                 exception=ValueError,
                 exception_tag="[GTAFBT002]",
             ),
             TestConfig(
-                name="[TA010] trie.add(set([1]), 3, 4, 5])",
+                name="[TA011] trie.add([set([1]), 3, 4, 5])",
                 action=trie.add,
                 args=[[set([1]), 3, 4, 5]],
                 exception=TypeError,
                 exception_tag="[GTAFBT003]",
             ),
             TestConfig(
-                name="[TA011] trie.add(key=[1, 3, 4, 7])",
+                name="[TA012] trie.add(key=[1, 3, 4, 7])",
                 action=trie.add,
                 kwargs={"key": [1, 3, 4, 7]},
-                exception=TypeError,
+                expected=7,
             ),
-            TestConfig(name="[TA012] trie.add()", action=trie.add, exception=TypeError),
+            TestConfig(name="[TA013] trie.add()", action=trie.add, exception=TypeError),
             TestConfig(
-                name="[TA013] trie.add(['a'], ['b'])",
+                name="[TA014] trie.add(['a'], ['b'])",
                 action=trie.add,
                 args=[["a"], ["b"]],
                 exception=TypeError,
             ),
-            TestConfig(name="[TA014] len(trie)", action=len, args=[trie], expected=6),
+            TestConfig(name="[TA015] len(trie)", action=len, args=[trie], expected=7),
             TestConfig(
-                name="[TA015] trie.add(['tree', 'value', 'ape'])",
+                name="[TA016] trie.add(['tree', 'value', 'ape'])",
                 action=trie.add,
                 args=[["tree", "value", "ape"]],
                 kwargs={},
                 expected=1,
             ),
-            TestConfig(name="[TA016] len(trie)", action=len, args=[trie], expected=6),
+            TestConfig(name="[TA017] len(trie)", action=len, args=[trie], expected=7),
             TestConfig(
-                name="[TA017] trie.add(['apple', 'value', 'ape'])",
+                name="[TA018] trie.add(['apple', 'value', 'ape'])",
                 action=trie.add,
                 args=[["apple", "value", "ape"]],
                 kwargs={},
-                expected=7,
+                expected=8,
             ),
         ]
         run_tests_list(self, tests)
 
     def test_prefixes(self) -> None:
         trie: GeneralizedTrie = GeneralizedTrie()
-        tests: List[TestConfig] = [
+        tests: list[TestConfig] = [
             TestConfig(
                 name="[TP001] trie.add(['tree', 'value', 'ape'])",
                 action=trie.add,
@@ -218,6 +306,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 action=trie.prefixes,
                 args=[["tree", "value", "ape"]],
                 expected=set([1, 2]),
+                display_on_fail=trie.__str__
             ),
             TestConfig(
                 name="[TP006] trie.prefixes(['tree', 'value'])",
@@ -280,15 +369,15 @@ class TestGeneralizedTrie(unittest.TestCase):
                 expected=set([6]),
             ),
             TestConfig(
-                name="[TP016] trie.prefixes(trie_key=[frozenset([1]), 3, 4, 5])",
+                name="[TP016] trie.prefixes(key=[frozenset([1]), 3, 4, 5])",
                 action=trie.prefixes,
-                kwargs={"trie_key": [frozenset([1]), 3, 4, 5]},
+                kwargs={"key": [frozenset([1]), 3, 4, 5]},
                 expected=set([6]),
             ),
             TestConfig(
-                name="[TP017] trie.prefixes(trie_key=[set([1]), 3, 4, 5])",
+                name="[TP017] trie.prefixes(key=[set([1]), 3, 4, 5])",
                 action=trie.prefixes,
-                kwargs={"trie_key": [set([1]), 3, 4, 5]},
+                kwargs={"key": [set([1]), 3, 4, 5]},
                 exception=TypeError,
             ),
             TestConfig(
@@ -308,7 +397,7 @@ class TestGeneralizedTrie(unittest.TestCase):
 
     def test_suffixes(self) -> None:
         trie: GeneralizedTrie = GeneralizedTrie()
-        tests: List[TestConfig] = [
+        tests: list[TestConfig] = [
             TestConfig(
                 name="[TS001] trie.add(['tree', 'value', 'ape'])",
                 action=trie.add,
@@ -401,15 +490,15 @@ class TestGeneralizedTrie(unittest.TestCase):
                 expected=set([6]),
             ),
             TestConfig(
-                name="[TS017] trie.suffixes(trie_key=[frozenset([1]), 3, 4, 5])",
+                name="[TS017] trie.suffixes(key=[frozenset([1]), 3, 4, 5])",
                 action=trie.suffixes,
-                kwargs={"trie_key": [frozenset([1]), 3, 4, 5]},
+                kwargs={"key": [frozenset([1]), 3, 4, 5]},
                 expected=set([6]),
             ),
             TestConfig(
-                name="[TS018] trie.suffixes(trie_key=[set([1]), 3, 4, 5])",
+                name="[TS018] trie.suffixes(key=[set([1]), 3, 4, 5])",
                 action=trie.suffixes,
-                kwargs={"trie_key": [set([1]), 3, 4, 5]},
+                kwargs={"key": [set([1]), 3, 4, 5]},
                 exception=TypeError,
             ),
             TestConfig(
@@ -431,23 +520,23 @@ class TestGeneralizedTrie(unittest.TestCase):
                 exception=TypeError,
             ),
             TestConfig(
-                name="[TS022] trie.suffixes(trie_key='a', depth='b')",
+                name="[TS022] trie.suffixes(key='a', depth='b')",
                 action=trie.suffixes,
-                kwargs={"trie_key": "a", "depth": "b"},
+                kwargs={"key": "a", "depth": "b"},
                 exception=TypeError,
                 exception_tag="[GTS002]",
             ),
             TestConfig(
-                name="[TS023] trie.suffixes(trie_key='a', depth=-2)",
+                name="[TS023] trie.suffixes(key='a', depth=-2)",
                 action=trie.suffixes,
-                kwargs={"trie_key": "a", "depth": -2},
+                kwargs={"key": "a", "depth": -2},
                 exception=ValueError,
                 exception_tag="[GTS003]",
             ),
             TestConfig(
-                name="[TS023] trie.suffixes(trie_key=[set(['a'], 'b']))",
+                name="[TS023] trie.suffixes(key=[set(['a'], 'b']))",
                 action=trie.suffixes,
-                kwargs={"trie_key": [set("a"), "b"]},
+                kwargs={"key": [set("a"), "b"]},
                 exception=TypeError,
                 exception_tag="[GTS004]",
             ),
@@ -456,7 +545,7 @@ class TestGeneralizedTrie(unittest.TestCase):
 
     def test_remove(self) -> None:
         trie: GeneralizedTrie = GeneralizedTrie()
-        tests: List[TestConfig] = [
+        tests: list[TestConfig] = [
             TestConfig(
                 name="[TR001] trie.add('a')", action=trie.add, args=["a"], expected=1
             ),
@@ -570,21 +659,42 @@ class TestGeneralizedTrie(unittest.TestCase):
         run_tests_list(self, tests)
 
     def test_str(self) -> None:
-        trie: GeneralizedTrie = GeneralizedTrie()
-        trie.add('ab')
+        trie = GeneralizedTrie()
+        test_string = 'a'
+        self.assertIsInstance(test_string, GeneralizedToken)
+        trie.add(test_string)
         found: str = dedent(str(trie))
         expected: str = dedent("""\
         {
           trie number = 1
           node token = None
           children = {
-            a = {
+            'a' = {
               parent = root node
-              node token = a
+              node token = 'a'
+              trie id = 1
+            }
+          }
+          trie index = dict_keys([1])
+        }""")
+        self.assertEqual(found, expected, msg='[TSTR001] str(trie)')
+
+        trie = GeneralizedTrie()
+        test_string = 'ab'
+        trie.add(test_string)
+        found = dedent(str(trie))
+        expected = dedent("""\
+        {
+          trie number = 1
+          node token = None
+          children = {
+            'a' = {
+              parent = root node
+              node token = 'a'
               children = {
-                b = {
-                  parent = a
-                  node token = b
+                'b' = {
+                  parent = 'a'
+                  node token = 'b'
                   trie id = 1
                 }
               }
@@ -592,11 +702,45 @@ class TestGeneralizedTrie(unittest.TestCase):
           }
           trie index = dict_keys([1])
         }""")
-        self.assertEqual(found, expected, msg='[TSTR001] str(trie)')
+        self.assertEqual(found, expected, msg='[TSTR002] str(trie))')
+
+        trie = GeneralizedTrie()
+        test_string = 'abc'
+        trie.add(test_string)
+        found = dedent(str(trie))
+        expected = dedent("""\
+        {
+          trie number = 1
+          node token = None
+          children = {
+            'a' = {
+              parent = root node
+              node token = 'a'
+              children = {
+                'b' = {
+                  parent = 'a'
+                  node token = 'b'
+                  children = {
+                    'c' = {
+                      parent = 'b'
+                      node token = 'c'
+                      trie id = 1
+                    }
+                  }
+                }
+              }
+            }
+          }
+          trie index = dict_keys([1])
+        }""")
+        self.assertEqual(found, expected, msg='[TSTR002] str(trie))')
+
+
+
 
     def test_contains(self) -> None:
         trie: GeneralizedTrie = GeneralizedTrie()
-        tests: List[TestConfig] = [
+        tests: list[TestConfig] = [
             TestConfig(
                 name="[TC001] trie.__contains__('a')",
                 action=trie.__contains__,
@@ -626,7 +770,7 @@ class TestGeneralizedTrie(unittest.TestCase):
 
     def test_bool(self) -> None:
         trie: GeneralizedTrie = GeneralizedTrie()
-        tests: List[TestConfig] = [
+        tests: list[TestConfig] = [
             TestConfig(
                 name="[TB001] bool(trie)", action=bool, args=[trie], expected=False
             ),
