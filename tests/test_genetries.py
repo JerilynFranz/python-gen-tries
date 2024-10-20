@@ -1,21 +1,48 @@
-"""Tests for the gentries.generalized module."""
+"""Tests for the gentrie module."""
 
+from collections.abc import Callable, Iterable
 from textwrap import dedent
 import traceback
-from typing import Any, Callable, NamedTuple, Optional
+from typing import Any, NamedTuple, Optional
 import unittest
 
-from gentries import GeneralizedKey, GeneralizedTrie, GeneralizedToken  # pylint: disable=import-error
+from gentrie import GeneralizedTrie, GeneralizedToken
 
 
 class NoExpectedValue:  # pylint: disable=too-few-public-methods
     """This is used to distinguish between having an expected return value
-    of None and and not expecting a value."""
+    of None and and not expecting a particular (or any) value."""
 
 
 class TestConfig(NamedTuple):
+    """A generic unit test specification class.
+
+    It allow tests to be specified declaratively while providing a large amount
+    of flexibility.
+
+    Args:
+        name (str):
+            Identifying name for the test.
+        action (Callable[..., Any]):
+            A reference to a callable function or method to be invoked for the test.
+        args (list[Any], default = []):
+            List of positional arguments to be passed to the `action` function or method.
+        kwargs (dict[str, Any], default = {}):
+            Dictionary containing keyword arguments to be passed to the `action` function or method.
+        expected (Any, default=NoExpectedValue() ):
+            Expected value (if any) that is expected to be returned by the `action` function or method.
+            If there is no expected value, the special class NoExpectedValue is used to flag it.
+            This is used so that the specific return value of None can be distinguished from no
+            particular value or any value at all is expected to be returned from the function or method.
+        obj: Optional[Any] = None
+        validate_obj: Optional[Callable] = None  # type: ignore
+        validate_result: Optional[Callable] = None  # type: ignore
+        exception: Optional[type[Exception]] = None
+        exception_tag: Optional[str] = None
+        display_on_fail: Optional[Callable] = None  # type: ignore
+    """
     name: str
-    action: Callable  # type: ignore
+    action: Callable[..., Any]
     args: list[Any] = []
     kwargs: dict[str, Any] = {}
     expected: Any = NoExpectedValue()
@@ -662,6 +689,8 @@ class TestGeneralizedTrie(unittest.TestCase):
         trie = GeneralizedTrie()
         test_string = 'a'
         self.assertIsInstance(test_string, GeneralizedToken)
+        self.assertIsInstance(test_string, Iterable)
+
         trie.add(test_string)
         found: str = dedent(str(trie))
         expected: str = dedent("""\
@@ -735,9 +764,6 @@ class TestGeneralizedTrie(unittest.TestCase):
         }""")
         self.assertEqual(found, expected, msg='[TSTR002] str(trie))')
 
-
-
-
     def test_contains(self) -> None:
         trie: GeneralizedTrie = GeneralizedTrie()
         tests: list[TestConfig] = [
@@ -769,7 +795,7 @@ class TestGeneralizedTrie(unittest.TestCase):
         run_tests_list(self, tests)
 
     def test_bool(self) -> None:
-        trie: GeneralizedTrie = GeneralizedTrie()
+        trie = GeneralizedTrie()
         tests: list[TestConfig] = [
             TestConfig(
                 name="[TB001] bool(trie)", action=bool, args=[trie], expected=False

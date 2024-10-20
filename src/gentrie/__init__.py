@@ -1,7 +1,8 @@
 """Module providing a generalized trie implementation."""
 
+from collections.abc import Iterable, Iterator
 from textwrap import indent
-from typing import Any, Iterable, Iterator, runtime_checkable, Optional, Protocol, Set
+from typing import Any, cast, runtime_checkable, Optional, Protocol
 
 
 class InvalidTokenError(Exception):
@@ -20,7 +21,7 @@ class GeneralizedToken(Protocol):
         str  bytes  int  float  complex  frozenset  tuple
 
     Usage:
-        from gentries import GeneralizedToken
+        from gentrie import GeneralizedToken
         if isinstance(token, GeneralizedToken):
             print("token supports the GeneralizedToken protocol")
         else:
@@ -30,7 +31,7 @@ class GeneralizedToken(Protocol):
     def __hash__(self) -> int: ...
 
 
-GeneralizedKey = Iterable[GeneralizedToken] | Iterator[GeneralizedToken]
+GeneralizedKey = Iterable[GeneralizedToken]
 """A GeneralizedKey is any class that is iterable and that when iterated
 returns tokens conforming to the **GeneneralizedToken** protocol.
 """
@@ -48,7 +49,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
     It requires only that the indexed tokens be comparable for equality
     and hashable (this amounts to being immutable). This is verified at
-    runtime using the gentries.GeneralizedToken protocol.
+    runtime using the gentrie.GeneralizedToken protocol.
 
     This generally means that only immutable values can be used as tokens
     in a key. i.e: a frozenset() works as a token, but a set() does not.
@@ -73,7 +74,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
     Usage:
 
     Example 1:
-        from gentries import GeneralizedTrie
+        from gentrie import GeneralizedTrie
 
         trie  = GeneralizedTrie()
         trie_id_1: TrieId = trie.add(['ape', 'green', 'apple'])
@@ -81,7 +82,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         matches: list[TrieId] = trie.prefixes(['ape', 'green'])
 
     Example 2:
-        from gentries import GeneralizedTrie
+        from gentrie import GeneralizedTrie
 
         # Create a trie to store website URLs
         url_trie = GeneralizedTrie()
@@ -140,43 +141,37 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         new_child._parent = self
         new_child._trie_index = self._trie_index
         new_child._trie_id_counter = self._trie_id_counter
-        trie_id: TrieId = new_child.add(key)
+        trie_id: TrieId = new_child._add_iter(key)
         self._children[node_token] = new_child
         return trie_id
 
-    def add(self, key: Iterable[GeneralizedToken]) -> TrieId:
-        """Adds a key defined by the passed key to the trie.
+    def _add_iter(self, key: Iterator[GeneralizedToken]) -> TrieId:
+        """Adds a key defined by the passed key Iterator to the trie.
 
         Args:
             key (GeneralizedKey):
-                Must be an object that can be iterated and that when iterated
-                returns elements conforming to the **GeneralizedToken** protocol.
+                Must be an Iterator that returns elements conforming
+                to the **GeneralizedToken** protocol.
 
         Raises:
-            TypeError [GTAFBT001]:
-                If key cannot be iterated on.
-            KeyError [GTAFBT002]:
+            AssertionError [GTAI001]:
+                If key is not an Iterator.
+            KeyError [GTAI002]:
                 If key contains no tokens.
-            TypeError [GTAFBT003]:
+            TypeError [GTAI003]:
                 If entries in key do not conform to the GeneralizedToken protocol.
 
         Returns:
             TrieId: id number of the inserted key. If the key was already in the
                  trie, it returns the id for the already existing entry.
         """
-        try:
-            if not isinstance(key, Iterator):
-                key = iter(key)
-        except TypeError as err:
-            raise TypeError(
-                f"[GTAFBT001] key arg cannot be iterated: {err}"
-            ) from err
+        assert isinstance(key, Iterator), "[GTIA001] key arg MUST be an Iterator"
 
         try:
             first_token: GeneralizedToken = next(key)  # type: ignore
         except StopIteration:
             if self._root_node:
-                raise ValueError("[GTAFBT002] empty key passed") from None
+                raise ValueError("[GTIA002] empty key passed") from None
             # already existing key
             if self._trie_id:
                 return self._trie_id
@@ -189,15 +184,39 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
         if not isinstance(first_token, GeneralizedToken):  # type: ignore
             raise TypeError(
-                "[GTAFBT003] a token in the key does not support the GeneralizedToken protocol"
+                "[GTIA003] a token in the key does not support the GeneralizedToken protocol"
             )
 
         # there is an existing child trie we can use
         if first_token in self._children:
-            return self._children[first_token].add(key)
+            return self._children[first_token]._add_iter(key)  # pylint: disable=protected-access
 
         # we need a new sub-trie
         return self._add_new_child(node_token=first_token, key=key)
+
+    def add(self, key: Iterable[GeneralizedToken | str | bytes]) -> TrieId:
+        """Adds the key to the trie.
+
+        Args:
+            key (GeneralizedKey):
+                Must be an object that can be iterated and that when iterated
+                returns elements conforming to the **GeneralizedToken** protocol.
+
+        Raises:
+            TypeError [GTA001]:
+                If key cannot be iterated on.
+            KeyError [GTAI002]:
+                If key contains no tokens.
+            TypeError [GTAI003]:
+                If a token in the key does not conform to the GeneralizedToken protocol.
+
+        Returns:
+            TrieId: id number of the inserted key. If the key was already in the
+                 trie, it returns the id for the already existing entry.
+        """
+        if not isinstance(key, Iterable):  # type: ignore[reportUnnecessaryIsInstance]
+            raise TypeError("[GTA001] key must be of type GeneralizedKey}")
+        return self._add_iter(key=iter(cast(GeneralizedKey, key)))
 
     def remove(self, trie_id: TrieId) -> None:
         """Remove the key with the passed trie_id from the trie.
@@ -252,7 +271,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             parent_node = node._parent
         return
 
-    def prefixes(self, key: GeneralizedKey) -> Set[TrieId]:
+    def prefixes(self, key: GeneralizedKey) -> set[TrieId]:
         """Returns the ids of all keys in the trie that are a prefix of the passed key.
 
         Searches the trie for all keys that are prefix matches
@@ -264,7 +283,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             keys_index: dict[TrieId, str] = {}
             for entry in keys:
                 key_index[trie.add(entry)] = entry
-            matches: Set[TrieId] = trie.prefix_key_ids('abcd')
+            matches: set[TrieId] = trie.prefix_key_ids('abcd')
 
             # matches now contains the set {2, 3, 4}, corresponding
             # to the keys 'abc', 'a', and 'abcd' - all of which are
@@ -281,7 +300,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
                 key for matching.
 
         Returns:
-            Set[TrieId]:
+            set[TrieId]:
                 Set of ids for keys that are prefixes of
                 the key. This will be an empty set if there
                 are no matches.
@@ -298,7 +317,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             except TypeError as err:
                 raise TypeError(f"[GTM001] key cannot be iterated: {err}") from err
 
-        matched: Set[TrieId] = set([self._trie_id]) if self._trie_id else set()
+        matched: set[TrieId] = set([self._trie_id]) if self._trie_id else set()
         try:
             token = next(key)
             if not isinstance(token, GeneralizedToken):  # type: ignore[unnecessaryIsInstance]
@@ -311,7 +330,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
         return matched
 
-    def suffixes(self, key: GeneralizedKey, depth: int = -1) -> Set[TrieId]:
+    def suffixes(self, key: GeneralizedKey, depth: int = -1) -> set[TrieId]:
         """Returns the ids of all suffixs of the trie_key up to depth.
 
         Searches the trie for all keys that are suffix matches for
@@ -323,7 +342,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             trie_keys_index: dict[TrieId, str] = {}
             for entry in keys:
                 trie_key_index[trie.add(entry)] = entry
-            matches: Set[TrieId] = trie.token_suffixes('abcd')
+            matches: set[TrieId] = trie.token_suffixes('abcd')
 
             # matches now contains the set {1, 4}, corresponding
             # to the keys 'abcdef' and 'abcd' - each of which are
@@ -350,7 +369,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
                     * A depth of 2 includes ids for the exact match and the next two layers down.
 
         Returns:
-            Set[TrieId]:
+            set[TrieId]:
                 Set of ids for keys that are suffix matchs for the key.
                 This will be an empty set if there are no matches.
 
@@ -387,7 +406,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             return self._children[token].suffixes(key, depth)
         return set()  # no match
 
-    def _contained_ids(self, ids: set[TrieId], depth: int = -1) -> Set[TrieId]:
+    def _contained_ids(self, ids: set[TrieId], depth: int = -1) -> set[TrieId]:
         """Returns a set contains all key ids defined for this node and/or its children up to
            the requested depth.
                     * A negative (-1 or lower) depth includes ALL ids for this node and all children
@@ -398,7 +417,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
                     * and so on.
 
         Returns:
-            Set[TrieId]:
+            set[TrieId]:
                 Set containing the ids of all contained keys.
         """
         # trunk-ignore(bandit/B101)
@@ -415,7 +434,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         return ids
 
     def __contains__(self,
-                     key: Iterable[GeneralizedToken]) -> Set[TrieId]:
+                     key: Iterable[GeneralizedToken]) -> set[TrieId]:
         """Returns True if the trie contains a key matching the passed key.
 
         Usage:
