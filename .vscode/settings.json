@@ -25,6 +25,7 @@
   },
   "files.autoSave": "afterDelay",
   "files.exclude": {
+    ".coverage": true,
     ".mypy_cache": true,
     ".venv": true,
     ".venv-3.10": true,
