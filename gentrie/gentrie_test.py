@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Tests for the gentrie module."""
 
 from collections.abc import Callable, Iterable
@@ -252,21 +253,21 @@ class TestGeneralizedTrie(unittest.TestCase):
                 action=trie.add,
                 args=[1],
                 exception=TypeError,
-                exception_tag="[GTAFBT001]",
+                exception_tag="[GTA001]",
             ),
             TestConfig(
                 name="[TA010] trie.add([])",
                 action=trie.add,
                 args=[[]],
                 exception=ValueError,
-                exception_tag="[GTAFBT002]",
+                exception_tag="[GTIA002]",
             ),
             TestConfig(
                 name="[TA011] trie.add([set([1]), 3, 4, 5])",
                 action=trie.add,
                 args=[[set([1]), 3, 4, 5]],
                 exception=TypeError,
-                exception_tag="[GTAFBT003]",
+                exception_tag="[GTIA003]",
             ),
             TestConfig(
                 name="[TA012] trie.add(key=[1, 3, 4, 7])",

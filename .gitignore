@@ -1,15 +1,17 @@
+
 # Bazel generated stuff
 bazel-bin
 bazel-datadog
 bazel-out
 bazel-testlogs
+bazel-python-gen-tries
 
 # Mac junk
-._.DS_Store/
-.DS_Store/
+._.DS_Store
+.DS_Store
 
 # lcov
-genhtml/
+genhtml
 
 # .swp files
 *.swp
@@ -61,7 +63,7 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
-*.cover
+coverage.lcov
 *.py,cover
 .hypothesis/
 .pytest_cache/
@@ -137,7 +139,11 @@ celerybeat.pid
 
 # Environments
 .env
-.venv
+.venv/
+.venv-3.10/
+.venv-3.11/
+.venv-3.12/
+.venv-3.13/
 env/
 venv/
 ENV/

@@ -1,0 +1,9 @@
+py_test(
+    name = "test_gentri",
+    srcs = ["test_gentri.py"],
+    size="small",
+    deps = [
+        "//gentrie:gentrie",
+    ]
+)
+

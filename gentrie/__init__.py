@@ -10,6 +10,7 @@ class InvalidTokenError(TypeError):
 
     This is a sub-class of TypeError."""
 
+
 @runtime_checkable
 class GeneralizedToken(Protocol):
     """GeneralizedToken is a protocal that defines key tokens that are usable with a GeneralizedTrie.

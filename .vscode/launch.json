@@ -13,7 +13,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}",
-            "env": {"PYTHONPATH": "${workspaceFolder}/src:${env:PYTHONPATH}"}
+            // "env": {"PYTHONPATH": "${workspaceFolder}/src:${env:PYTHONPATH}"}
         }
     ]
 }
