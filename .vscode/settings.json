@@ -21,7 +21,8 @@
     "bazel-datadog": true,
     "bazel-out": true,
     "bazel-testlogs": true,
-    "bazel-python-gen-tries": true
+    "bazel-python-gen-tries": true,
+    "coverage.lcov": true
   },
   "files.autoSave": "afterDelay",
   "files.exclude": {
@@ -39,7 +40,8 @@
     "bazel-datadog": true,
     "bazel-out": true,
     "bazel-testlogs": true,
-    "bazel-python-gen-tries": true
+    "bazel-python-gen-tries": true,
+    "coverage.lcov": true
   },
   "markiscodecoverage.searchCriteria": "${workspace_dir}/coverage/*dat",
   "terminal.integrated.env.osx": {
