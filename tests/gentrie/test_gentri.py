@@ -7,7 +7,7 @@ import traceback
 from typing import Any, NamedTuple, Optional
 import unittest
 
-from gentrie import GeneralizedTrie, GeneralizedToken
+from gentrie import GeneralizedTrie, GeneralizedToken, InvalidTokenError
 
 
 class NoExpectedValue:  # pylint: disable=too-few-public-methods
@@ -266,7 +266,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA011] trie.add([set([1]), 3, 4, 5])",
                 action=trie.add,
                 args=[[set([1]), 3, 4, 5]],
-                exception=TypeError,
+                exception=InvalidTokenError,
                 exception_tag="[GTIA003]",
             ),
             TestConfig(
@@ -406,7 +406,8 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TP017] trie.prefixes(key=[set([1]), 3, 4, 5])",
                 action=trie.prefixes,
                 kwargs={"key": [set([1]), 3, 4, 5]},
-                exception=TypeError,
+                exception=InvalidTokenError,
+                exception_tag="[GTM002]",
             ),
             TestConfig(
                 name="[TP018] trie.prefixes()",
@@ -565,7 +566,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TS023] trie.suffixes(key=[set(['a'], 'b']))",
                 action=trie.suffixes,
                 kwargs={"key": [set("a"), "b"]},
-                exception=TypeError,
+                exception=InvalidTokenError,
                 exception_tag="[GTS004]",
             ),
         ]
