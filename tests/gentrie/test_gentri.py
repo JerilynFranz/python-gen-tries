@@ -289,15 +289,15 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA010] trie.add([])",
                 action=trie.add,
                 args=[[]],
-                exception=ValueError,
-                exception_tag="[GTIA002]",
+                exception=InvalidGeneralizedKeyError,
+                exception_tag="[GTA001]",
             ),
             TestConfig(
                 name="[TA011] trie.add([set([1]), 3, 4, 5])",
                 action=trie.add,
                 args=[[set([1]), 3, 4, 5]],
                 exception=InvalidGeneralizedKeyError,
-                exception_tag="[GTIA003]",
+                exception_tag="[GTA001]",
             ),
             TestConfig(
                 name="[TA012] trie.add(key=[1, 3, 4, 7])",
@@ -597,7 +597,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 action=trie.suffixes,
                 kwargs={"key": [set("a"), "b"]},
                 exception=InvalidGeneralizedKeyError,
-                exception_tag="[GTS004]",
+                exception_tag="[GTS001]",
             ),
         ]
         run_tests_list(self, tests)
