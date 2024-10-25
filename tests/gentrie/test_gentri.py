@@ -6,7 +6,7 @@ import traceback
 from typing import Any, NamedTuple, Optional
 import unittest
 
-from gentrie import GeneralizedTrie, GeneralizedToken, InvalidTokenError
+from gentrie import GeneralizedTrie, GeneralizedToken, InvalidTokenError, is_generalizedkey
 
 
 class NoExpectedValue:  # pylint: disable=too-few-public-methods
@@ -114,19 +114,50 @@ class TestGeneralizedToken(unittest.TestCase):
             complex(3.0, 4.0),
             bytes(456),
         ]
-        for key in good_types:
-            with self.subTest(msg=f'key = {key}'):  # type: ignore
-                self.assertIsInstance(key, GeneralizedToken)
+        for token in good_types:
+            with self.subTest(msg=f'{token:}'):  # type: ignore
+                self.assertIsInstance(token, GeneralizedToken)
 
     def test_unsupported_builtin_types(self) -> None:
         bad_types: list[Any] = [
             set('a'),
             list(['a', 'b']),
             dict({'a': 1, 'b': 2, 'c': 3}),
+            set('abc'),
+
         ]
-        for key in bad_types:
+        for token in bad_types:
+            with self.subTest(msg=f'{token:}'):  # type: ignore
+                self.assertNotIsInstance(token, GeneralizedToken)
+
+
+class TestGeneralizedKey(unittest.TestCase):
+    def test_supported_builtin_types(self) -> None:
+        good_keys: list[Any] = [
+            'a',
+            str('ab'),
+            ['a', 'b'],
+            tuple(['a', 'b', 'c', 'd']),
+            [int(1)],
+            [float(2.0)],
+            [complex(3.0, 4.0)],
+            [b'abc'],
+            b'abc'
+        ]
+        for key in good_keys:
             with self.subTest(msg=f'key = {key}'):  # type: ignore
-                self.assertNotIsInstance(key, GeneralizedToken)
+                self.assertTrue(is_generalizedkey(key))
+
+    def test_unsupported_builtin_types(self) -> None:
+        bad_keys: list[Any] = [
+            dict({'a': 1, 'b': 2, 'c': 3}),
+            set('abc'),
+            frozenset('abc'),
+            complex(3.0, 4.0),
+        ]
+        for key in bad_keys:
+            with self.subTest(msg=f'key = {key}'):  # type: ignore
+                self.assertFalse(is_generalizedkey(key))
 
 
 class TestGeneralizedTrie(unittest.TestCase):
