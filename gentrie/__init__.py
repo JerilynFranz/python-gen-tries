@@ -415,7 +415,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         try:
             token: GeneralizedToken = next(key)  # type: ignore
         except StopIteration:  # found the match
-            return self._contained_ids(ids=set(), depth=depth)
+            return self._contained_ids(depth=depth)
         if token in self._children:  # looking for match
             return self._children[token]._suffixes_iter(key, depth)
         return set()  # no match
@@ -490,21 +490,27 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         try:
             token: GeneralizedToken = next(key)  # type: ignore
         except StopIteration:  # found the match
-            return self._contained_ids(ids=set(), depth=depth)
+            return self._contained_ids(depth=depth)
 
         if token in self._children:  # looking for match
             return self._children[token]._suffixes_iter(key, depth)  # type: ignore
         return set()  # no match
 
     def _contained_ids_helper(self, ids: set[TrieId], depth: int) -> set[TrieId]:
-        """Performance 'helper' method returns a set contains all key ids defined for this node and/or its children up to
-           the requested depth.
-                    * A negative (-1 or lower) depth includes ALL ids for this node and all children
-                      nodes.
-                    * A depth of 0 includes ONLY the ids for this node.
-                    * A depth of 1 includes ids for this node and its direct child nodes.
-                    * A depth of 2 includes ids for this node and the next two layers below it.
-                    * and so on.
+        """'helper' method returns a set contains all key ids defined for this node and/or its children.
+
+        Args:
+            ids (TrieId):
+                Set containing the collected TrieIds
+            depth (int):
+                depth counter to limit the depth of contained ids to include.
+
+                * A negative (-1 or lower) depth includes ALL ids for this node and all children
+                    nodes.
+                * A depth of 0 includes ONLY the ids for this node.
+                * A depth of 1 includes ids for this node and its direct child nodes.
+                * A depth of 2 includes ids for this node and the next two layers below it.
+                * and so on.
 
         Returns:
             set[TrieId]:
@@ -519,24 +525,30 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
                 node._contained_ids_helper(ids, depth)
         return ids
 
-    def _contained_ids(self, ids: set[TrieId], depth: int = -1) -> set[TrieId]:
+    def _contained_ids(self, depth: int = -1) -> set[TrieId]:
         """Returns a set contains all key ids defined for this node and/or its children up to
            the requested depth.
-                    * A negative (-1 or lower) depth includes ALL ids for this node and all children
-                      nodes.
-                    * A depth of 0 includes ONLY the ids for this node.
-                    * A depth of 1 includes ids for this node and its direct child nodes.
-                    * A depth of 2 includes ids for this node and the next two layers below it.
-                    * and so on.
+
+        Args:
+            ids (TrieId):
+                Set containing the collected TrieIds
+            depth (int):
+                depth counter to limit the depth of contained ids to include.
+
+                * A negative (-1 or lower) depth includes ALL ids for this node and all children
+                    nodes.
+                * A depth of 0 includes ONLY the ids for this node.
+                * A depth of 1 includes ids for this node and its direct child nodes.
+                * A depth of 2 includes ids for this node and the next two layers below it.
+                * and so on.
 
         Returns:
             set[TrieId]:
                 Set containing the ids of all contained keys.
         """
         # trunk-ignore(bandit/B101)
-        assert isinstance(ids, set), "[GTCI001] ids arg must be a set or sub-class"
-        # trunk-ignore(bandit/B101)
         assert isinstance(depth, int), "[GTCI002] depth arg must be an int or sub-class"
+        ids: set[TrieId] = set()
         return self._contained_ids_helper(ids=ids, depth=depth)
 
     def __contains__(self,
