@@ -437,7 +437,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 action=trie.prefixes,
                 kwargs={"key": [set([1]), 3, 4, 5]},
                 exception=InvalidGeneralizedKeyError,
-                exception_tag="[GTM002]",
+                exception_tag="[GTM001]",
             ),
             TestConfig(
                 name="[TP018] trie.prefixes()",
