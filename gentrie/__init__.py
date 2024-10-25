@@ -5,8 +5,14 @@ from textwrap import indent
 from typing import Any, runtime_checkable, Optional, Protocol, NamedTuple, TypeAlias
 
 
-class InvalidTokenError(TypeError):
+class InvalidGeneralizedTokenError(TypeError):
     """Raised when a token in a key is not a valid `GeneralizedToken`.
+
+    This is a sub-class of `TypeError`."""
+
+
+class InvalidGeneralizedKeyError(TypeError):
+    """Raised when a key is not a valid `GeneralizedKey`.
 
     This is a sub-class of `TypeError`."""
 
@@ -40,8 +46,12 @@ that when iterated returns tokens conforming to the `GeneneralizedToken` protoco
 Examples:
     `str`
     `bytes`
+    `list[bool]`
+    `list[int]`
+    `list[bytes]`
     `list[str]`
     `tuple[int, int, str]`
+
 """
 
 
@@ -60,8 +70,10 @@ class TrieEntry(NamedTuple):
 def is_generalizedtoken(token: GeneralizedToken) -> bool:
     """Tests token for whether it is a valid `GeneralizedToken`.
 
-    A valid GeneralizedToken is an immutable object that
+    A valid GeneralizedToken is a hashable object that
     can have its value compared for equality.
+
+    Examples: `bool`, `bytes`, `float`, `frozenset`, `int`, `str`
 
     Args:
         token (GeneralizedKey): Object for testing.
@@ -101,41 +113,46 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
     types of tokens used to key it and thus far more general purpose.
 
     It requires only that the indexed tokens be comparable for equality
-    and hashable (this amounts to being immutable). This is verified at
-    runtime using the gentrie.GeneralizedToken protocol.
+    and hashable. This is verified at runtime using the
+    `gentrie.GeneralizedToken` protocol.
 
-    This generally means that only immutable values can be used as tokens
+    This generally means that immutable values and bytes can be used as tokens
     in a key. i.e: a frozenset() works as a token, but a set() does not.
+
     Tokens in a key do NOT have to all be the same type as long as they
     can be compared for equality.
 
-    You can define make new classes of objects able to be used with the
-    GeneralizedTrie just by defining __hash__ and __eq__ dunder methods on them.
-    You should **ONLY** do this for immutable objects (they cannot be changed
-    once created).
+    You can make new classes of objects able to be used with the
+    `GeneralizedTrie` just by defining __hash__ and __eq__ dunder methods on them.
 
-    It can handle Sequences of `GeneralizedToken` conforming objects as keys
+    You should generally **ONLY** do this for immutable objects (objects that cannot
+    be changed once created).
+
+    It can handle `Sequence`s of `GeneralizedToken` conforming objects as keys
     for the trie out of the box.
 
     As long as the tokens returned by a sequence are comparable and
     hashable, it largely 'just works'.
 
     You can 'mix and match' types of objects used as token in a key as
-    long as they all conform to the GeneralizedToken protocol.
+    long as they all conform to the `GeneralizedToken` protocol.
 
     The code emphasizes robustness and correctness.
 
     Usage:
 
     Example 1:
+        ```
         from gentrie import GeneralizedTrie
 
         trie  = GeneralizedTrie()
         trie_id_1: TrieEntry = trie.add(['ape', 'green', 'apple'])
         trie_id_2: TrieEntry = trie.add(['ape', 'green'])
         matches: list[TrieEntry] = trie.prefixes(['ape', 'green'])
+        ```
 
     Example 2:
+        ```
         from gentrie import GeneralizedTrie
 
         # Create a trie to store website URLs
@@ -149,6 +166,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         # Find all https URLs with "example.com" domain
         prefixes: list[TrieEntry] = url_trie.prefixes(["https", "com", "example"])
         print(f"Found URL prefixes: {prefixes}")  # Output: Found URL prefixes: {1}
+        ```
     """
 
     def __init__(self) -> None:
@@ -182,7 +200,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             AssertionError [GTANC001]:
                 If node_token does not conform to the GeneralizedToken protocol
                 or if the key is not an Iterator.
-            InvalidTokenError [GTAFBT003]:
+            InvalidGeneralizedTokenError [GTAFBT003]:
                 If a token in the key does not conform to the GeneralizedToken protocol.
         """
         # pylint: disable=protected-access
@@ -212,7 +230,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
                 If key is not an Iterator.
             KeyError [GTAI002]:
                 If key contains no tokens.
-            InvalidTokenError [GTAI003]:
+            InvalidGeneralizedKeyError [GTAI003]:
                 If a token in the key does not conform to the GeneralizedToken protocol.
 
         Returns:
@@ -237,7 +255,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             return new_trie_id
 
         if not isinstance(first_token, GeneralizedToken):  # type: ignore
-            raise InvalidTokenError(
+            raise InvalidGeneralizedKeyError(
                 "[GTIA003] a token in the key does not conform with the GeneralizedToken protocol"
             )
 
@@ -257,11 +275,11 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
                 returns elements conforming to the **GeneralizedToken** protocol.
 
         Raises:
-            TypeError [GTA001]:
+            InvalidGeneralKeyError [GTA001]:
                 If key is not a `Sequence`.
-            KeyError [GTAI002]:
+            InvalidGeneralKeyError [GTAI002]:
                 If the key contains no tokens.
-            InvalidTokenError [GTAI003]:
+            InvalidGeneralizedKeyError [GTAI003]:
                 If a token in the key does not conform to the `GeneralizedToken` protocol.
 
         Returns:
@@ -269,7 +287,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
                  trie, it returns the id for the already existing entry.
         """
         if not isinstance(key, Sequence):  # type: ignore[reportUnnecessaryIsInstance]
-            raise TypeError("[GTA001] key must be a `GeneralizedKey`")
+            raise InvalidGeneralizedKeyError("[GTA001] key is not a valid `GeneralizedKey`")
         return self._add_iter(key=iter(key))  # type: ignore
 
     def remove(self, trie_id: TrieId) -> None:
@@ -360,23 +378,23 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
                 are no matches.
 
         Raises:
-            TypeError [GTM001]:
-                If key is not Sequence.
-            InvalidTokenError [GTM002]:
-                If a token in the key does not conform with the GeneralizedToken protocol.
+            InvalidGeneralizedKeyError [GTM001]:
+                If key is not a valid `GeneralizedKey` (is not a `Sequence` of `GeneralizedToken`).
+            InvalidGeneralizedKeyError [GTM002]:
+                If a token in the key does not conform to the `GeneralizedToken` protocol.
         """
         if not isinstance(key, Iterator):
             try:
                 key = iter(key)  # type: ignore[reportAssignmentType]
             except TypeError as err:
-                raise TypeError(f"[GTM001] key is not a `GeneralizedKey`: {err}") from err
+                raise InvalidGeneralizedKeyError(f"[GTM001] key is not a valid `GeneralizedKey`: {err}") from err
 
         matched: set[TrieId] = set([self._trie_id]) if self._trie_id else set()
         try:
             token = next(key)  # type: ignore[reportAssignmentType]
             if not isinstance(token, GeneralizedToken):  # type: ignore[unnecessaryIsInstance]
-                raise InvalidTokenError(
-                    "[GTM002] key contains a token that does not conform with the GeneralizedToken protocol")
+                raise InvalidGeneralizedKeyError(
+                    "[GTM002] key contains a token that does not conform with the `GeneralizedToken` protocol")
             if token in self._children:
                 matched = matched.union(self._children[token].prefixes(key))
         except StopIteration:
@@ -408,13 +426,13 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
                 This will be an empty set if there are no matches.
 
         Raises:
-            TypeError (GTS001):
+            InvalidGeneralizedKeyError (GTS001):
                 If key arg is not a GeneralizedKey.
             TypeError (GTS002):
                 If depth arg is not an int.
             ValueError (GTS003):
                 If depth arg is less than -1.
-            InvalidTokenError (GTS004):
+            InvalidGeneralizedKeyError (GTS004):
                 If a token in the key arg does not conform with the GeneralizedToken protocol.
 
         Usage:
@@ -443,7 +461,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             try:
                 key = iter(key)  # type: ignore[reportAssignmentType]
             except TypeError as err:
-                raise TypeError(f"[GTS001] trie_key arg is not an Sequence: {err}") from err
+                raise InvalidGeneralizedKeyError(f"[GTS001] trie_key arg is not an Sequence: {err}") from err
 
         if not isinstance(depth, int):  # type: ignore
             raise TypeError("[GTS002] depth must be an int")
@@ -454,7 +472,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         except StopIteration:  # found the match
             return self._contained_ids(ids=set(), depth=depth)
         if not isinstance(token, GeneralizedToken):  # type: ignore[reportUnnecessaryIsInstance]
-            raise InvalidTokenError(
+            raise InvalidGeneralizedKeyError(
                 "[GTS004] a token in the key does not conform with the GeneralizedToken protocol"
             )
 
@@ -517,7 +535,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         Raises:
             TypeError:
                 If key arg is not a Sequence.
-            InvalidTokenError:
+            InvalidGeneralizedTokenError:
                 If a token in the key arg does not conform with the GeneralizedToken protocol.
         """
         return bool(self.suffixes(key, 0))  # type: ignore

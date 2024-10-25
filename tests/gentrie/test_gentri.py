@@ -6,7 +6,7 @@ import traceback
 from typing import Any, NamedTuple, Optional
 import unittest
 
-from gentrie import GeneralizedTrie, GeneralizedToken, InvalidTokenError, is_generalizedkey
+from gentrie import GeneralizedTrie, GeneralizedToken, InvalidGeneralizedKeyError, is_generalizedkey
 
 
 class NoExpectedValue:  # pylint: disable=too-few-public-methods
@@ -282,7 +282,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA009] trie.add(1)",
                 action=trie.add,
                 args=[1],
-                exception=TypeError,
+                exception=InvalidGeneralizedKeyError,
                 exception_tag="[GTA001]",
             ),
             TestConfig(
@@ -296,7 +296,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA011] trie.add([set([1]), 3, 4, 5])",
                 action=trie.add,
                 args=[[set([1]), 3, 4, 5]],
-                exception=InvalidTokenError,
+                exception=InvalidGeneralizedKeyError,
                 exception_tag="[GTIA003]",
             ),
             TestConfig(
@@ -436,7 +436,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TP017] trie.prefixes(key=[set([1]), 3, 4, 5])",
                 action=trie.prefixes,
                 kwargs={"key": [set([1]), 3, 4, 5]},
-                exception=InvalidTokenError,
+                exception=InvalidGeneralizedKeyError,
                 exception_tag="[GTM002]",
             ),
             TestConfig(
@@ -569,7 +569,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TS020] trie.suffixes(None)",
                 action=trie.suffixes,
                 args=[None],
-                exception=TypeError,
+                exception=InvalidGeneralizedKeyError,
                 exception_tag="[GTS001]",
             ),
             TestConfig(
@@ -596,7 +596,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TS023] trie.suffixes(key=[set(['a'], 'b']))",
                 action=trie.suffixes,
                 kwargs={"key": [set("a"), "b"]},
-                exception=InvalidTokenError,
+                exception=InvalidGeneralizedKeyError,
                 exception_tag="[GTS004]",
             ),
         ]
