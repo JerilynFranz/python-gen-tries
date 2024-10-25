@@ -497,7 +497,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
         return ids
 
-    def __contains__(self, key: GeneralizedKey) -> set[TrieId]:
+    def __contains__(self, key: GeneralizedKey) -> bool:
         """Returns True if the trie contains a key matching the passed key.
 
         Usage:
@@ -527,7 +527,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             InvalidGeneralizedTokenError:
                 If a token in the key arg does not conform with the GeneralizedToken protocol.
         """
-        return bool(self.suffixes(key, 0))  # type: ignore
+        return bool(self.suffixes(key, 0))
 
     def __len__(self) -> int:
         """Returns the number of keys in the trie.
