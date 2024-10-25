@@ -80,7 +80,7 @@ class GeneralizedToken(Protocol):
     are suitable for use as tokens.
 
     Some examples of types suitable for use as tokens in a key:
-        str  bytes  int  float  complex  frozenset  tuple
+        `str`  `bytes`  `int`  `float`  `complex`  `frozenset`  `tuple`
 
     Usage:
         from gentrie import GeneralizedToken
