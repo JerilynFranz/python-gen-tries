@@ -1,4 +1,4 @@
-"""Module providing a generalized trie implementation."""
+"""Package providing a generalized trie implementation."""
 
 from collections.abc import Sequence, Iterator
 from textwrap import indent
@@ -33,6 +33,30 @@ class GeneralizedToken(Protocol):
     def __hash__(self) -> int: ...
 
 
+GeneralizedKey: TypeAlias = Sequence[GeneralizedToken | str]
+"""A GeneralizedKey is an object of any class that is a `Sequence` and
+that when iterated returns tokens conforming to the `GeneneralizedToken` protocol.
+
+Examples:
+    `str`
+    `bytes`
+    `list[str]`
+    `tuple[int, int, str]`
+"""
+
+
+TrieId = int
+"""Unique identifier for a key in a trie"""
+
+
+class TrieEntry(NamedTuple):
+    """A TrieEntry is a tuple containing the unique identifer and key for an entry in the trie."""
+    ident: TrieId
+    """Unique identifier for a key in the trie"""
+    key: GeneralizedKey
+    """Key for an entry in the trie"""
+
+
 def is_generalizedtoken(token: GeneralizedToken) -> bool:
     """Tests token for whether it is a valid `GeneralizedToken`.
 
@@ -46,18 +70,6 @@ def is_generalizedtoken(token: GeneralizedToken) -> bool:
         bool: True if a valid GeneralizedToken, False otherwise.
     """
     return isinstance(token, GeneralizedToken)  # type: ignore[reportUnnecessaryIsInstance]]
-
-
-GeneralizedKey: TypeAlias = Sequence[GeneralizedToken | str]
-"""A GeneralizedKey is an object of any class that is a `Sequence` and
-that when iterated returns tokens conforming to the `GeneneralizedToken` protocol.
-
-Examples:
-    `str`
-    `bytes`
-    `list`
-    `tuple`
-"""
 
 
 def is_generalizedkey(key: GeneralizedKey) -> bool:
@@ -79,18 +91,6 @@ def is_generalizedkey(key: GeneralizedKey) -> bool:
         if not isinstance(token, GeneralizedToken):  # type: ignore[reportGeneralTypeIssues]
             return False
     return True
-
-
-TrieId = int
-"""Unique identifier for a key in a trie"""
-
-
-class TrieEntry(NamedTuple):
-    """A TrieEntry is a tuple containing the unique identifer and key for an entry in the trie."""
-    ident: TrieId
-    """Unique identifier for a key in the trie"""
-    key: GeneralizedKey
-    """Key for an entry in the trie"""
 
 
 class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
