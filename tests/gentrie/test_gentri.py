@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Tests for the gentrie module."""
 
 from collections.abc import Callable, Iterable
