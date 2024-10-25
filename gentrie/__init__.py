@@ -75,12 +75,9 @@ def is_generalizedkey(key: GeneralizedKey) -> bool:
     """
     if not isinstance(key, Sequence):  # type: ignore[reportUnnecessaryIsInstance]
         return False
-    try:
-        for token in key:
-            if not isinstance(token, GeneralizedToken):  # type: ignore[reportGeneralTypeIssues]
-                return False
-    except Exception:
-        return False
+    for token in key:
+        if not isinstance(token, GeneralizedToken):  # type: ignore[reportGeneralTypeIssues]
+            return False
     return True
 
 
@@ -123,7 +120,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
     As long as the tokens returned by a sequence are comparable and
     hashable, it largely 'just works'.
 
-    You can  'mix and match' types of objects used as token in a key as
+    You can 'mix and match' types of objects used as token in a key as
     long as they all conform to the GeneralizedToken protocol.
 
     The code emphasizes robustness and correctness.
