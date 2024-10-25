@@ -1,5 +1,59 @@
-"""Package providing a generalized trie implementation."""
+"""Package providing a generalized trie implementation.
 
+This package includes classes and functions to create and manipulate a generalized trie
+data structure. Unlike traditional trie implementations that only support strings as keys,
+this generalized trie can handle various types of tokens, as long as they are hashable
+and comparable for equality.
+
+Classes:
+    - InvalidGeneralizedTokenError: Raised when a token in a key is not a valid `GeneralizedToken`.
+    - InvalidGeneralizedKeyError: Raised when a key is not a valid `GeneralizedKey`.
+    - GeneralizedToken: Protocol defining key tokens usable with a `GeneralizedTrie`.
+    - TrieEntry: NamedTuple containing the unique identifier and key for an entry in the trie.
+    - GeneralizedTrie: A general-purpose trie that supports various types of tokens as keys.
+
+Type Aliases:
+    - GeneralizedKey: A sequence of `GeneralizedToken` or `str`.
+    - TrieId: Unique identifier for a key in a trie.
+
+Functions:
+    - is_generalizedtoken: Tests if a token is a valid `GeneralizedToken`.
+    - is_generalizedkey: Tests if a key is a valid `GeneralizedKey`.
+
+Usage:
+
+    Example 1:
+    ```
+    from gentrie import GeneralizedTrie
+
+    trie  = GeneralizedTrie()
+    trie_id_1: TrieEntry = trie.add(['ape', 'green', 'apple'])
+    trie_id_2: TrieEntry = trie.add(['ape', 'green'])
+    matches: list[TrieEntry] = trie.prefixes(['ape', 'green'])
+    ```
+
+    Example 2:
+    ```
+    from gentrie import GeneralizedTrie
+
+    # Create a trie to store website URLs
+    url_trie = GeneralizedTrie()
+
+    # Add some URLs with different components (protocol, domain, path)
+    url_trie.add(["https", "com", "example", "www", "/", "products", "clothing"])
+    url_trie.add(["http", "org", "example", "blog", "/", "2023", "10", "best-laptops"])
+    url_trie.add(["ftp", "net", "example", "ftp", "/", "data", "images"])
+
+    # Find all https URLs with "example.com" domain
+    prefixes: list[TrieEntry] = url_trie.prefixes(["https", "com", "example"])
+    print(f"Found URL prefixes: {prefixes}")  # Output: Found URL prefixes: {1}
+    ```
+    trie_id_1 = trie.add(['ape', 'green', 'apple'])
+    trie_id_2 = trie.add(['ape', 'green'])
+    matches = trie.prefixes(['ape', 'green'])
+    prefixes = url_trie.prefixes(["https", "com", "example"])
+    ```
+"""
 from collections.abc import Sequence
 from textwrap import indent
 from typing import Any, runtime_checkable, Optional, Protocol, NamedTuple, TypeAlias
