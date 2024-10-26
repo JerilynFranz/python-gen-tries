@@ -23,7 +23,7 @@ Functions:
 Usage:
 
     Example 1:
-    ```
+    ```python
     from gentrie import GeneralizedTrie
 
     trie  = GeneralizedTrie()
@@ -33,7 +33,7 @@ Usage:
     ```
 
     Example 2:
-    ```
+    ```python
     from gentrie import GeneralizedTrie
 
     # Create a trie to store website URLs
@@ -47,7 +47,7 @@ Usage:
     # Find all https URLs with "example.com" domain
     prefixes: list[TrieEntry] = url_trie.prefixes(["https", "com", "example"])
     print(f"Found URL prefixes: {prefixes}")  # Output: Found URL prefixes: {1}
-    ```
+
     trie_id_1 = trie.add(['ape', 'green', 'apple'])
     trie_id_2 = trie.add(['ape', 'green'])
     matches = trie.prefixes(['ape', 'green'])
@@ -80,14 +80,16 @@ class GeneralizedToken(Protocol):
     are suitable for use as tokens.
 
     Some examples of types suitable for use as tokens in a key:
-        `str`  `bytes`  `int`  `float`  `complex`  `frozenset`  `tuple`
+        `str`  `bytes`  `int`  `float`  `complex`  `frozenset`  `tuple`  `None`
 
     Usage:
+        ```python
         from gentrie import GeneralizedToken
         if isinstance(token, GeneralizedToken):
             print("token supports the GeneralizedToken protocol")
         else:
             print("token does not support the GeneralizedToken protocol")
+        ```
     """
     def __eq__(self, value: Any) -> bool: ...
     def __hash__(self) -> int: ...
@@ -134,7 +136,7 @@ def is_generalizedtoken(token: GeneralizedToken) -> bool:
         token (GeneralizedKey): Object for testing.
 
     Returns:
-        bool: True if a valid GeneralizedToken, False otherwise.
+        True if a valid GeneralizedToken, False otherwise.
     """
     return isinstance(token, GeneralizedToken)  # type: ignore[reportUnnecessaryIsInstance]]
 
@@ -150,7 +152,7 @@ def is_generalizedkey(key: GeneralizedKey) -> bool:
         key (GeneralizedKey): Key for testing.
 
     Returns:
-        bool: True if a valid GeneralizedKey, False otherwise.
+        True if a valid GeneralizedKey, False otherwise.
     """
     return (
         isinstance(key, Sequence) and  # type: ignore[reportUnnecessaryIsInstance]
@@ -235,17 +237,15 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         """Adds the key to the trie.
 
         Args:
-            key (GeneralizedKey):
-                Must be an object that can be iterated and that when iterated
-                returns elements conforming to the **GeneralizedToken** protocol.
+            key (GeneralizedKey): Must be an object that can be iterated and that when iterated
+                returns elements conforming to the `GeneralizedToken` protocol.
 
         Raises:
-            InvalidGeneralizedKeyError [GTA001]:
-                If key is not a valid `GeneralizedKey`.
+            - InvalidGeneralizedKeyError [GTA001] if key is not a valid `GeneralizedKey`.
 
         Returns:
-            TrieId: id of the inserted key. If the key was already in the
-                 trie, it returns the id for the already existing entry.
+            Id of the inserted key. If the key was already in the trie,
+            it returns the id for the already existing entry.
         """
         if not is_generalizedkey(key):
             raise InvalidGeneralizedKeyError("[GTA001] key is not a valid `GeneralizedKey`")
@@ -277,12 +277,9 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             trie_id (TrieId): id of the key to remove.
 
         Raises:
-            TypeError:
-                trie_id arg is not a `TrieId`.
-            ValueError:
-                trie_id arg is not a legal value.
-            KeyError:
-                trie_id does not match the id of any keys.
+            - TypeError if the trie_id arg is not a `TrieId`.
+            - ValueError if the trie_id arg is not a legal value.
+            - KeyError if the trie_id does not match the id of any keys.
         """
         # pylint: disable=protected-access
         if not isinstance(trie_id, TrieId):  # type: ignore
@@ -329,7 +326,21 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         Searches the trie for all keys that are prefix matches
         for the key and returns their ids as a set.
 
+        Args:
+            key (GeneralizedKey): key for matching.
+
+        Returns:
+            Set of ids for keys that are prefixes of the key.
+            This will be an empty set if there are no matches.
+
+        Raises:
+            - `InvalidGeneralizedKeyError` [GTM001] if key is not a valid `GeneralizedKey`
+                (is not a `Sequence` of `GeneralizedToken`).
+            - `InvalidGeneralizedKeyError` [GTM002] if a token in the key does not conform
+                to the `GeneralizedToken` protocol.
+
         Usage:
+            ```python
             trie: GeneralizedTrie = GeneralizedTrie()
             keys: list[str] = ['abcdef', 'abc', 'a', 'abcd', 'qrs']
             keys_index: dict[TrieId, str] = {}
@@ -346,22 +357,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             # 4: abcd
             for trie_id in sorted(list(matches)):
                 print(f'{trie_id}: {keys_index[trie_id]}')
-
-        Args:
-            key (Any):
-                key for matching.
-
-        Returns:
-            set[TrieId]:
-                Set of ids for keys that are prefixes of
-                the key. This will be an empty set if there
-                are no matches.
-
-        Raises:
-            InvalidGeneralizedKeyError [GTM001]:
-                If key is not a valid `GeneralizedKey` (is not a `Sequence` of `GeneralizedToken`).
-            InvalidGeneralizedKeyError [GTM002]:
-                If a token in the key does not conform to the `GeneralizedToken` protocol.
+            ```
         """
         if not is_generalizedkey(key):
             raise InvalidGeneralizedKeyError("[GTM001] key is not a valid `GeneralizedKey`")
@@ -384,15 +380,12 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
     def suffixes(self, key: GeneralizedKey, depth: int = -1) -> set[TrieId]:
         """Returns the ids of all suffixes of the trie_key up to depth.
 
-        Searches the trie for all keys that are suffix matches for
-        the key up to the specified depth and returns their ids as a set.
+        Searches the trie for all keys that are suffix matches for the key up
+        to the specified depth below the key match and returns their ids as a set.
 
         Args:
-            key (`GeneralizedKey`):
-                Key for matching.
-            depth (`int`, default=-1):
-                Depth starting from the matched key to include.
-
+            key (`GeneralizedKey`): Key for matching.
+            depth (`int`, default=-1): Depth starting from the matched key to include.
                 The depth determines how many 'layers' deeper into the trie to look for ids:
                     * A depth of -1 (the default) includes ALL ids for the exact match and all children nodes.
                     * A depth of 0 only includes the ids for the *exact* match for the key.
@@ -400,9 +393,8 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
                     * A depth of 2 includes ids for the exact match and the next two layers down.
 
         Returns:
-            `set[TrieId]`:
-                Set of ids for keys that are suffix matches for the key.
-                This will be an empty set if there are no matches.
+            Set of ids for keys that are suffix matches for the key.
+            This will be an empty set if there are no matches.
 
         Raises:
             InvalidGeneralizedKeyError (GTS001):
@@ -466,22 +458,19 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
     def _contained_ids(self, depth: int = -1) -> set[TrieId]:
         """Returns a set containing all key ids defined for this node and/or its children up to
-            the requested depth.
+        the requested depth.
 
         Args:
-            depth (int):
-                Depth counter to limit the depth of contained ids to include.
-
+            depth (int): Depth counter to limit the depth of contained ids to include.
                 * A negative (-1 or lower) depth includes ALL ids for this node and all children
-                    nodes.
+                  nodes.
                 * A depth of 0 includes ONLY the ids for this node.
                 * A depth of 1 includes ids for this node and its direct child nodes.
                 * A depth of 2 includes ids for this node and the next two layers below it.
                 * and so on.
 
         Returns:
-            set[TrieId]:
-                Set containing the ids of all contained keys.
+            set[TrieId]: Set containing the ids of all contained keys.
         """
         assert isinstance(depth, int), "[GTCI002] depth arg must be an int or sub-class"
         ids: set[TrieId] = set()
@@ -500,7 +489,21 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
     def __contains__(self, key: GeneralizedKey) -> bool:
         """Returns True if the trie contains a key matching the passed key.
 
+        Args:
+            key (GeneralizedKey):
+                key for matching.
+
+        Returns:
+            True if there is a matching key in the trie. False otherwise.
+
+        Raises:
+            TypeError:
+                If key arg is not a Sequence.
+            InvalidGeneralizedTokenError:
+                If a token in the key arg does not conform with the GeneralizedToken protocol.
+
         Usage:
+            ```python
             trie = GeneralizedTrie()
             keys: list[str] = ['abcdef', 'abc', 'a', 'abcd', 'qrs']
             keys_index: dict[TrieId, str] = {}
@@ -509,34 +512,18 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
             if 'abc' in trie:
                 print('abc is in the trie')
-
-        Args:
-            key (GeneralizedKey):
-                key for matching.
-
-        Returns:
-            bool:
-                (False):
-                    Trie does not contain a key matching the passed key.
-                (True):
-                    Trie contains a key matching the passed key.
-
-        Raises:
-            TypeError:
-                If key arg is not a Sequence.
-            InvalidGeneralizedTokenError:
-                If a token in the key arg does not conform with the GeneralizedToken protocol.
+            ```
         """
         return bool(self.suffixes(key, 0))
 
     def __len__(self) -> int:
         """Returns the number of keys in the trie.
 
-        Usage:
-            n_keys: int = len(trie)
-
         Returns:
-            (int) number of keys in the trie.
+            Number of keys in the trie.
+
+        Usage:
+            `n_keys: int = len(trie)`
         """
         return len(self._trie_index)
 
