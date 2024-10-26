@@ -6,7 +6,7 @@ import traceback
 from typing import Any, NamedTuple, Optional
 import unittest
 
-from gentrie import GeneralizedTrie, GeneralizedToken, InvalidGeneralizedKeyError, is_generalizedkey
+from gentrie import GeneralizedTrie, Hashable, InvalidGeneralizedKeyError, is_generalizedkey
 
 
 class NoExpectedValue:  # pylint: disable=too-few-public-methods
@@ -102,7 +102,25 @@ def run_test(self, entry: TestConfig) -> None:  # type: ignore
             self.fail(msg=test_description + ": " + "\n".join(errors))  # type: ignore
 
 
-class TestGeneralizedToken(unittest.TestCase):
+class MockDefaultHashable:
+    def __init__(self, a: tuple[int, int, int], b: str) -> None:
+        self.a = a
+        self.b = b
+
+
+class MockContentAwareHashable:
+    def __init__(self, a: tuple[int, int, int], b: str) -> None:
+        self.a = a
+        self.b = b
+
+    def __eq__(self, other: Any) -> bool:
+        return hash(self) == hash(other)
+
+    def __hash__(self) -> int:
+        return hash((self.a, self.b))
+
+
+class TestHashable(unittest.TestCase):
     def test_supported_builtin_types(self) -> None:
         good_types: list[Any] = [
             'a',
@@ -116,7 +134,7 @@ class TestGeneralizedToken(unittest.TestCase):
         ]
         for token in good_types:
             with self.subTest(msg=f'{token:}'):  # type: ignore
-                self.assertIsInstance(token, GeneralizedToken)
+                self.assertIsInstance(token, Hashable)
 
     def test_unsupported_builtin_types(self) -> None:
         bad_types: list[Any] = [
@@ -128,7 +146,7 @@ class TestGeneralizedToken(unittest.TestCase):
         ]
         for token in bad_types:
             with self.subTest(msg=f'{token:}'):  # type: ignore
-                self.assertNotIsInstance(token, GeneralizedToken)
+                self.assertNotIsInstance(token, Hashable)
 
 
 class TestGeneralizedKey(unittest.TestCase):
@@ -327,6 +345,50 @@ class TestGeneralizedTrie(unittest.TestCase):
                 args=[["apple", "value", "ape"]],
                 kwargs={},
                 expected=8,
+            ),
+        ]
+        run_tests_list(self, tests)
+
+    def test_add_user_defined_classes(self) -> None:
+        trie = GeneralizedTrie()
+        a: list[str | MockDefaultHashable] = ['red', MockDefaultHashable(a=(1, 2, 3), b='hello')]
+        b: list[str | MockDefaultHashable] = ['red', MockDefaultHashable(a=(1, 2, 3), b='hello')]
+        c: list[str | MockContentAwareHashable] = ['red', MockContentAwareHashable(a=(1, 2, 3), b='hello')]
+        d: list[str | MockContentAwareHashable] = ['red', MockContentAwareHashable(a=(1, 2, 3), b='hello')]
+
+        with self.subTest(msg='[TAUDC001] a <=> b'):  # type: ignore
+            self.assertNotEqual(a, b)
+        with self.subTest(msg='[TAUDC002] a <=> a'):  # type: ignore
+            self.assertEqual(a, a)
+        with self.subTest(msg='[TAUDC003] c <=> d'):  # type: ignore
+            self.assertEqual(c, d)
+        with self.subTest(msg='[TAUDC003] c <=> c'):  # type: ignore
+            self.assertEqual(c, c, msg='c <=> c')
+
+        tests: list[TestConfig] = [
+            TestConfig(
+                name="[TAUDC004] trie.add(['red', MockDefaultHashable(a=(1, 2, 3), b='hello')])",
+                action=trie.add,
+                args=[a],
+                expected=1,
+            ),
+            TestConfig(
+                name="[TAUDC005] trie.add(['red', MockDefaultHashable(a=[1, 2, 3], b='hello')])",
+                action=trie.add,
+                args=[b],
+                expected=2,
+            ),
+            TestConfig(
+                name="[TAUDC006] trie.add(['red', MockContentAwareHashable(a=(1, 2, 3), b='hello')])",
+                action=trie.add,
+                args=[c],
+                expected=3,
+            ),
+            TestConfig(
+                name="[TAUDC007] trie.add(['red', MockContentAwareHashable(a=(1, 2, 3), b='hello')])",
+                action=trie.add,
+                args=[d],
+                expected=3,
             ),
         ]
         run_tests_list(self, tests)
@@ -720,7 +782,7 @@ class TestGeneralizedTrie(unittest.TestCase):
     def test_str(self) -> None:
         trie = GeneralizedTrie()
         test_string = 'a'
-        self.assertIsInstance(test_string, GeneralizedToken)
+        self.assertIsInstance(test_string, Hashable)
         self.assertIsInstance(test_string, Iterable)
 
         trie.add(test_string)

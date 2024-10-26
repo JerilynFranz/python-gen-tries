@@ -2,23 +2,22 @@
 
 This package includes classes and functions to create and manipulate a generalized trie
 data structure. Unlike traditional trie implementations that only support strings as keys,
-this generalized trie can handle various types of tokens, as long as they are hashable
-and comparable for equality.
+this generalized trie can handle various types of tokens, as long as they are hashable.
 
 Classes:
-    - InvalidGeneralizedTokenError: Raised when a token in a key is not a valid `GeneralizedToken`.
-    - InvalidGeneralizedKeyError: Raised when a key is not a valid `GeneralizedKey`.
-    - GeneralizedToken: Protocol defining key tokens usable with a `GeneralizedTrie`.
-    - TrieEntry: NamedTuple containing the unique identifier and key for an entry in the trie.
-    - GeneralizedTrie: A general-purpose trie that supports various types of tokens as keys.
+    - `InvalidHashableError`: Raised when a token in a key is not a valid `Hashable` object.
+    - `InvalidGeneralizedKeyError`: Raised when a key is not a valid `GeneralizedKey`.
+    - `Hashable`: Protocol defining key tokens usable with a `GeneralizedTrie`.
+    - `TrieEntry`: NamedTuple containing the unique identifier and key for an entry in the trie.
+    - `GeneralizedTrie`: A general-purpose trie that supports various types of tokens as keys.
 
 Type Aliases:
-    - GeneralizedKey: A sequence of `GeneralizedToken` or `str`.
-    - TrieId: Unique identifier for a key in a trie.
+    - `GeneralizedKey`: A Sequence of `Hashable` or `str`.
+    - `TrieId`: Unique identifier for a key in a trie.
 
 Functions:
-    - is_generalizedtoken: Tests if a token is a valid `GeneralizedToken`.
-    - is_generalizedkey: Tests if a key is a valid `GeneralizedKey`.
+    - `is_hashable`: Tests if a token is a `Hashable` object.
+    - `is_generalizedkey`: Tests if a key is a valid `GeneralizedKey`.
 
 Usage:
 
@@ -59,8 +58,8 @@ from textwrap import indent
 from typing import Any, runtime_checkable, Optional, Protocol, NamedTuple, TypeAlias
 
 
-class InvalidGeneralizedTokenError(TypeError):
-    """Raised when a token in a key is not a valid `GeneralizedToken`.
+class InvalidHashableError(TypeError):
+    """Raised when a token in a key is not `Hashable`.
 
     This is a sub-class of `TypeError`."""
 
@@ -72,30 +71,33 @@ class InvalidGeneralizedKeyError(TypeError):
 
 
 @runtime_checkable
-class GeneralizedToken(Protocol):
-    """GeneralizedToken is a protocal that defines key tokens that are usable with a `GeneralizedTrie`.
+class Hashable(Protocol):
+    """Hashable is a protocal that defines key tokens that are usable with a `GeneralizedTrie`.
 
-    The protocol requires that a token object implements both an __eq__()
-    method and a __hash__() method. This generally means that only immutable types
-    are suitable for use as tokens.
+    The protocol requires that a token object be *hashable*. This means that it
+    implements both an __eq__() method and a __hash__() method.
 
-    Some examples of types suitable for use as tokens in a key:
+    Some examples of built-in types suitable for use as tokens in a key:
         `str`  `bytes`  `int`  `float`  `complex`  `frozenset`  `tuple`  `None`
+
+    Note: frozensets and tuples are only hashable *if their contents are hashable*.
+
+    User-defined classes are hashable by default.
 
     Usage:
         ```python
-        from gentrie import GeneralizedToken
-        if isinstance(token, GeneralizedToken):
-            print("token supports the GeneralizedToken protocol")
+        from gentrie import Hashable
+        if isinstance(token, Hashable):
+            print("token supports the Hashable protocol")
         else:
-            print("token does not support the GeneralizedToken protocol")
+            print("token does not support the Hashable protocol")
         ```
     """
     def __eq__(self, value: Any) -> bool: ...
     def __hash__(self) -> int: ...
 
 
-GeneralizedKey: TypeAlias = Sequence[GeneralizedToken | str]
+GeneralizedKey: TypeAlias = Sequence[Hashable | str]
 """A GeneralizedKey is an object of any class that is a `Sequence` and
 that when iterated returns tokens conforming to the `GeneneralizedToken` protocol.
 
@@ -124,11 +126,10 @@ class TrieEntry(NamedTuple):
     """Key for an entry in the trie"""
 
 
-def is_generalizedtoken(token: GeneralizedToken) -> bool:
-    """Tests token for whether it is a valid `GeneralizedToken`.
+def is_hashable(token: Hashable) -> bool:
+    """Tests token for whether it is a valid `Hashable`.
 
-    A valid GeneralizedToken is a hashable object that
-    can have its value compared for equality.
+    A valid Hashable is a hashable object.
 
     Examples: `bool`, `bytes`, `float`, `frozenset`, `int`, `str`, `None`
 
@@ -136,16 +137,16 @@ def is_generalizedtoken(token: GeneralizedToken) -> bool:
         token (GeneralizedKey): Object for testing.
 
     Returns:
-        True if a valid GeneralizedToken, False otherwise.
+        True if a valid Hashable, False otherwise.
     """
-    return isinstance(token, GeneralizedToken)  # type: ignore[reportUnnecessaryIsInstance]]
+    return isinstance(token, Hashable)  # type: ignore[reportUnnecessaryIsInstance]]
 
 
 def is_generalizedkey(key: GeneralizedKey) -> bool:
     """Tests key for whether it is a valid `GeneralizedKey`.
 
     A valid `GeneralizedKey` is a `Sequence` that returns
-    `GeneralizedToken` protocol conformant objects when
+    `Hashable` protocol conformant objects when
     iterated. It must have at least one token.
 
     Args;
@@ -157,7 +158,7 @@ def is_generalizedkey(key: GeneralizedKey) -> bool:
     return (
         isinstance(key, Sequence) and  # type: ignore[reportUnnecessaryIsInstance]
         len(key) and
-        all(isinstance(t, GeneralizedToken) for t in key))  # type: ignore[reportGeneralTypeIssues]
+        all(isinstance(t, Hashable) for t in key))  # type: ignore[reportGeneralTypeIssues]
 
 
 class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
@@ -167,30 +168,22 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
     and token match only at the character level, it is agnostic as to the
     types of tokens used to key it and thus far more general purpose.
 
-    It requires only that the indexed tokens be comparable for equality
-    and hashable. This is verified at runtime using the
-    `gentrie.GeneralizedToken` protocol.
-
-    This generally means that immutable values and bytes can be used as tokens
-    in a key. i.e: a frozenset() works as a token, but a set() does not.
+    It requires only that the indexed tokens be hashable. This is verified
+    at runtime using the `gentrie.Hashable` protocol.
 
     Tokens in a key do NOT have to all be the same type as long as they
     can be compared for equality.
 
-    You can make new classes of objects able to be used with the
-    `GeneralizedTrie` just by defining __hash__ and __eq__ dunder methods on them.
+    Note that objects of user-defined classes are Hashable by default, but this
+    may not work as naively expected.
 
-    You should generally **ONLY** do this for immutable objects (objects that cannot
-    be changed once created).
-
-    It can handle `Sequence`s of `GeneralizedToken` conforming objects as keys
+    It can handle `Sequence`s of `Hashable` conforming objects as keys
     for the trie out of the box.
 
-    As long as the tokens returned by a sequence are comparable and
-    hashable, it largely 'just works'.
+    As long as the tokens returned by a sequence are hashable, it largely 'just works'.
 
     You can 'mix and match' types of objects used as token in a key as
-    long as they all conform to the `GeneralizedToken` protocol.
+    long as they all conform to the `Hashable` protocol.
 
     The code emphasizes robustness and correctness.
 
@@ -226,9 +219,9 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
     def __init__(self) -> None:
         self._root_node: bool = True
-        self._node_token: Optional[GeneralizedToken] = None
+        self._node_token: Optional[Hashable] = None
         self._parent: Optional[GeneralizedTrie] = None
-        self._children: dict[GeneralizedToken, GeneralizedTrie] = {}
+        self._children: dict[Hashable, GeneralizedTrie] = {}
         self._trie_index: dict[TrieId, GeneralizedTrie] = {}
         self._trie_id: TrieId = 0
         self._trie_id_counter: dict[str, TrieId] = {"trie_number": 0}
@@ -238,7 +231,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
         Args:
             key (GeneralizedKey): Must be an object that can be iterated and that when iterated
-                returns elements conforming to the `GeneralizedToken` protocol.
+                returns elements conforming to the `Hashable` protocol.
 
         Raises:
             - InvalidGeneralizedKeyError [GTA001] if key is not a valid `GeneralizedKey`.
@@ -304,7 +297,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
         # No trie ids or children are left for this node, so prune
         # nodes up the trie tree as needed.
-        node_token: Optional[GeneralizedToken] = node._node_token
+        node_token: Optional[Hashable] = node._node_token
         parent_node = node._parent
         while parent_node is not None:
             del parent_node._children[node_token]  # type: ignore[arg-type, reportArgumentType]
@@ -335,9 +328,9 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
         Raises:
             - `InvalidGeneralizedKeyError` [GTM001] if key is not a valid `GeneralizedKey`
-                (is not a `Sequence` of `GeneralizedToken`).
+                (is not a `Sequence` of `Hashable`).
             - `InvalidGeneralizedKeyError` [GTM002] if a token in the key does not conform
-                to the `GeneralizedToken` protocol.
+                to the `Hashable` protocol.
 
         Usage:
             ```python
@@ -404,7 +397,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             ValueError (GTS003):
                 If depth arg is less than -1.
             InvalidGeneralizedKeyError (GTS004):
-                If a token in the key arg does not conform with the GeneralizedToken protocol.
+                If a token in the key arg does not conform with the Hashable protocol.
 
         Usage:
             ```python
@@ -499,8 +492,8 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         Raises:
             TypeError:
                 If key arg is not a Sequence.
-            InvalidGeneralizedTokenError:
-                If a token in the key arg does not conform with the GeneralizedToken protocol.
+            InvalidHashableError:
+                If a token in the key arg does not conform with the Hashable protocol.
 
         Usage:
             ```python
