@@ -5,7 +5,15 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["gentrie"]
-
+exclude = [
+    ".trunk/",
+    ".git/",
+    ".gitignore",
+    "coverage/",
+    "MODULE.bazel",
+    "BUILD.bazel",
+    "WORKSPACE.bazel",
+]
 [tool.hatch.build.targets.sdist]
 exclude = [
     ".trunk/",
