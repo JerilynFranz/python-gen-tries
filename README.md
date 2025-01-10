@@ -6,8 +6,8 @@ python-gen-tries
 
 ## Description
 
-A generalized trie implementation that provides classes and functions to create and manipulate a generalized trie
-data structure. 
+A generalized trie implementation for python 3.9 or later that provides classes and
+functions to create and manipulate a generalized trie data structure. 
 
 Unlike many Trie implementations which only support strings as keys
 and token match only at the character level, it is agnostic as to the
@@ -62,10 +62,6 @@ Example 2:
 ## Authors and acknowledgment
 
 - Jerilyn Franz
-
-## Project status
-
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
 
 ## Copyright
 
