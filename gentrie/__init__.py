@@ -5,202 +5,46 @@ data structure. Unlike traditional trie implementations that only support string
 this generalized trie can handle various types of tokens, as long as they are hashable.
 
 Classes:
-    - `InvalidHashableError`: Raised when a token in a key is not a valid `Hashable` object.
-    - `InvalidGeneralizedKeyError`: Raised when a key is not a valid `GeneralizedKey`.
-    - `Hashable`: Protocol defining key tokens usable with a `GeneralizedTrie`.
-    - `TrieEntry`: NamedTuple containing the unique identifier and key for an entry in the trie.
-    - `GeneralizedTrie`: A general-purpose trie that supports various types of tokens as keys.
+    :class:`Hashable`
+        Protocol defining key tokens usable with a :class:`GeneralizedTrie`.
+    :class:`TrieEntry`
+        :class:`NamedTuple` containing the unique identifier and key for an entry in the trie.
+    :class:`GeneralizedTrie`
+        A general-purpose trie that supports various types of tokens as keys.
+
+Exceptions:
+    :exc:`InvalidHashableError`
+        Raised when a token in a key is not a valid :class:`Hashable` object.
+    :exc:`InvalidGeneralizedKeyError`
+        Raised when a key is not a valid :class:`GeneralizedKey`.
 
 Type Aliases:
-    - `GeneralizedKey`: A Sequence of `Hashable` or `str`.
-    - `TrieId`: Unique identifier for a key in a trie.
+    :class:`GeneralizedKey`
+        A :class:`Sequence` of :class:`Hashable` or :class:`str`.
+    :class:`TrieId`
+        Unique identifier for a key in a trie.
 
 Functions:
-    - `is_hashable`: Tests if a token is a `Hashable` object.
-    - `is_generalizedkey`: Tests if a key is a valid `GeneralizedKey`.
+    :func:`is_hashable`
+        Tests if a token is a :class:`Hashable` object.
+    :func:`is_generalizedkey`
+        Tests if a key is a valid :class:`GeneralizedKey`.
 
 Usage:
 
-    Example 1:
-    ```python
-    from gentrie import GeneralizedTrie
+    Example 1::
 
-    trie  = GeneralizedTrie()
-    trie_id_1: TrieEntry = trie.add(['ape', 'green', 'apple'])
-    trie_id_2: TrieEntry = trie.add(['ape', 'green'])
-    matches: list[TrieEntry] = trie.prefixes(['ape', 'green'])
-    ```
-
-    Example 2:
-    ```python
-    from gentrie import GeneralizedTrie
-
-    # Create a trie to store website URLs
-    url_trie = GeneralizedTrie()
-
-    # Add some URLs with different components (protocol, domain, path)
-    url_trie.add(["https", "com", "example", "www", "/", "products", "clothing"])
-    url_trie.add(["http", "org", "example", "blog", "/", "2023", "10", "best-laptops"])
-    url_trie.add(["ftp", "net", "example", "ftp", "/", "data", "images"])
-
-    # Find all https URLs with "example.com" domain
-    prefixes: list[TrieEntry] = url_trie.prefixes(["https", "com", "example"])
-    print(f"Found URL prefixes: {prefixes}")  # Output: Found URL prefixes: {1}
-
-    trie_id_1 = trie.add(['ape', 'green', 'apple'])
-    trie_id_2 = trie.add(['ape', 'green'])
-    matches = trie.prefixes(['ape', 'green'])
-    prefixes = url_trie.prefixes(["https", "com", "example"])
-    ```
-"""
-from collections.abc import Sequence
-from textwrap import indent
-from typing import Any, runtime_checkable, Optional, Protocol, NamedTuple, TypeAlias
-
-
-class InvalidHashableError(TypeError):
-    """Raised when a token in a key is not `Hashable`.
-
-    This is a sub-class of `TypeError`."""
-
-
-class InvalidGeneralizedKeyError(TypeError):
-    """Raised when a key is not a valid `GeneralizedKey`.
-
-    This is a sub-class of `TypeError`."""
-
-
-@runtime_checkable
-class Hashable(Protocol):
-    """Hashable is a protocal that defines key tokens that are usable with a `GeneralizedTrie`.
-
-    The protocol requires that a token object be *hashable*. This means that it
-    implements both an __eq__() method and a __hash__() method.
-
-    Some examples of built-in types suitable for use as tokens in a key:
-        `str`  `bytes`  `int`  `float`  `complex`  `frozenset`  `tuple`  `None`
-
-    Note: frozensets and tuples are only hashable *if their contents are hashable*.
-
-    User-defined classes are hashable by default.
-
-    Usage:
-        ```python
-        from gentrie import Hashable
-        if isinstance(token, Hashable):
-            print("token supports the Hashable protocol")
-        else:
-            print("token does not support the Hashable protocol")
-        ```
-    """
-    def __eq__(self, value: Any) -> bool: ...
-    def __hash__(self) -> int: ...
-
-
-GeneralizedKey: TypeAlias = Sequence[Hashable | str]
-"""A GeneralizedKey is an object of any class that is a `Sequence` and
-that when iterated returns tokens conforming to the `Hashable` protocol.
-
-Examples:
-    `str`
-    `bytes`
-    `list[bool]`
-    `list[int]`
-    `list[bytes]`
-    `list[str]`
-    `list[Optional[str]`]
-    `tuple[int, int, str]`
-
-"""
-
-
-TrieId = int
-"""Unique identifier for a key in a trie"""
-
-
-class TrieEntry(NamedTuple):
-    """A TrieEntry is a tuple containing the unique identifer and key for an entry in the trie."""
-    ident: TrieId
-    """Unique identifier for a key in the trie"""
-    key: GeneralizedKey
-    """Key for an entry in the trie"""
-
-
-def is_hashable(token: Hashable) -> bool:
-    """Tests token for whether it is a valid `Hashable`.
-
-    A valid Hashable is a hashable object.
-
-    Examples: `bool`, `bytes`, `float`, `frozenset`, `int`, `str`, `None`
-
-    Args:
-        token (GeneralizedKey): Object for testing.
-
-    Returns:
-        True if a valid Hashable, False otherwise.
-    """
-    return isinstance(token, Hashable)  # type: ignore[reportUnnecessaryIsInstance]]
-
-
-def is_generalizedkey(key: GeneralizedKey) -> bool:
-    """Tests key for whether it is a valid `GeneralizedKey`.
-
-    A valid `GeneralizedKey` is a `Sequence` that returns
-    `Hashable` protocol conformant objects when
-    iterated. It must have at least one token.
-
-    Args;
-        key (GeneralizedKey): Key for testing.
-
-    Returns:
-        True if a valid GeneralizedKey, False otherwise.
-    """
-    return (
-        isinstance(key, Sequence) and  # type: ignore[reportUnnecessaryIsInstance]
-        len(key) and
-        all(isinstance(t, Hashable) for t in key))  # type: ignore[reportGeneralTypeIssues]
-
-
-class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
-    """A general purpose trie.
-
-    Unlike many Trie implementations which only support strings as keys
-    and token match only at the character level, it is agnostic as to the
-    types of tokens used to key it and thus far more general purpose.
-
-    It requires only that the indexed tokens be hashable. This is verified
-    at runtime using the `gentrie.Hashable` protocol.
-
-    Tokens in a key do NOT have to all be the same type as long as they
-    can be compared for equality.
-
-    Note that objects of user-defined classes are Hashable by default, but this
-    may not work as naively expected.
-
-    It can handle `Sequence`s of `Hashable` conforming objects as keys
-    for the trie out of the box.
-
-    As long as the tokens returned by a sequence are hashable, it largely 'just works'.
-
-    You can 'mix and match' types of objects used as token in a key as
-    long as they all conform to the `Hashable` protocol.
-
-    The code emphasizes robustness and correctness.
-
-    Usage:
-
-    Example 1:
-        ```
         from gentrie import GeneralizedTrie
 
         trie  = GeneralizedTrie()
         trie_id_1: TrieEntry = trie.add(['ape', 'green', 'apple'])
         trie_id_2: TrieEntry = trie.add(['ape', 'green'])
         matches: list[TrieEntry] = trie.prefixes(['ape', 'green'])
-        ```
 
-    Example 2:
-        ```
+
+
+    Example 2::
+
         from gentrie import GeneralizedTrie
 
         # Create a trie to store website URLs
@@ -214,7 +58,183 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         # Find all https URLs with "example.com" domain
         prefixes: list[TrieEntry] = url_trie.prefixes(["https", "com", "example"])
         print(f"Found URL prefixes: {prefixes}")  # Output: Found URL prefixes: {1}
-        ```
+
+        trie_id_1 = trie.add(['ape', 'green', 'apple'])
+        trie_id_2 = trie.add(['ape', 'green'])
+        matches = trie.prefixes(['ape', 'green'])
+        prefixes = url_trie.prefixes(["https", "com", "example"])
+
+"""
+from collections.abc import Sequence
+from textwrap import indent
+from typing import Any, runtime_checkable, Optional, Protocol, NamedTuple, TypeAlias
+
+
+class InvalidHashableError(TypeError):
+    """Raised when a token in a key is not a valid :class:`Hashable` object.
+
+    This is a sub-class of :class:`TypeError`."""
+
+
+class InvalidGeneralizedKeyError(TypeError):
+    """Raised when a key is not a valid :class:`GeneralizedKey` object.
+
+    This is a sub-class of :class:`TypeError`."""
+
+
+@runtime_checkable
+class Hashable(Protocol):
+    """:class:`Hashable` is a protocol that defines key tokens that are usable with a :class:`GeneralizedTrie`.
+
+    The protocol requires that a token object be *hashable*. This means that it
+    implements both an ``__eq__()`` method and a ``__hash__()`` method.
+
+    Some examples of built-in types suitable for use as tokens in a key:
+
+        :class:`str`
+        :class:`bytes`
+        :class:`int`
+        :class:`float`
+        :class:`complex`
+        :class:`frozenset`
+        :class:`tuple`
+        :class:`None`
+
+    Note: frozensets and tuples are only hashable *if their contents are hashable*.
+
+    User-defined classes are hashable by default.
+
+    Usage::
+
+        from gentrie import Hashable
+        if isinstance(token, Hashable):
+            print("token supports the Hashable protocol")
+        else:
+            print("token does not support the Hashable protocol")
+
+    """
+    def __eq__(self, value: Any) -> bool: ...
+    def __hash__(self) -> int: ...
+
+
+GeneralizedKey: TypeAlias = Sequence[Hashable | str]
+"""A :class:`GeneralizedKey` is an object of any class that is a :class:`Sequence` and
+that when iterated returns tokens conforming to the :class:`Hashable` protocol.
+
+Examples:
+
+    * :class:`str`
+    * :class:`bytes`
+    * :class:`list[bool]`
+    * :class:`list[int]`
+    * :class:`list[bytes]`
+    * :class:`list[str]`
+    * :class:`list[Optional[str]]`
+    * :class:`tuple[int, int, str]`
+
+"""
+
+
+TrieId = int
+"""Unique identifier for a key in a trie."""
+
+
+class TrieEntry(NamedTuple):
+    """A :class:`TrieEntry` is a :class:`NamedTuple` containing the unique identifer and key for an entry in the trie."""
+    ident: TrieId
+    """:class:`TrieId` Unique identifier for a key in the trie. Alias for field number 0."""
+    key: GeneralizedKey
+    """:class:`GeneralizedKey` Key for an entry in the trie. Alias for field number 1."""
+
+
+def is_hashable(token: Hashable) -> bool:
+    """Tests token for whether it is a valid ``Hashable``.
+
+    A valid ``Hashable`` is a hashable object.
+
+    Examples: ``bool``, ``bytes``, ``float``, ``frozenset``, ``int``, ``str``, ``None``
+
+    Args:
+        token (GeneralizedKey): Object for testing.
+
+    Returns:
+        True if a valid ``Hashable``, False otherwise.
+    """
+    return isinstance(token, Hashable)  # type: ignore[reportUnnecessaryIsInstance]]
+
+
+def is_generalizedkey(key: GeneralizedKey) -> bool:
+    """Tests key for whether it is a valid `GeneralizedKey`.
+
+    A valid ``GeneralizedKey`` is a ``Sequence`` that returns
+    ``Hashable`` protocol conformant objects when
+    iterated. It must have at least one token.
+
+    Parameters:
+        key (GeneralizedKey): Key for testing.
+
+    Returns:
+        True if a valid ``GeneralizedKey``, False otherwise.
+    """
+    return (
+        isinstance(key, Sequence) and  # type: ignore[reportUnnecessaryIsInstance]
+        len(key) and
+        all(isinstance(t, Hashable) for t in key))  # type: ignore[reportGeneralTypeIssues]
+
+
+class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
+    """A general purpose trie.
+
+    Unlike many trie implementations which only support strings as keys
+    and token match only at the character level, it is agnostic as to the
+    types of tokens used to key it and thus far more general purpose.
+
+    It requires only that the indexed tokens be hashable. This is verified
+    at runtime using the ``gentrie.Hashable`` protocol.
+
+    Tokens in a key do NOT have to all be the same type as long as they
+    can be compared for equality.
+
+    Note that objects of user-defined classes are Hashable by default, but this
+    may not work as naively expected.
+
+    It can handle a ``Sequence`` of ``Hashable`` conforming objects as keys
+    for the trie out of the box.
+
+    As long as the tokens returned by a sequence are hashable, it largely 'just works'.
+
+    You can 'mix and match' types of objects used as token in a key as
+    long as they all conform to the ``Hashable`` protocol.
+
+    The code emphasizes robustness and correctness.
+
+    Usage:
+
+    Example 1::
+
+        from gentrie import GeneralizedTrie
+
+        trie  = GeneralizedTrie()
+        trie_id_1: TrieEntry = trie.add(['ape', 'green', 'apple'])
+        trie_id_2: TrieEntry = trie.add(['ape', 'green'])
+        matches: list[TrieEntry] = trie.prefixes(['ape', 'green'])
+
+    Example 2::
+
+        from gentrie import GeneralizedTrie
+
+        # Create a trie to store website URLs
+        url_trie = GeneralizedTrie()
+
+        # Add some URLs with different components (protocol, domain, path)
+        url_trie.add(["https", "com", "example", "www", "/", "products", "clothing"])
+        url_trie.add(["http", "org", "example", "blog", "/", "2023", "10", "best-laptops"])
+        url_trie.add(["ftp", "net", "example", "ftp", "/", "data", "images"])
+
+        # Find all https URLs with "example.com" domain
+        prefixes: list[TrieEntry] = url_trie.prefixes(["https", "com", "example"])
+        print(f"Found URL prefixes: {prefixes}")  # Output: Found URL prefixes: {1}
+
     """
 
     def __init__(self) -> None:
@@ -231,13 +251,14 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
         Args:
             key (GeneralizedKey): Must be an object that can be iterated and that when iterated
-                returns elements conforming to the `Hashable` protocol.
+                returns elements conforming to the :class:`Hashable` protocol.
 
         Raises:
-            - InvalidGeneralizedKeyError [GTA001] if key is not a valid `GeneralizedKey`.
+            InvalidGeneralizedKeyError ([GTA001]):
+                If key is not a valid :class:`GeneralizedKey`.
 
         Returns:
-            Id of the inserted key. If the key was already in the trie,
+            :class:`TrieId`: Id of the inserted key. If the key was already in the trie,
             it returns the id for the already existing entry.
         """
         if not is_generalizedkey(key):
@@ -270,9 +291,9 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             trie_id (TrieId): id of the key to remove.
 
         Raises:
-            - TypeError if the trie_id arg is not a `TrieId`.
-            - ValueError if the trie_id arg is not a legal value.
-            - KeyError if the trie_id does not match the id of any keys.
+            TypeError ([GTR001]): if the trie_id arg is not a :class:`TrieId`.
+            ValueError ([GTR002]): if the trie_id arg is not a legal value.
+            KeyError ([GTR003]): if the trie_id does not match the id of any keys.
         """
         # pylint: disable=protected-access
         if not isinstance(trie_id, TrieId):  # type: ignore
@@ -320,20 +341,19 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         for the key and returns their ids as a set.
 
         Args:
-            key (GeneralizedKey): key for matching.
+            key (GeneralizedKey): Key for matching.
 
         Returns:
-            Set of ids for keys that are prefixes of the key.
+            :class:`set[TrieId]`: :class:`set` containing TrieId identifiers for keys that are prefixes of the key.
             This will be an empty set if there are no matches.
 
         Raises:
-            - `InvalidGeneralizedKeyError` [GTM001] if key is not a valid `GeneralizedKey`
-                (is not a `Sequence` of `Hashable`).
-            - `InvalidGeneralizedKeyError` [GTM002] if a token in the key does not conform
-                to the `Hashable` protocol.
+            InvalidGeneralizedKeyError ([GTM001]):
+                If key is not a valid :class:`GeneralizedKey`
+                (is not a :class:`Sequence` of :class:`Hashable` objects).
 
-        Usage:
-            ```python
+        Usage::
+
             trie: GeneralizedTrie = GeneralizedTrie()
             keys: list[str] = ['abcdef', 'abc', 'a', 'abcd', 'qrs']
             keys_index: dict[TrieId, str] = {}
@@ -350,7 +370,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             # 4: abcd
             for trie_id in sorted(list(matches)):
                 print(f'{trie_id}: {keys_index[trie_id]}')
-            ```
+
         """
         if not is_generalizedkey(key):
             raise InvalidGeneralizedKeyError("[GTM001] key is not a valid `GeneralizedKey`")
@@ -377,7 +397,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         to the specified depth below the key match and returns their ids as a set.
 
         Args:
-            key (`GeneralizedKey`): Key for matching.
+            key (GeneralizedKey): Key for matching.
             depth (`int`, default=-1): Depth starting from the matched key to include.
                 The depth determines how many 'layers' deeper into the trie to look for ids:
                     * A depth of -1 (the default) includes ALL ids for the exact match and all children nodes.
@@ -386,40 +406,40 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
                     * A depth of 2 includes ids for the exact match and the next two layers down.
 
         Returns:
-            Set of ids for keys that are suffix matches for the key.
+            :class:`set[TrieId]`: Set of ids for keys that are suffix matches for the key.
             This will be an empty set if there are no matches.
 
         Raises:
-            InvalidGeneralizedKeyError (GTS001):
+            InvalidGeneralizedKeyError ([GTS001]):
                 If key arg is not a GeneralizedKey.
-            TypeError (GTS002):
+            TypeError ([GTS002]):
                 If depth arg is not an int.
-            ValueError (GTS003):
+            ValueError ([GTS003]):
                 If depth arg is less than -1.
-            InvalidGeneralizedKeyError (GTS004):
-                If a token in the key arg does not conform with the Hashable protocol.
+            InvalidGeneralizedKeyError ([GTS004]):
+                If a token in the key arg does not conform to the :class:`Hashable` protocol.
 
-        Usage:
-            ```python
+        Usage::
+
             trie = GeneralizedTrie()
             keys: list[str] = ['abcdef', 'abc', 'a', 'abcd', 'qrs']
             trie_keys_index: dict[TrieId, str] = {}
             for entry in keys:
                 trie_key_index[trie.add(entry)] = entry
             matches: set[TrieId] = trie.token_suffixes('abcd')
-            ```
 
-            After running the code above, `matches` contains the set {1, 4},
-            corresponding to the keys 'abcdef' and 'abcd' - each of which are
-            suffix matches to 'abcd'.
+        After running the code above, `matches` contains the set {1, 4},
+        corresponding to the keys 'abcdef' and 'abcd' - each of which are
+        suffix matches to 'abcd'::
 
-            ```python
             for trie_id in sorted(list(matches)):
                 print(f'{trie_id}: {trie_keys_index[trie_id]}')
-            ```
-            Output:
-                1: abcdef
-                4: abc
+
+        Output::
+
+            1: abcdef
+            4: abc
+
         """
         if not is_generalizedkey(key):
             raise InvalidGeneralizedKeyError("[GTS001] key arg is not a valid GeneralizedKey")
@@ -463,7 +483,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
                 * and so on.
 
         Returns:
-            set[TrieId]: Set containing the ids of all contained keys.
+            :class:`set[TrieId]`: Set containing the ids of all contained keys.
         """
         assert isinstance(depth, int), "[GTCI002] depth arg must be an int or sub-class"
         ids: set[TrieId] = set()
@@ -487,16 +507,16 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
                 key for matching.
 
         Returns:
-            True if there is a matching key in the trie. False otherwise.
+            :class:`bool`: True if there is a matching key in the trie. False otherwise.
 
         Raises:
-            TypeError:
+            :class:`TypeError`:
                 If key arg is not a Sequence.
-            InvalidHashableError:
+            :class:`InvalidHashableError`:
                 If a token in the key arg does not conform with the Hashable protocol.
 
-        Usage:
-            ```python
+        Usage::
+
             trie = GeneralizedTrie()
             keys: list[str] = ['abcdef', 'abc', 'a', 'abcd', 'qrs']
             keys_index: dict[TrieId, str] = {}
@@ -505,7 +525,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
             if 'abc' in trie:
                 print('abc is in the trie')
-            ```
+
         """
         return bool(self.suffixes(key, 0))
 
@@ -513,10 +533,12 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         """Returns the number of keys in the trie.
 
         Returns:
-            Number of keys in the trie.
+            :class:`int`: Number of keys in the trie.
 
-        Usage:
-            `n_keys: int = len(trie)`
+        Usage::
+
+            n_keys: int = len(trie)
+
         """
         return len(self._trie_index)
 
