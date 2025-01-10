@@ -99,7 +99,7 @@ class Hashable(Protocol):
 
 GeneralizedKey: TypeAlias = Sequence[Hashable | str]
 """A GeneralizedKey is an object of any class that is a `Sequence` and
-that when iterated returns tokens conforming to the `GeneneralizedToken` protocol.
+that when iterated returns tokens conforming to the `Hashable` protocol.
 
 Examples:
     `str`
