@@ -1,2 +1,2 @@
-sphinx-apidoc -f -o source . tests conf
+sphinx-apidoc -f -o source ../src tests conf
 make html
