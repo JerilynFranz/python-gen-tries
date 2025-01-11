@@ -8,37 +8,52 @@ Usage:
 
     Example 1::
 
-        from gentrie import GeneralizedTrie
+        from gentrie import GeneralizedTrie, TrieEntry
 
-        trie  = GeneralizedTrie()
+        trie = GeneralizedTrie()
         trie.add(['ape', 'green', 'apple'])
         trie.add(['ape', 'green'])
-        matches: list[TrieEntry] = trie.prefixes(['ape', 'green'])
-        print(f"Found matches: {matches}")
+        matches: set[TrieEntry] = trie.prefixes(['ape', 'green'])
+        print(matches)
 
     Example 1 Output::
 
-        Found matches: {TrieEntry(ident=1, key=['ape', 'green', 'apple']), TrieEntry(ident=2, key=['ape', 'green'])}
+        {TrieEntry(ident=2, key=['ape', 'green'])}
 
     Example 2::
 
-        from gentrie import GeneralizedTrie
+        from gentrie import GeneralizedTrie, TrieEntry
 
         # Create a trie to store website URLs
         url_trie = GeneralizedTrie()
 
         # Add some URLs with different components (protocol, domain, path)
-        url_trie.add(["https","com", "example", "www", "/", "products", "clothing"])
+        url_trie.add(["https", "com", "example", "www", "/", "products", "clothing"])
         url_trie.add(["http", "org", "example", "blog", "/", "2023", "10", "best-laptops"])
         url_trie.add(["ftp", "net", "example", "ftp", "/", "data", "images"])
 
         # Find all https URLs with "example.com" domain
-        prefixes: list[TrieEntry] = url_trie.prefixes(["https", "com", "example"])
-        print(f"Found URL prefixes: {prefixes}")
+        suffixes: set[TrieEntry] = url_trie.suffixes(["https", "com", "example"])
+        print(suffixes)
 
     Example 2 Output::
 
-        Found URL prefixes: {TrieEntry(ident=1, key=['https', 'com', 'example', 'www', '/', 'products', 'clothing']}
+        {TrieEntry(ident=1, key=['https', 'com', 'example', 'www', '/', 'products', 'clothing'])}}
+
+    Example 3::
+
+        from gentrie import GeneralizedTrie, TrieEntry
+
+        trie = GeneralizedTrie()
+        trie.add('abcdef')
+        trie.add('abc')
+        trie.add('qrf')
+        matches: set[TrieEntry] = trie.suffixes('ab')
+        print(matches)
+
+    Example 3 Output::
+
+        {TrieEntry(ident=2, key='abc'), TrieEntry(ident=1, key='abcdef')}
 
 """
 # pylint: disable=protected-access
@@ -328,6 +343,8 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
         Usage::
 
+            from gentrie import GeneralizedTrie, TrieEntry
+
             trie: GeneralizedTrie = GeneralizedTrie()
             keys: list[str] = ['abcdef', 'abc', 'a', 'abcd', 'qrs']
             for entry in keys:
@@ -336,10 +353,9 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             for trie_entry in sorted(list(matches)):
                 print(f'{trie_entry.ident}: {trie_entry.key}')
 
-
-            2: abcd
-            3: a
-            4: abcd
+            # 2: abc
+            # 3: a
+            # 4: abcd
 
         """
         if not is_generalizedkey(key):
@@ -391,18 +407,19 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
         Usage::
 
+            from gentrie import GeneralizedTrie, TrieEntry
+
             trie = GeneralizedTrie()
             keys: list[str] = ['abcdef', 'abc', 'a', 'abcd', 'qrs']
             for entry in keys:
                 trie.add(entry)
-            matches: set[TrieEntry] = trie.token_suffixes('abcd')
+            matches: set[TrieEntry] = trie.suffixes('abcd')
 
             for trie_entry in sorted(list(matches)):
                 print(f'{trie_entry.ident}: {trie_entry.key}')
 
-
-            1: abcdef
-            4: abcd
+            # 1: abcdef
+            # 4: abcd
 
         """
         if not is_generalizedkey(key):
@@ -550,7 +567,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
     def keys(self) -> Generator[TrieId, None, None]:
         """Returns an iterator for all the TrieId keys in the trie.
 
-        The generator yields the :class:`TrieId`for each key in the trie.
+        The generator yields the :class:`TrieId` for each key in the trie.
 
         Returns:
             :class:`Generator[TrieId, None, None]`: Generator for the trie.

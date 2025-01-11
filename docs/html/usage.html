@@ -48,6 +48,7 @@
               <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Using gen-trie</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="gentrie.html">gentrie package</a></li>
@@ -82,6 +83,59 @@
 <p>Stuff goes here</p>
 <section id="installation">
 <span id="gentrie-installation"></span><h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">pip3</span> <span class="pre">install</span> <span class="pre">gen-trie</span></code></p>
+</section>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h2>
+<p>Example 1:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gentrie</span> <span class="kn">import</span> <span class="n">GeneralizedTrie</span><span class="p">,</span> <span class="n">TrieEntry</span>
+
+<span class="n">trie</span> <span class="o">=</span> <span class="n">GeneralizedTrie</span><span class="p">()</span>
+<span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;apple&#39;</span><span class="p">])</span>
+<span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">])</span>
+<span class="n">matches</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Example 1 Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="n">TrieEntry</span><span class="p">(</span><span class="n">ident</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">])}}</span>
+</pre></div>
+</div>
+<p>Example 2:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gentrie</span> <span class="kn">import</span> <span class="n">GeneralizedTrie</span><span class="p">,</span> <span class="n">TrieEntry</span>
+
+<span class="c1"># Create a trie to store website URLs</span>
+<span class="n">url_trie</span> <span class="o">=</span> <span class="n">GeneralizedTrie</span><span class="p">()</span>
+
+<span class="c1"># Add some URLs with different components (protocol, domain, path)</span>
+<span class="n">url_trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s2">&quot;https&quot;</span><span class="p">,</span> <span class="s2">&quot;com&quot;</span><span class="p">,</span> <span class="s2">&quot;example&quot;</span><span class="p">,</span> <span class="s2">&quot;www&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;products&quot;</span><span class="p">,</span> <span class="s2">&quot;clothing&quot;</span><span class="p">])</span>
+<span class="n">url_trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s2">&quot;http&quot;</span><span class="p">,</span> <span class="s2">&quot;org&quot;</span><span class="p">,</span> <span class="s2">&quot;example&quot;</span><span class="p">,</span> <span class="s2">&quot;blog&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;2023&quot;</span><span class="p">,</span> <span class="s2">&quot;10&quot;</span><span class="p">,</span> <span class="s2">&quot;best-laptops&quot;</span><span class="p">])</span>
+<span class="n">url_trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s2">&quot;ftp&quot;</span><span class="p">,</span> <span class="s2">&quot;net&quot;</span><span class="p">,</span> <span class="s2">&quot;example&quot;</span><span class="p">,</span> <span class="s2">&quot;ftp&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;images&quot;</span><span class="p">])</span>
+
+<span class="c1"># Find all https URLs with &quot;example.com&quot; domain</span>
+<span class="n">suffixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">url_trie</span><span class="o">.</span><span class="n">suffixes</span><span class="p">([</span><span class="s2">&quot;https&quot;</span><span class="p">,</span> <span class="s2">&quot;com&quot;</span><span class="p">,</span> <span class="s2">&quot;example&quot;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">suffixes</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Example 2 Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="n">TrieEntry</span><span class="p">(</span><span class="n">ident</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="s1">&#39;com&#39;</span><span class="p">,</span> <span class="s1">&#39;example&#39;</span><span class="p">,</span> <span class="s1">&#39;www&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="s1">&#39;products&#39;</span><span class="p">,</span> <span class="s1">&#39;clothing&#39;</span><span class="p">])}</span>
+</pre></div>
+</div>
+<p>Example 3:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gentrie</span> <span class="kn">import</span> <span class="n">GeneralizedTrie</span><span class="p">,</span> <span class="n">TrieEntry</span>
+
+<span class="n">trie</span> <span class="o">=</span> <span class="n">GeneralizedTrie</span><span class="p">()</span>
+<span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;abcdef&#39;</span><span class="p">)</span>
+<span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;abc&#39;</span><span class="p">)</span>
+<span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;qrf&#39;</span><span class="p">)</span>
+<span class="n">matches</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">suffixes</span><span class="p">(</span><span class="s1">&#39;ab&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Example 3 Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="n">TrieEntry</span><span class="p">(</span><span class="n">ident</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;abc&#39;</span><span class="p">),</span> <span class="n">TrieEntry</span><span class="p">(</span><span class="n">ident</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;abcdef&#39;</span><span class="p">)}</span>
+</pre></div>
+</div>
 </section>
 </section>
 
