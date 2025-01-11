@@ -3,7 +3,7 @@ py_test(
     srcs = ["test_gentri.py"],
     size="small",
     deps = [
-        "//gentrie:gentrie",
+        "//src/gentrie:gentrie",
     ]
 )
 

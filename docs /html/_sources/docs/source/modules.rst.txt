@@ -1,0 +1,9 @@
+python-gen-tries
+================
+
+.. toctree::
+   :maxdepth: 4
+
+   conf
+   gentrie
+   tests

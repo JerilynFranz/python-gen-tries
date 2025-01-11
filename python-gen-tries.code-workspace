@@ -16,6 +16,7 @@
 		"terminal.integrated.env.osx": {
 			"PYTHONPATH": "${workspaceFolder}/src:${workspaceFolder}/src"
 		},
-		"pythonTestExplorer.testFramework": "unittest"
+		"pythonTestExplorer.testFramework": "unittest",
+		"makefile.configureOnOpen": false
 	}
 }

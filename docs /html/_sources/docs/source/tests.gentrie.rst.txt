@@ -1,0 +1,21 @@
+tests.gentrie package
+=====================
+
+Submodules
+----------
+
+tests.gentrie.test\_gentri module
+---------------------------------
+
+.. automodule:: tests.gentrie.test_gentri
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: tests.gentrie
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -17,7 +17,7 @@
 # sys.path.insert(0, os.path.abspath('.'))
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path('.').resolve()))
+sys.path.insert(0, str(Path('../src').resolve()))
 
 # -- Project information -----------------------------------------------------
 
@@ -75,7 +75,14 @@ exclude_patterns = [
     'coverage',
     'tests.gentrie.rst.txt',
     'tests.rst.txt',
-    'conf.rst.txt'
+    'conf.rst.txt',
+    'bazel-out',
+    'bazel-bin',
+    '.venv-3.10',
+    '.venv-3.11',
+    '.venv-3.12',
+    '.venv-3.13',
+    'bazel-python-gen-tries',
     ]
 
 # The name of the Pygments (syntax highlighting) style to use.

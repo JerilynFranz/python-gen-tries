@@ -6,7 +6,7 @@ import traceback
 from typing import Any, NamedTuple, Optional
 import unittest
 
-from gentrie import GeneralizedTrie, Hashable, InvalidGeneralizedKeyError, is_generalizedkey
+from src.gentrie import GeneralizedTrie, Hashable, InvalidGeneralizedKeyError, is_generalizedkey
 
 
 class NoExpectedValue:  # pylint: disable=too-few-public-methods
