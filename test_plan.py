@@ -10,23 +10,9 @@ from testplan.testing import pyunit  # type: ignore
 
 from tests.gentrie import test_gentri
 
+# pylint: disable=missing-function-docstring
 
-# def before_start(env, result):
-#     result.log("Executing before start hook.")
-#
-#
-# def after_start(env, result):
-#    result.log("Executing after start hook.")
-#
-#
-# def before_stop(env, result):
-#     result.log("Executing before stop hook.")
-#
-#
-# def after_stop(env, result):
-#    result.log("Executing after stop hook.")
-#
-#
+
 @test_plan(name='PyUnitGentri', description='PyUnit gentri tests')
 def main(plan):  # type: ignore
     plan.add(  # type: ignore
@@ -36,10 +22,6 @@ def main(plan):  # type: ignore
             testcases=[test_gentri.TestHashable,
                        test_gentri.TestGeneralizedKey,
                        test_gentri.TestGeneralizedTrie],
-            # before_start=before_start,
-            # after_start=after_start,
-            # before_stop=before_stop,
-            # after_stop=after_stop,
         )
     )
 
