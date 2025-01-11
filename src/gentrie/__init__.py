@@ -65,6 +65,8 @@ Usage:
         prefixes = url_trie.prefixes(["https", "com", "example"])
 
 """
+# pylint: disable=protected-access
+
 from collections.abc import Sequence
 from textwrap import indent
 from typing import Any, runtime_checkable, Optional, Protocol, NamedTuple, TypeAlias
@@ -140,7 +142,8 @@ TrieId: TypeAlias = int
 
 
 class TrieEntry(NamedTuple):
-    """A :class:`TrieEntry` is a :class:`NamedTuple` containing the unique identifer and key for an entry in the trie."""
+    """A :class:`TrieEntry` is a :class:`NamedTuple` containing the unique identifer and key for an entry in the trie.
+    """
     ident: TrieId
     """:class:`TrieId` Unique identifier for a key in the trie. Alias for field number 0."""
     key: GeneralizedKey
