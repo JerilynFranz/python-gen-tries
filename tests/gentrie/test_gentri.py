@@ -6,7 +6,7 @@ import traceback
 from typing import Any, NamedTuple, Optional
 import unittest
 
-from src.gentrie import GeneralizedTrie, Hashable, InvalidGeneralizedKeyError, is_generalizedkey
+from src.gentrie import GeneralizedTrie, TrieEntry, TrieId, Hashable, InvalidGeneralizedKeyError, is_generalizedkey
 
 
 class NoExpectedValue:  # pylint: disable=too-few-public-methods
@@ -395,44 +395,39 @@ class TestGeneralizedTrie(unittest.TestCase):
 
     def test_prefixes(self) -> None:
         trie: GeneralizedTrie = GeneralizedTrie()
+
+        with self.subTest(msg="[TP001] trie.add(['tree', 'value', 'ape'])"):
+            entry_id: TrieId = trie.add(["tree", "value", "ape"])
+            self.assertEqual(entry_id, 1)
+
+        with self.subTest(msg="[TP002] trie.add(['tree', 'value'])"):
+            entry_id = trie.add(["tree", "value"])
+            self.assertEqual(entry_id, 2)
+
+        with self.subTest(msg="[TP003] trie.add('abcdef')"):
+            entry_id = trie.add("abcdef")
+            self.assertEqual(entry_id, 3)
+
+        with self.subTest(msg="[TP004] trie.add('abc')"):
+            entry_id = trie.add("abc")
+            self.assertEqual(entry_id, 4)
+
+        with self.subTest(msg="[TP005] trie.prefixes(['tree', 'value', 'ape'])"):
+            found: set[TrieEntry] = trie.prefixes(["tree", "value", "ape"])
+            expected: set[TrieEntry] = set([
+                TrieEntry(1, ['tree', 'value', 'ape']),
+                TrieEntry(2, ['tree', 'value'])
+            ])
+            self.assertEqual(found, expected, msg=str(trie))
+
         tests: list[TestConfig] = [
-            TestConfig(
-                name="[TP001] trie.add(['tree', 'value', 'ape'])",
-                action=trie.add,
-                args=[["tree", "value", "ape"]],
-                expected=1,
-            ),
-            TestConfig(
-                name="[TP002] trie.add(['tree', 'value']",
-                action=trie.add,
-                args=[["tree", "value"]],
-                expected=2,
-            ),
-            TestConfig(
-                name="[TP003] trie.add('abcdef')",
-                action=trie.add,
-                args=["abcdef"],
-                kwargs={},
-                expected=3,
-            ),
-            TestConfig(
-                name="[TP004] trie.add('abc')",
-                action=trie.add,
-                args=["abc"],
-                expected=4,
-            ),
-            TestConfig(
-                name="[TP005] trie.prefixes(['tree', 'value', 'ape'])",
-                action=trie.prefixes,
-                args=[["tree", "value", "ape"]],
-                expected=set([1, 2]),
-                display_on_fail=trie.__str__
-            ),
             TestConfig(
                 name="[TP006] trie.prefixes(['tree', 'value'])",
                 action=trie.prefixes,
                 args=[["tree", "value"]],
-                expected=set([2]),
+                expected=set([
+                    TrieEntry(2, ['tree', 'value']),
+                ]),
             ),
             TestConfig(
                 name="[TP007] trie.prefixes('a')",
@@ -444,13 +439,13 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TP008] trie.prefixes('abc')",
                 action=trie.prefixes,
                 args=["abc"],
-                expected=set([4]),
+                expected=set([TrieEntry(4, 'abc')]),
             ),
             TestConfig(
                 name="[TP009] trie.prefixes('abcd')",
                 action=trie.prefixes,
                 args=["abcd"],
-                expected=set([4]),
+                expected=set([TrieEntry(4, 'abc')]),
             ),
             TestConfig(
                 name="[TP010] trie.prefixes(['abc'])",
@@ -468,7 +463,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TP012] trie.prefixes([1, 3, 4, 5, 6, ])",
                 action=trie.prefixes,
                 args=[[1, 3, 4, 5, 6]],
-                expected=set([5]),
+                expected=set([TrieEntry(5, [1, 3, 4])]),
             ),
             TestConfig(
                 name="[TP013] trie.prefixes(['a', 3, 4, 5])",
@@ -486,13 +481,13 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TP015] trie.prefixes([frozenset([1]), 3, 4, 5])",
                 action=trie.prefixes,
                 args=[[frozenset([1]), 3, 4, 5]],
-                expected=set([6]),
+                expected=set([TrieEntry(6, [frozenset([1]), 3, 4, 5])]),
             ),
             TestConfig(
                 name="[TP016] trie.prefixes(key=[frozenset([1]), 3, 4, 5])",
                 action=trie.prefixes,
                 kwargs={"key": [frozenset([1]), 3, 4, 5]},
-                expected=set([6]),
+                expected=set([TrieEntry(6, [frozenset([1]), 3, 4, 5])]),
             ),
             TestConfig(
                 name="[TP017] trie.prefixes(key=[set([1]), 3, 4, 5])",
@@ -548,31 +543,31 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TS005] trie.suffixes(['tree', 'value', 'ape'])",
                 action=trie.suffixes,
                 args=[["tree", "value", "ape"]],
-                expected=set([1]),
+                expected=set([TrieEntry(1, ["tree", "value", "ape"])]),
             ),
             TestConfig(
                 name="[TS006] trie.suffixes(['tree', 'value'])",
                 action=trie.suffixes,
                 args=[["tree", "value"]],
-                expected=set([1, 2]),
+                expected=set([TrieEntry(1, ['tree', 'value', 'ape']), TrieEntry(2, ["tree", "value"])]),
             ),
             TestConfig(
                 name="[TS007] trie.suffixes('a')",
                 action=trie.suffixes,
                 args=["a"],
-                expected=set([3, 4]),
+                expected=set([TrieEntry(3, 'abcdef'), TrieEntry(4, 'abc')]),
             ),
             TestConfig(
                 name="[TS008] trie.suffixes('abc')",
                 action=trie.suffixes,
                 args=["abc"],
-                expected=set([3, 4]),
+                expected=set([TrieEntry(3, 'abcdef'), TrieEntry(4, 'abc')]),
             ),
             TestConfig(
                 name="[TS009] trie.suffixes('abcd')",
                 action=trie.suffixes,
                 args=["abcd"],
-                expected=set([3]),
+                expected=set([TrieEntry(3, 'abcdef')]),
             ),
             TestConfig(
                 name="[TS010] trie.suffixes(['abc'])",
@@ -608,13 +603,13 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TS015] trie.suffixes([frozenset([1]), 3, 4, 5])",
                 action=trie.suffixes,
                 args=[[frozenset([1]), 3, 4, 5]],
-                expected=set([6]),
+                expected=set([TrieEntry(6, [frozenset([1]), 3, 4, 5])]),
             ),
             TestConfig(
                 name="[TS017] trie.suffixes(key=[frozenset([1]), 3, 4, 5])",
                 action=trie.suffixes,
                 kwargs={"key": [frozenset([1]), 3, 4, 5]},
-                expected=set([6]),
+                expected=set([TrieEntry(6, [frozenset([1]), 3, 4, 5])]),
             ),
             TestConfig(
                 name="[TS018] trie.suffixes(key=[set([1]), 3, 4, 5])",

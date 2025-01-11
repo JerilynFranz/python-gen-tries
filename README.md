@@ -6,7 +6,7 @@ python-gen-tries
 
 ## Description
 
-A generalized trie implementation for python 3.9 or later that provides classes and
+A generalized trie implementation for python 3.10 or later that provides classes and
 functions to create and manipulate a generalized trie data structure. 
 
 Unlike many Trie implementations which only support strings as keys
@@ -29,6 +29,10 @@ As long as the tokens returned by a sequence are hashable, it largely 'just work
 
 You can 'mix and match' types of objects used as token in a key as
 long as they all conform to the `Hashable` protocol.
+
+When keys are inserted into the trie, they are assigned a unique id which is returned to the
+caller. It is the caller's responsibilty to save the id's for reference when doing lookups from
+the trie. Because the keys are not necessarily strings it
 
 ## Usage
 

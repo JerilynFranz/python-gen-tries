@@ -37,10 +37,9 @@ Usage:
         from gentrie import GeneralizedTrie
 
         trie  = GeneralizedTrie()
-        trie_id_1: TrieEntry = trie.add(['ape', 'green', 'apple'])
-        trie_id_2: TrieEntry = trie.add(['ape', 'green'])
+        trie.add(['ape', 'green', 'apple'])
+        trie.add(['ape', 'green'])
         matches: list[TrieEntry] = trie.prefixes(['ape', 'green'])
-
 
 
     Example 2::
@@ -69,7 +68,7 @@ Usage:
 
 from collections.abc import Sequence
 from textwrap import indent
-from typing import Any, runtime_checkable, Optional, Protocol, NamedTuple, TypeAlias
+from typing import runtime_checkable, Optional, Protocol, NamedTuple, TypeAlias
 
 
 class InvalidHashableError(TypeError):
@@ -115,7 +114,7 @@ class Hashable(Protocol):
             print("token does not support the Hashable protocol")
 
     """
-    def __eq__(self, value: Any) -> bool: ...
+    def __eq__(self, value: object, /) -> bool: ...
     def __hash__(self) -> int: ...
 
 
@@ -148,6 +147,14 @@ class TrieEntry(NamedTuple):
     """:class:`TrieId` Unique identifier for a key in the trie. Alias for field number 0."""
     key: GeneralizedKey
     """:class:`GeneralizedKey` Key for an entry in the trie. Alias for field number 1."""
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, TrieEntry):
+            return False
+        return self.ident == other.ident and tuple(self.key) == tuple(other.key)
+
+    def __hash__(self) -> int:
+        return hash((self.ident, tuple(self.key)))
 
 
 def is_hashable(token: Hashable) -> bool:
@@ -248,6 +255,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         self._parent: Optional[GeneralizedTrie] = None
         self._children: dict[Hashable, GeneralizedTrie] = {}
         self._trie_index: dict[TrieId, GeneralizedTrie] = {}
+        self._trie_entries: dict[TrieId, TrieEntry] = {}
         self._trie_id: TrieId = 0
         self._trie_id_counter: dict[str, TrieId] = {"trie_number": 0}
 
@@ -268,6 +276,8 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         """
         if not is_generalizedkey(key):
             raise InvalidGeneralizedKeyError("[GTA001] key is not a valid `GeneralizedKey`")
+
+        # Traverse the trie to find the insertion point for the key
         current_node = self
         for token in key:
             if token not in current_node._children:
@@ -275,18 +285,19 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
                 child_node._root_node = False
                 child_node._node_token = token  # type: ignore[reportAttributeAccess]
                 child_node._parent = current_node
-                child_node._trie_index = self._trie_index
-                child_node._trie_id_counter = self._trie_id_counter
                 current_node._children[token] = child_node  # type: ignore[reportArgumentType]
             current_node = current_node._children[token]  # type: ignore[reportArgumentType]
 
+        # If the node already has a trie id, return it
         if current_node._trie_id:
             return current_node._trie_id
 
+        # Assign a new trie id for the node
         new_trie_id: TrieId = self._trie_id_counter["trie_number"] + 1
         current_node._trie_id = new_trie_id
         self._trie_id_counter["trie_number"] = new_trie_id
         self._trie_index[new_trie_id] = current_node
+        self._trie_entries[new_trie_id] = TrieEntry(new_trie_id, key)
         return new_trie_id
 
     def remove(self, trie_id: TrieId) -> None:
@@ -312,7 +323,8 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
         # Find the node and delete its id from the trie index
         node: GeneralizedTrie = self._trie_index[trie_id]
-        del node._trie_index[trie_id]
+        del self._trie_index[trie_id]
+        del self._trie_entries[trie_id]
 
         # Remove the id from the node
         node._trie_id = 0
@@ -329,7 +341,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             del parent_node._children[node_token]  # type: ignore[arg-type, reportArgumentType]
             # explicitly break possible cyclic references
             node._parent = node._node_token = None
-            node._trie_id_counter = {}
+
             # If the parent node has a trie id or children, we're done: return
             if parent_node._trie_id or parent_node._children:
                 return
@@ -339,17 +351,17 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             parent_node = node._parent
         return
 
-    def prefixes(self, key: GeneralizedKey) -> set[TrieId]:
-        """Returns the ids of all keys in the trie that are a prefix of the passed key.
+    def prefixes(self, key: GeneralizedKey) -> set[TrieEntry]:
+        """Returns a set of TrieEntry instances for all keys in the trie that are a prefix of the passed key.
 
         Searches the trie for all keys that are prefix matches
-        for the key and returns their ids as a set.
+        for the key and returns their TrieEntry instances as a set.
 
         Args:
             key (GeneralizedKey): Key for matching.
 
         Returns:
-            :class:`set[TrieId]`: :class:`set` containing TrieId identifiers for keys that are prefixes of the key.
+            :class:`set[TrieEntry]`: :class:`set` containing TrieEntry instances for keys that are prefixes of the key.
             This will be an empty set if there are no matches.
 
         Raises:
@@ -380,22 +392,22 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         if not is_generalizedkey(key):
             raise InvalidGeneralizedKeyError("[GTM001] key is not a valid `GeneralizedKey`")
 
-        matched: set[TrieId] = set()
+        matched: set[TrieEntry] = set()
         current_node = self
 
         for token in key:
             if current_node._trie_id:
-                matched.add(current_node._trie_id)
+                matched.add(self._trie_entries[current_node._trie_id])
             if token not in current_node._children:
                 break
             current_node = current_node._children[token]
 
         if current_node._trie_id:
-            matched.add(current_node._trie_id)
+            matched.add(self._trie_entries[current_node._trie_id])
 
         return matched
 
-    def suffixes(self, key: GeneralizedKey, depth: int = -1) -> set[TrieId]:
+    def suffixes(self, key: GeneralizedKey, depth: int = -1) -> set[TrieEntry]:
         """Returns the ids of all suffixes of the trie_key up to depth.
 
         Searches the trie for all keys that are suffix matches for the key up
@@ -404,14 +416,14 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         Args:
             key (GeneralizedKey): Key for matching.
             depth (`int`, default=-1): Depth starting from the matched key to include.
-                The depth determines how many 'layers' deeper into the trie to look for ids:
-                * A depth of -1 (the default) includes ALL ids for the exact match and all children nodes.
-                * A depth of 0 only includes the ids for the *exact* match for the key.
-                * A depth of 1 includes ids for the exact match and the next layer down.
-                * A depth of 2 includes ids for the exact match and the next two layers down.
+                The depth determines how many 'layers' deeper into the trie to look for suffixes.:
+                * A depth of -1 (the default) includes ALL entries for the exact match and all children nodes.
+                * A depth of 0 only includes the entries for the *exact* match for the key.
+                * A depth of 1 includes entries for the exact match and the next layer down.
+                * A depth of 2 includes entries for the exact match and the next two layers down.
 
         Returns:
-            :class:`set[TrieId]`: Set of ids for keys that are suffix matches for the key.
+            :class:`set[TrieId]`: Set of TrieEntry instances for keys that are suffix matches for the key.
             This will be an empty set if there are no matches.
 
         Raises:
@@ -462,17 +474,17 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
         # Perform a breadth-first search to collect suffixes up to the specified depth
         queue = [(current_node, depth)]
-        matched_ids: set[TrieId] = set()
+        matches: set[TrieEntry] = set()
 
         while queue:
             node, current_depth = queue.pop(0)
             if node._trie_id:
-                matched_ids.add(node._trie_id)
+                matches.add(self._trie_entries[node._trie_id])
             if current_depth != 0:
                 for child in node._children.values():
                     queue.append((child, current_depth - 1))
 
-        return matched_ids
+        return matches
 
     def _contained_ids(self, depth: int = -1) -> set[TrieId]:
         """Returns a set containing all key ids defined for this node and/or its children up to
@@ -554,8 +566,10 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         output: list[str] = ["{"]
         if self._root_node:
             output.append(f"  trie number = {self._trie_id_counter['trie_number']}")
-        elif self._parent:
-            if self._parent._root_node:
+        else:
+            if self._parent is None:
+                output.append("  parent = None")
+            elif self._parent._root_node:
                 output.append("  parent = root node")
             else:
                 output.append(f"  parent = {repr(self._parent._node_token)}")
