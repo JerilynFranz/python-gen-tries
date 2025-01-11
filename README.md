@@ -35,42 +35,53 @@ long as they all conform to the `Hashable` protocol.
 
 ### Example 1:
 ```python3
-    from gentrie import GeneralizedTrie
+from gentrie import GeneralizedTrie, TrieEntry
 
-    trie  = GeneralizedTrie()
-    trie.add(['ape', 'green', 'apple'])
-    trie.add(['ape', 'green'])
-    matches: set[TrieEntry] = trie.prefixes(['ape', 'green'])
-    print(matches)
+trie = GeneralizedTrie()
+trie.add(['ape', 'green', 'apple'])
+trie.add(['ape', 'green'])
+matches: set[TrieEntry] = trie.prefixes(['ape', 'green'])
+print(matches)
 ```
 
 ### Example 1 Output:
 ```python3
-{TrieEntry(TrieId(1), ['ape', 'green', 'apple']), TrieEntry(Trieid(2), ['ape','green'])}
+{TrieEntry(ident=2, key=['ape', 'green'])}}
 ```
 
 ### Example 2:
 ```python3
-    from gentrie import GeneralizedTrie
+from gentrie import GeneralizedTrie, TrieEntry
 
-    # Create a trie to store website URLs
-    url_trie = GeneralizedTrie()
+# Create a trie to store website URLs
+url_trie = GeneralizedTrie()
 
-    # Add some URLs with different components (protocol, domain, path)
-    url_trie.add(["https", "com", "example", "www", "/", "products", "clothing"])
-    url_trie.add(["http", "org", "example", "blog", "/", "2023", "10", "best-laptops"])
-    url_trie.add(["ftp", "net", "example", "ftp", "/", "data", "images"])
+# Add some URLs with different components (protocol, domain, path)
+url_trie.add(["https", "com", "example", "www", "/", "products", "clothing"])
+url_trie.add(["http", "org", "example", "blog", "/", "2023", "10", "best-laptops"])
+url_trie.add(["ftp", "net", "example", "ftp", "/", "data", "images"])
 
-    # Find all https URLs with "example.com" domain
-    prefixes: set[TrieEntry] = url_trie.prefixes(["https", "com", "example"])
-    print(f"Found URL prefixes: {prefixes}")
+# Find all https URLs with "example.com" domain
+suffixes: set[TrieEntry] = url_trie.suffixes(["https", "com", "example"])
+print(suffixes)
+```
+
+### Example 3:
+```python
+from gentrie import GeneralizedTrie, TrieEntry
+
+trie = GeneralizedTrie()
+trie.add('abcdef')
+trie.add('abc')
+trie.add('qrf')
+matches: set[TrieEntry] = trie.suffixes('ab')
+print(matches)
 ```
 
 ### Example 3 Output:
+```python
+{TrieEntry(ident=2, key='abc'), TrieEntry(ident=1, key='abcdef')}
 ```
-{TrieEntry(TrieId(1), ["https", "com", "example", "www", "/", "products", "clothing"])}
-```
-
 ## Authors and acknowledgment
 
 - Jerilyn Franz
