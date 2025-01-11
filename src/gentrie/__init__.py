@@ -227,9 +227,9 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         from gentrie import GeneralizedTrie
 
         trie  = GeneralizedTrie()
-        trie_id_1: TrieEntry = trie.add(['ape', 'green', 'apple'])
-        trie_id_2: TrieEntry = trie.add(['ape', 'green'])
-        matches: list[TrieEntry] = trie.prefixes(['ape', 'green'])
+        trie_id_1: TrieId = trie.add(['ape', 'green', 'apple'])
+        trie_id_2: TrieId = trie.add(['ape', 'green'])
+        matches: set[TrieEntry] = trie.prefixes(['ape', 'green'])
 
     Example 2::
 
@@ -244,8 +244,9 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         url_trie.add(["ftp", "net", "example", "ftp", "/", "data", "images"])
 
         # Find all https URLs with "example.com" domain
-        prefixes: list[TrieEntry] = url_trie.prefixes(["https", "com", "example"])
-        print(f"Found URL prefixes: {prefixes}")  # Output: Found URL prefixes: {1}
+        prefixes: set[TrieEntry] = url_trie.prefixes(["https", "com", "example"])
+        print(f"Found URL prefixes: {prefixes}")
+        # Output: Found URL prefixes: {TrieEntry(ident=1, key=['https', 'com', 'example', 'www', '/', 'products', 'clothing']}
 
     """
 
@@ -373,20 +374,16 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
             trie: GeneralizedTrie = GeneralizedTrie()
             keys: list[str] = ['abcdef', 'abc', 'a', 'abcd', 'qrs']
-            keys_index: dict[TrieId, str] = {}
             for entry in keys:
-                key_index[trie.add(entry)] = entry
-            matches: set[TrieId] = trie.prefix_key_ids('abcd')
+                trie.add(entry)
+            matches: set[TrieEntry] = trie.prefixes('abcd')
+            for trie_entry in sorted(list(matches)):
+                print(f'{trie_entry.ident}: {trie_entry.key}')
 
-            # matches now contains the set {2, 3, 4}, corresponding
-            # to the keys 'abc', 'a', and 'abcd' - all of which are
-            prefix matches for 'abcd'.
 
-            # 2: abcd
-            # 3: a
-            # 4: abcd
-            for trie_id in sorted(list(matches)):
-                print(f'{trie_id}: {keys_index[trie_id]}')
+            2: abcd
+            3: a
+            4: abcd
 
         """
         if not is_generalizedkey(key):
@@ -440,22 +437,16 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
             trie = GeneralizedTrie()
             keys: list[str] = ['abcdef', 'abc', 'a', 'abcd', 'qrs']
-            trie_keys_index: dict[TrieId, str] = {}
             for entry in keys:
-                trie_key_index[trie.add(entry)] = entry
-            matches: set[TrieId] = trie.token_suffixes('abcd')
+                trie.add(entry)
+            matches: set[TrieEntry] = trie.token_suffixes('abcd')
 
-        After running the code above, `matches` contains the set {1, 4},
-        corresponding to the keys 'abcdef' and 'abcd' - each of which are
-        suffix matches to 'abcd'::
+            for trie_entry in sorted(list(matches)):
+                print(f'{trie_entry.ident}: {trie_entry.key}')
 
-            for trie_id in sorted(list(matches)):
-                print(f'{trie_id}: {trie_keys_index[trie_id]}')
-
-        Output::
 
             1: abcdef
-            4: abc
+            4: abcd
 
         """
         if not is_generalizedkey(key):
