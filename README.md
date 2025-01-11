@@ -66,6 +66,11 @@ suffixes: set[TrieEntry] = url_trie.suffixes(["https", "com", "example"])
 print(suffixes)
 ```
 
+### Example 2 Output:
+```python
+{TrieEntry(ident=1, key=['https', 'com', 'example', 'www', '/', 'products', 'clothing'])}
+```
+
 ### Example 3:
 ```python
 from gentrie import GeneralizedTrie, TrieEntry
