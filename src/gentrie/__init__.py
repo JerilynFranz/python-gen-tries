@@ -1,7 +1,7 @@
 """Package providing a generalized trie implementation.
 
 This package includes classes and functions to create and manipulate a generalized trie
-data structure. Unlike traditional trie implementations that only support strings as keys,
+data structure. Unlike common trie implementations that only support strings as keys,
 this generalized trie can handle various types of tokens, as long as they are hashable.
 
 Classes:
