@@ -246,7 +246,8 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         # Find all https URLs with "example.com" domain
         prefixes: set[TrieEntry] = url_trie.prefixes(["https", "com", "example"])
         print(f"Found URL prefixes: {prefixes}")
-        # Output: Found URL prefixes: {TrieEntry(ident=1, key=['https', 'com', 'example', 'www', '/', 'products', 'clothing']}
+        # Output:
+        # Found URL prefixes: {TrieEntry(ident=1, key=['https', 'com', 'example', 'www', '/', 'products', 'clothing']}
 
     """
 
