@@ -25,10 +25,10 @@ exclude = [
 [project]
 name = "gen-tries"
 authors = [
-    {name = "Jerilyn Franz", email = "jerilyn.franz@snowhare.com"}
+    {name = "Jerilyn Franz", email = "opensource@snowhare.com"}
 ]
 maintainers = [
-    {name = "Jerilyn Franz", email = "jerilyn.franz@snowhare.com"}
+    {name = "Jerilyn Franz", email = "opensource@snowhare.com"}
 ]
 description = "Generalized trie implementation"
 readme = "README.md"
