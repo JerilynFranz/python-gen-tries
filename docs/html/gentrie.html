@@ -52,9 +52,12 @@
 <li class="toctree-l3"><a class="reference internal" href="#gentrie.GeneralizedTrie"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#gentrie.GeneralizedTrie.add"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.add()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gentrie.GeneralizedTrie.clear"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.clear()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gentrie.GeneralizedTrie.items"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.items()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gentrie.GeneralizedTrie.keys"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.keys()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gentrie.GeneralizedTrie.prefixes"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.prefixes()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gentrie.GeneralizedTrie.remove"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.remove()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gentrie.GeneralizedTrie.suffixes"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.suffixes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gentrie.GeneralizedTrie.values"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.values()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#gentrie.Hashable"><code class="docutils literal notranslate"><span class="pre">Hashable</span></code></a></li>
@@ -106,38 +109,6 @@
 <p>This package includes classes and functions to create and manipulate a generalized trie
 data structure. Unlike common trie implementations that only support strings as keys,
 this generalized trie can handle various types of tokens, as long as they are hashable.</p>
-<dl class="simple">
-<dt>Classes:</dt><dd><dl class="simple">
-<dt><a class="reference internal" href="#gentrie.Hashable" title="gentrie.Hashable"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hashable</span></code></a></dt><dd><p>Protocol defining key tokens usable with a <a class="reference internal" href="#gentrie.GeneralizedTrie" title="gentrie.GeneralizedTrie"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedTrie</span></code></a>.</p>
-</dd>
-<dt><a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieEntry</span></code></a></dt><dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code> containing the unique identifier and key for an entry in the trie.</p>
-</dd>
-<dt><a class="reference internal" href="#gentrie.GeneralizedTrie" title="gentrie.GeneralizedTrie"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedTrie</span></code></a></dt><dd><p>A general-purpose trie that supports various types of tokens as keys.</p>
-</dd>
-</dl>
-</dd>
-<dt>Exceptions:</dt><dd><dl class="simple">
-<dt><a class="reference internal" href="#gentrie.InvalidHashableError" title="gentrie.InvalidHashableError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">InvalidHashableError</span></code></a></dt><dd><p>Raised when a token in a key is not a valid <a class="reference internal" href="#gentrie.Hashable" title="gentrie.Hashable"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hashable</span></code></a> object.</p>
-</dd>
-<dt><a class="reference internal" href="#gentrie.InvalidGeneralizedKeyError" title="gentrie.InvalidGeneralizedKeyError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">InvalidGeneralizedKeyError</span></code></a></dt><dd><p>Raised when a key is not a valid <a class="reference internal" href="#gentrie.GeneralizedKey" title="gentrie.GeneralizedKey"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code></a>.</p>
-</dd>
-</dl>
-</dd>
-<dt>Type Aliases:</dt><dd><dl class="simple">
-<dt><a class="reference internal" href="#gentrie.GeneralizedKey" title="gentrie.GeneralizedKey"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code></a></dt><dd><p>A <code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code> of <a class="reference internal" href="#gentrie.Hashable" title="gentrie.Hashable"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hashable</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>.</p>
-</dd>
-<dt><a class="reference internal" href="#gentrie.TrieId" title="gentrie.TrieId"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieId</span></code></a></dt><dd><p>Unique identifier for a key in a trie.</p>
-</dd>
-</dl>
-</dd>
-<dt>Functions:</dt><dd><dl class="simple">
-<dt><a class="reference internal" href="#gentrie.is_hashable" title="gentrie.is_hashable"><code class="xref py py-func docutils literal notranslate"><span class="pre">is_hashable()</span></code></a></dt><dd><p>Tests if a token is a <a class="reference internal" href="#gentrie.Hashable" title="gentrie.Hashable"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hashable</span></code></a> object.</p>
-</dd>
-<dt><a class="reference internal" href="#gentrie.is_generalizedkey" title="gentrie.is_generalizedkey"><code class="xref py py-func docutils literal notranslate"><span class="pre">is_generalizedkey()</span></code></a></dt><dd><p>Tests if a key is a valid <a class="reference internal" href="#gentrie.GeneralizedKey" title="gentrie.GeneralizedKey"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code></a>.</p>
-</dd>
-</dl>
-</dd>
-</dl>
 <p>Usage:</p>
 <blockquote>
 <div><p>Example 1:</p>
@@ -147,6 +118,11 @@ this generalized trie can handle various types of tokens, as long as they are ha
 <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;apple&#39;</span><span class="p">])</span>
 <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">])</span>
 <span class="n">matches</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found matches: </span><span class="si">{</span><span class="n">matches</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Example 1 Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Found</span> <span class="n">matches</span><span class="p">:</span> <span class="p">{</span><span class="n">TrieEntry</span><span class="p">(</span><span class="n">ident</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;apple&#39;</span><span class="p">]),</span> <span class="n">TrieEntry</span><span class="p">(</span><span class="n">ident</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">])}</span>
 </pre></div>
 </div>
 <p>Example 2:</p>
@@ -156,18 +132,17 @@ this generalized trie can handle various types of tokens, as long as they are ha
 <span class="n">url_trie</span> <span class="o">=</span> <span class="n">GeneralizedTrie</span><span class="p">()</span>
 
 <span class="c1"># Add some URLs with different components (protocol, domain, path)</span>
-<span class="n">url_trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s2">&quot;https&quot;</span><span class="p">,</span> <span class="s2">&quot;com&quot;</span><span class="p">,</span> <span class="s2">&quot;example&quot;</span><span class="p">,</span> <span class="s2">&quot;www&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;products&quot;</span><span class="p">,</span> <span class="s2">&quot;clothing&quot;</span><span class="p">])</span>
+<span class="n">url_trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s2">&quot;https&quot;</span><span class="p">,</span><span class="s2">&quot;com&quot;</span><span class="p">,</span> <span class="s2">&quot;example&quot;</span><span class="p">,</span> <span class="s2">&quot;www&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;products&quot;</span><span class="p">,</span> <span class="s2">&quot;clothing&quot;</span><span class="p">])</span>
 <span class="n">url_trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s2">&quot;http&quot;</span><span class="p">,</span> <span class="s2">&quot;org&quot;</span><span class="p">,</span> <span class="s2">&quot;example&quot;</span><span class="p">,</span> <span class="s2">&quot;blog&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;2023&quot;</span><span class="p">,</span> <span class="s2">&quot;10&quot;</span><span class="p">,</span> <span class="s2">&quot;best-laptops&quot;</span><span class="p">])</span>
 <span class="n">url_trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s2">&quot;ftp&quot;</span><span class="p">,</span> <span class="s2">&quot;net&quot;</span><span class="p">,</span> <span class="s2">&quot;example&quot;</span><span class="p">,</span> <span class="s2">&quot;ftp&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;images&quot;</span><span class="p">])</span>
 
 <span class="c1"># Find all https URLs with &quot;example.com&quot; domain</span>
 <span class="n">prefixes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">url_trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">([</span><span class="s2">&quot;https&quot;</span><span class="p">,</span> <span class="s2">&quot;com&quot;</span><span class="p">,</span> <span class="s2">&quot;example&quot;</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found URL prefixes: </span><span class="si">{</span><span class="n">prefixes</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Output: Found URL prefixes: {1}</span>
-
-<span class="n">trie_id_1</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;apple&#39;</span><span class="p">])</span>
-<span class="n">trie_id_2</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">])</span>
-<span class="n">matches</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">])</span>
-<span class="n">prefixes</span> <span class="o">=</span> <span class="n">url_trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">([</span><span class="s2">&quot;https&quot;</span><span class="p">,</span> <span class="s2">&quot;com&quot;</span><span class="p">,</span> <span class="s2">&quot;example&quot;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found URL prefixes: </span><span class="si">{</span><span class="n">prefixes</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Example 2 Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Found</span> <span class="n">URL</span> <span class="n">prefixes</span><span class="p">:</span> <span class="p">{</span><span class="n">TrieEntry</span><span class="p">(</span><span class="n">ident</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="s1">&#39;com&#39;</span><span class="p">,</span> <span class="s1">&#39;example&#39;</span><span class="p">,</span> <span class="s1">&#39;www&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="s1">&#39;products&#39;</span><span class="p">,</span> <span class="s1">&#39;clothing&#39;</span><span class="p">]}</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -208,34 +183,6 @@ for the trie out of the box.</p>
 <p>You can ‘mix and match’ types of objects used as token in a key as
 long as they all conform to the <a class="reference internal" href="#gentrie.Hashable" title="gentrie.Hashable"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hashable</span></code></a> protocol.</p>
 <p>The code emphasizes robustness and correctness.</p>
-<p>Usage:</p>
-<p>Example 1:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gentrie</span> <span class="kn">import</span> <span class="n">GeneralizedTrie</span>
-
-<span class="n">trie</span>  <span class="o">=</span> <span class="n">GeneralizedTrie</span><span class="p">()</span>
-<span class="n">trie_id_1</span><span class="p">:</span> <span class="n">TrieId</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;apple&#39;</span><span class="p">])</span>
-<span class="n">trie_id_2</span><span class="p">:</span> <span class="n">TrieId</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">])</span>
-<span class="n">matches</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">])</span>
-</pre></div>
-</div>
-<p>Example 2:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gentrie</span> <span class="kn">import</span> <span class="n">GeneralizedTrie</span>
-
-<span class="c1"># Create a trie to store website URLs</span>
-<span class="n">url_trie</span> <span class="o">=</span> <span class="n">GeneralizedTrie</span><span class="p">()</span>
-
-<span class="c1"># Add some URLs with different components (protocol, domain, path)</span>
-<span class="n">url_trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s2">&quot;https&quot;</span><span class="p">,</span> <span class="s2">&quot;com&quot;</span><span class="p">,</span> <span class="s2">&quot;example&quot;</span><span class="p">,</span> <span class="s2">&quot;www&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;products&quot;</span><span class="p">,</span> <span class="s2">&quot;clothing&quot;</span><span class="p">])</span>
-<span class="n">url_trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s2">&quot;http&quot;</span><span class="p">,</span> <span class="s2">&quot;org&quot;</span><span class="p">,</span> <span class="s2">&quot;example&quot;</span><span class="p">,</span> <span class="s2">&quot;blog&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;2023&quot;</span><span class="p">,</span> <span class="s2">&quot;10&quot;</span><span class="p">,</span> <span class="s2">&quot;best-laptops&quot;</span><span class="p">])</span>
-<span class="n">url_trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s2">&quot;ftp&quot;</span><span class="p">,</span> <span class="s2">&quot;net&quot;</span><span class="p">,</span> <span class="s2">&quot;example&quot;</span><span class="p">,</span> <span class="s2">&quot;ftp&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;images&quot;</span><span class="p">])</span>
-
-<span class="c1"># Find all https URLs with &quot;example.com&quot; domain</span>
-<span class="n">prefixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">url_trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">([</span><span class="s2">&quot;https&quot;</span><span class="p">,</span> <span class="s2">&quot;com&quot;</span><span class="p">,</span> <span class="s2">&quot;example&quot;</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found URL prefixes: </span><span class="si">{</span><span class="n">prefixes</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="c1"># Output:</span>
-<span class="c1"># Found URL prefixes: {TrieEntry(ident=1, key=[&#39;https&#39;, &#39;com&#39;, &#39;example&#39;, &#39;www&#39;, &#39;/&#39;, &#39;products&#39;, &#39;clothing&#39;]}</span>
-</pre></div>
-</div>
 </div></blockquote>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -280,6 +227,36 @@ it returns the id for the already existing entry.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trie_obj</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gentrie.GeneralizedTrie.items">
+<span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generator" title="(in Python v3.13)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><span class="pre">TrieEntry</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.items" title="Link to this definition"></a></dt>
+<dd><p>Returns an iterator for the trie.</p>
+<p>The generator yields the <a class="reference internal" href="#gentrie.TrieId" title="gentrie.TrieId"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieId</span></code></a> and <a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieEntry</span></code></a> for each key in the trie.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Generator for the trie.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator[tuple[TrieId,</span> <span class="pre">TrieEntry],</span> <span class="pre">None,</span> <span class="pre">None]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gentrie.GeneralizedTrie.keys">
+<span class="sig-name descname"><span class="pre">keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generator" title="(in Python v3.13)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.keys" title="Link to this definition"></a></dt>
+<dd><p>Returns an iterator for all the TrieId keys in the trie.</p>
+<p>The generator yields the :class:<a href="#id1"><span class="problematic" id="id2">`</span></a>TrieId`for each key in the trie.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Generator for the trie.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator[TrieId,</span> <span class="pre">None,</span> <span class="pre">None]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -388,6 +365,21 @@ This will be an empty set if there are no matches.</p>
 <span class="mi">4</span><span class="p">:</span> <span class="n">abcd</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gentrie.GeneralizedTrie.values">
+<span class="sig-name descname"><span class="pre">values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generator" title="(in Python v3.13)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><span class="pre">TrieEntry</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.values" title="Link to this definition"></a></dt>
+<dd><p>Returns an iterator for all the TrieEntry entries in the trie.</p>
+<p>The generator yields the <a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieEntry</span></code></a> for each key in the trie.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Generator for the trie.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator[TrieEntry,</span> <span class="pre">None,</span> <span class="pre">None]</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

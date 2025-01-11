@@ -4,32 +4,6 @@ This package includes classes and functions to create and manipulate a generaliz
 data structure. Unlike common trie implementations that only support strings as keys,
 this generalized trie can handle various types of tokens, as long as they are hashable.
 
-Classes:
-    :class:`Hashable`
-        Protocol defining key tokens usable with a :class:`GeneralizedTrie`.
-    :class:`TrieEntry`
-        :class:`NamedTuple` containing the unique identifier and key for an entry in the trie.
-    :class:`GeneralizedTrie`
-        A general-purpose trie that supports various types of tokens as keys.
-
-Exceptions:
-    :exc:`InvalidHashableError`
-        Raised when a token in a key is not a valid :class:`Hashable` object.
-    :exc:`InvalidGeneralizedKeyError`
-        Raised when a key is not a valid :class:`GeneralizedKey`.
-
-Type Aliases:
-    :class:`GeneralizedKey`
-        A :class:`Sequence` of :class:`Hashable` or :class:`str`.
-    :class:`TrieId`
-        Unique identifier for a key in a trie.
-
-Functions:
-    :func:`is_hashable`
-        Tests if a token is a :class:`Hashable` object.
-    :func:`is_generalizedkey`
-        Tests if a key is a valid :class:`GeneralizedKey`.
-
 Usage:
 
     Example 1::
@@ -40,7 +14,11 @@ Usage:
         trie.add(['ape', 'green', 'apple'])
         trie.add(['ape', 'green'])
         matches: list[TrieEntry] = trie.prefixes(['ape', 'green'])
+        print(f"Found matches: {matches}")
 
+    Example 1 Output::
+
+        Found matches: {TrieEntry(ident=1, key=['ape', 'green', 'apple']), TrieEntry(ident=2, key=['ape', 'green'])}
 
     Example 2::
 
@@ -50,18 +28,17 @@ Usage:
         url_trie = GeneralizedTrie()
 
         # Add some URLs with different components (protocol, domain, path)
-        url_trie.add(["https", "com", "example", "www", "/", "products", "clothing"])
+        url_trie.add(["https","com", "example", "www", "/", "products", "clothing"])
         url_trie.add(["http", "org", "example", "blog", "/", "2023", "10", "best-laptops"])
         url_trie.add(["ftp", "net", "example", "ftp", "/", "data", "images"])
 
         # Find all https URLs with "example.com" domain
         prefixes: list[TrieEntry] = url_trie.prefixes(["https", "com", "example"])
-        print(f"Found URL prefixes: {prefixes}")  # Output: Found URL prefixes: {1}
+        print(f"Found URL prefixes: {prefixes}")
 
-        trie_id_1 = trie.add(['ape', 'green', 'apple'])
-        trie_id_2 = trie.add(['ape', 'green'])
-        matches = trie.prefixes(['ape', 'green'])
-        prefixes = url_trie.prefixes(["https", "com", "example"])
+    Example 2 Output::
+
+        Found URL prefixes: {TrieEntry(ident=1, key=['https', 'com', 'example', 'www', '/', 'products', 'clothing']}
 
 """
 # pylint: disable=protected-access
@@ -215,35 +192,6 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
     The code emphasizes robustness and correctness.
 
-    Usage:
-
-    Example 1::
-
-        from gentrie import GeneralizedTrie
-
-        trie  = GeneralizedTrie()
-        trie_id_1: TrieId = trie.add(['ape', 'green', 'apple'])
-        trie_id_2: TrieId = trie.add(['ape', 'green'])
-        matches: set[TrieEntry] = trie.prefixes(['ape', 'green'])
-
-    Example 2::
-
-        from gentrie import GeneralizedTrie
-
-        # Create a trie to store website URLs
-        url_trie = GeneralizedTrie()
-
-        # Add some URLs with different components (protocol, domain, path)
-        url_trie.add(["https", "com", "example", "www", "/", "products", "clothing"])
-        url_trie.add(["http", "org", "example", "blog", "/", "2023", "10", "best-laptops"])
-        url_trie.add(["ftp", "net", "example", "ftp", "/", "data", "images"])
-
-        # Find all https URLs with "example.com" domain
-        prefixes: set[TrieEntry] = url_trie.prefixes(["https", "com", "example"])
-        print(f"Found URL prefixes: {prefixes}")
-        # Output:
-        # Found URL prefixes: {TrieEntry(ident=1, key=['https', 'com', 'example', 'www', '/', 'products', 'clothing']}
-
    .. warning:: **GOTCHA: Using User Defined Classes As Tokens In Keys**
 
         Objects of user-defined classes are :class:`Hashable` by default, but **this
@@ -258,7 +206,6 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         content of the object).
 
     """
-
     def __init__(self) -> None:
         self._root_node: bool = True
         self._node_token: Optional[Hashable] = None
