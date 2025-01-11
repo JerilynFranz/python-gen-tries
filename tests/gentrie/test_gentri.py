@@ -966,7 +966,6 @@ class TestGeneralizedTrie(unittest.TestCase):
             found_entries_list = list(trie.values())
             self.assertEqual(found_entries_list, expect_entries_list)
 
-
     def test_items(self) -> None:
         trie: GeneralizedTrie = GeneralizedTrie()
 
@@ -1007,13 +1006,11 @@ class TestGeneralizedTrie(unittest.TestCase):
             found_items_list = list(sorted(trie.items()))
             self.assertEqual(found_items_list, expect_items_list)
 
-
     def test_getitem_dunder(self) -> None:
         trie: GeneralizedTrie = GeneralizedTrie()
 
         with self.assertRaises(KeyError, msg="[TGID001] trie[1]"):
-            # pylint: disable=reportUnusedVariable
-            a: TrieEntry = trie[1]  # noqa: F841  # type: ignore
+            a: TrieEntry = trie[1]  # noqa: F841  # type: ignore  # pylint: disable=unused-variable
 
         with self.subTest(msg="[TGID002] trie.add('abcdef')"):
             expect_id: TrieId = 1
@@ -1036,8 +1033,7 @@ class TestGeneralizedTrie(unittest.TestCase):
             self.assertEqual(found_entry, expect_entry)
 
         with self.assertRaises(KeyError, msg="[TGID006] trie[3]"):
-            # pylint: disable=reportUnusedVariable
-            a: TrieEntry = trie[3]  # noqa: F841  # type: ignore
+            a: TrieEntry = trie[3]  # noqa: F841  # type: ignore  # pylint: disable=unused-variable
 
     def test_iter(self) -> None:
         trie: GeneralizedTrie = GeneralizedTrie()
