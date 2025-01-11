@@ -883,6 +883,196 @@ class TestGeneralizedTrie(unittest.TestCase):
         ]
         run_tests_list(self, tests)
 
+    def test_keys(self) -> None:
+        trie: GeneralizedTrie = GeneralizedTrie()
+
+        with self.subTest(msg="[TK001] trie.keys()"):
+            expect_id_list: list[TrieId] = []
+            found_id_list: list[TrieId] = list(trie.keys())
+            self.assertEqual(found_id_list, expect_id_list)
+
+        with self.subTest(msg="[TK002] trie.add('abcdef')"):
+            expect_id: TrieId = 1
+            found_id: TrieId = trie.add("abcdef")
+            self.assertEqual(found_id, expect_id)
+
+        with self.subTest(msg="[TK003] trie.keys()"):
+            expect_id_list: list[TrieId] = [TrieId(1)]
+            found_id_list: list[TrieId] = list(trie.keys())
+            self.assertEqual(found_id_list, expect_id_list)
+
+        with self.subTest(msg="[TK004] trie.add('abc')"):
+            expect_id = 2
+            found_id = trie.add("abc")
+            self.assertEqual(found_id, expect_id)
+
+        with self.subTest(msg="[TK005] trie.keys()"):
+            expect_id_list = [TrieId(1), TrieId(2)]
+            found_id_list = list(sorted(trie.keys()))
+            self.assertEqual(found_id_list, expect_id_list)
+
+        with self.assertRaises(TypeError, msg="[TK006] trie.remove('abc')"):
+            trie.remove("abc")  # type: ignore
+
+        with self.subTest(msg="[TK007] trie.remove(1)"):
+            trie.remove(1)
+            expect_id_list = [TrieId(2)]
+            found_id_list = list(trie.keys())
+            self.assertEqual(found_id_list, expect_id_list)
+
+        with self.subTest(msg="[TK008] trie.remove(2)"):
+            trie.remove(2)
+            expect_id_list = []
+            found_id_list = list(trie.keys())
+            self.assertEqual(found_id_list, expect_id_list)
+
+    def test_values(self) -> None:
+        trie: GeneralizedTrie = GeneralizedTrie()
+
+        with self.subTest(msg="[TV001] trie.values()"):
+            expect_entries_list: list[TrieEntry] = []
+            found_entries_list: list[TrieEntry] = list(trie.values())
+            self.assertEqual(found_entries_list, expect_entries_list)
+
+        with self.subTest(msg="[TV002] trie.add('abcdef')"):
+            expect_id: TrieId = 1
+            found_id: TrieId = trie.add("abcdef")
+            self.assertEqual(found_id, expect_id)
+
+        with self.subTest(msg="[TV003] trie.values()"):
+            expect_entries_list = [TrieEntry(1, 'abcdef')]
+            found_entries_list = list(trie.values())
+            self.assertEqual(found_entries_list, expect_entries_list)
+
+        with self.subTest(msg="[TV004] trie.add('abc')"):
+            expect_id = 2
+            found_id = trie.add("abc")
+            self.assertEqual(found_id, expect_id)
+
+        with self.subTest(msg="[TV005] trie.values()"):
+            expect_entries_list = [TrieEntry(1, 'abcdef'), TrieEntry(2, 'abc')]
+            found_entries_list = list(sorted(trie.values()))
+            self.assertEqual(found_entries_list, expect_entries_list)
+
+        with self.subTest(msg="[TV006] trie.remove(1)"):
+            trie.remove(1)
+            expect_entries_list = [TrieEntry(2, 'abc')]
+            found_entries_list = list(trie.values())
+            self.assertEqual(found_entries_list, expect_entries_list)
+
+        with self.subTest(msg="[TV007] trie.remove(2)"):
+            trie.remove(2)
+            expect_entries_list = []
+            found_entries_list = list(trie.values())
+            self.assertEqual(found_entries_list, expect_entries_list)
+
+
+    def test_items(self) -> None:
+        trie: GeneralizedTrie = GeneralizedTrie()
+
+        with self.subTest(msg="[TI001] trie.items()"):
+            expect_items_list: list[tuple[TrieId, TrieEntry]] = []
+            found_items_list: list[tuple[TrieId, TrieEntry]] = list(trie.items())
+            self.assertEqual(found_items_list, expect_items_list)
+
+        with self.subTest(msg="[TI002] trie.add('abcdef')"):
+            expect_id: TrieId = 1
+            found_id: TrieId = trie.add("abcdef")
+            self.assertEqual(found_id, expect_id)
+
+        with self.subTest(msg="[TI003] trie.items()"):
+            expect_items_list = [(TrieId(1), TrieEntry(1, 'abcdef'))]
+            found_items_list = list(sorted(trie.items()))
+            self.assertEqual(found_items_list, expect_items_list)
+
+        with self.subTest(msg="[TI004] trie.add('abc')"):
+            expect_id = 2
+            found_id = trie.add("abc")
+            self.assertEqual(found_id, expect_id)
+
+        with self.subTest(msg="[TI005] trie.items()"):
+            expect_items_list = [(TrieId(1), TrieEntry(1, 'abcdef')), (TrieId(2), TrieEntry(2, 'abc'))]
+            found_items_list = list(sorted(trie.items()))
+            self.assertEqual(found_items_list, expect_items_list)
+
+        with self.subTest(msg="[TI006] trie.remove(1)"):
+            trie.remove(1)
+            expect_items_list = [(TrieId(2), TrieEntry(2, 'abc'))]
+            found_items_list = list(sorted(trie.items()))
+            self.assertEqual(found_items_list, expect_items_list)
+
+        with self.subTest(msg="[TK007] trie.remove(2)"):
+            trie.remove(2)
+            expect_items_list = []
+            found_items_list = list(sorted(trie.items()))
+            self.assertEqual(found_items_list, expect_items_list)
+
+
+    def test_getitem_dunder(self) -> None:
+        trie: GeneralizedTrie = GeneralizedTrie()
+
+        with self.assertRaises(KeyError, msg="[TGID001] trie[1]"):
+            # pylint: disable=reportUnusedVariable
+            a: TrieEntry = trie[1]  # noqa: F841  # type: ignore
+
+        with self.subTest(msg="[TGID002] trie.add('abcdef')"):
+            expect_id: TrieId = 1
+            found_id: TrieId = trie.add("abcdef")
+            self.assertEqual(found_id, expect_id)
+
+        with self.subTest(msg="[TGID003] trie[1]"):
+            expect_entry: TrieEntry = TrieEntry(1, 'abcdef')
+            found_entry: TrieEntry = trie[1]
+            self.assertEqual(found_entry, expect_entry)
+
+        with self.subTest(msg="[TGID004] trie.add('abc')"):
+            expect_id = 2
+            found_id = trie.add("abc")
+            self.assertEqual(found_id, expect_id)
+
+        with self.subTest(msg="[TGID005] trie[2]"):
+            expect_entry = TrieEntry(2, 'abc')
+            found_entry = trie[2]
+            self.assertEqual(found_entry, expect_entry)
+
+        with self.assertRaises(KeyError, msg="[TGID006] trie[3]"):
+            # pylint: disable=reportUnusedVariable
+            a: TrieEntry = trie[3]  # noqa: F841  # type: ignore
+
+    def test_iter(self) -> None:
+        trie: GeneralizedTrie = GeneralizedTrie()
+
+        with self.subTest(msg="[TITER001] for entry in trie:"):
+            expect_ids_list: list[TrieId] = []
+            found_ids_list: list[TrieId] = []
+            for entry in trie:
+                found_ids_list.append(entry)
+            self.assertEqual(found_ids_list, expect_ids_list)
+
+        with self.subTest(msg="[TITER002] trie.add('abcdef')"):
+            expect_id: TrieId = 1
+            found_id: TrieId = trie.add("abcdef")
+            self.assertEqual(found_id, expect_id)
+
+        with self.subTest(msg="[TITER003] for ident in trie:"):
+            expect_ids_list = [1]
+            found_ids_list = []
+            for ident in trie:
+                found_ids_list.append(ident)
+            self.assertEqual(sorted(found_ids_list), expect_ids_list)
+
+        with self.subTest(msg="[TITER004] trie.add('abc')"):
+            expect_id = 2
+            found_id = trie.add("abc")
+            self.assertEqual(found_id, expect_id)
+
+        with self.subTest(msg="[TITER005] for entry in trie:"):
+            expect_ids_list: list[TrieId] = [TrieId(1), TrieId(2)]
+            found_ids_list: list[TrieId] = []
+            for entry in trie:
+                found_ids_list.append(entry)
+            self.assertEqual(sorted(found_ids_list), expect_ids_list)
+
     def test_bool(self) -> None:
         trie = GeneralizedTrie()
         tests: list[TestConfig] = [
