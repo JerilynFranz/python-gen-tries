@@ -34,7 +34,7 @@ long as they all conform to the `Hashable` protocol.
 ## Usage
 
 ### Example 1:
-```python3
+```python
 from gentrie import GeneralizedTrie, TrieEntry
 
 trie = GeneralizedTrie()
@@ -45,12 +45,12 @@ print(matches)
 ```
 
 ### Example 1 Output:
-```python3
+```python
 {TrieEntry(ident=2, key=['ape', 'green'])}}
 ```
 
 ### Example 2:
-```python3
+```python
 from gentrie import GeneralizedTrie, TrieEntry
 
 # Create a trie to store website URLs
