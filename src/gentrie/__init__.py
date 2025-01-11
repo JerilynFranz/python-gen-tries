@@ -599,3 +599,33 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         Returns: :class:`TrieEntry`: TrieEntry for the key with the passed trie_id.
         """
         return self._trie_entries[trie_id]
+
+    def keys(self) -> Generator[TrieId, None, None]:
+        """Returns an iterator for all the TrieId keys in the trie.
+
+        The generator yields the :class:`TrieId`for each key in the trie.
+
+        Returns:
+            :class:`Generator[TrieId, None, None]`: Generator for the trie.
+        """
+        return (entry for entry in self._trie_entries.keys())  # pylint: disable=consider-iterating-dictionary
+
+    def values(self) -> Generator[TrieEntry, None, None]:
+        """Returns an iterator for all the TrieEntry entries in the trie.
+
+        The generator yields the :class:`TrieEntry` for each key in the trie.
+
+        Returns:
+            :class:`Generator[TrieEntry, None, None]`: Generator for the trie.
+        """
+        return (entry for entry in self._trie_entries.values())
+
+    def items(self) -> Generator[tuple[TrieId, TrieEntry], None, None]:
+        """Returns an iterator for the trie.
+
+        The generator yields the :class:`TrieId` and :class:`TrieEntry` for each key in the trie.
+
+        Returns:
+            :class:`Generator[tuple[TrieId, TrieEntry], None, None]`: Generator for the trie.
+        """
+        return ((key, value) for key, value in self._trie_entries.items())
