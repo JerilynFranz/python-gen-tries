@@ -405,10 +405,10 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             key (GeneralizedKey): Key for matching.
             depth (`int`, default=-1): Depth starting from the matched key to include.
                 The depth determines how many 'layers' deeper into the trie to look for ids:
-                    * A depth of -1 (the default) includes ALL ids for the exact match and all children nodes.
-                    * A depth of 0 only includes the ids for the *exact* match for the key.
-                    * A depth of 1 includes ids for the exact match and the next layer down.
-                    * A depth of 2 includes ids for the exact match and the next two layers down.
+                * A depth of -1 (the default) includes ALL ids for the exact match and all children nodes.
+                * A depth of 0 only includes the ids for the *exact* match for the key.
+                * A depth of 1 includes ids for the exact match and the next layer down.
+                * A depth of 2 includes ids for the exact match and the next two layers down.
 
         Returns:
             :class:`set[TrieId]`: Set of ids for keys that are suffix matches for the key.
