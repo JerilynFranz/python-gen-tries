@@ -17,8 +17,8 @@ from tests.gentrie import test_gentri
 def main(plan):  # type: ignore
     plan.add(  # type: ignore
         pyunit.PyUnit(
-            name="My PyUnit",
-            description="PyUnit example testcase",
+            name="gen-trie tests",
+            description="PyUnit testcases for the gentri module",
             testcases=[test_gentri.TestHashable,
                        test_gentri.TestGeneralizedKey,
                        test_gentri.TestGeneralizedTrie],
