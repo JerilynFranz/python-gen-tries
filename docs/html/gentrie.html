@@ -51,6 +51,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#gentrie.GeneralizedKey"><code class="docutils literal notranslate"><span class="pre">GeneralizedKey</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gentrie.GeneralizedTrie"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#gentrie.GeneralizedTrie.add"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.add()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gentrie.GeneralizedTrie.clear"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.clear()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gentrie.GeneralizedTrie.prefixes"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.prefixes()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gentrie.GeneralizedTrie.remove"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.remove()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gentrie.GeneralizedTrie.suffixes"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.suffixes()</span></code></a></li>
@@ -143,8 +144,8 @@ this generalized trie can handle various types of tokens, as long as they are ha
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gentrie</span> <span class="kn">import</span> <span class="n">GeneralizedTrie</span>
 
 <span class="n">trie</span>  <span class="o">=</span> <span class="n">GeneralizedTrie</span><span class="p">()</span>
-<span class="n">trie_id_1</span><span class="p">:</span> <span class="n">TrieEntry</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;apple&#39;</span><span class="p">])</span>
-<span class="n">trie_id_2</span><span class="p">:</span> <span class="n">TrieEntry</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">])</span>
+<span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;apple&#39;</span><span class="p">])</span>
+<span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">])</span>
 <span class="n">matches</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -194,18 +195,16 @@ that when iterated returns tokens conforming to the <a class="reference internal
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">GeneralizedTrie</span></span><a class="headerlink" href="#gentrie.GeneralizedTrie" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A general purpose trie.</p>
-<p>Unlike many trie implementations which only support strings as keys
+<blockquote>
+<div><p>Unlike many trie implementations which only support strings as keys
 and token match only at the character level, it is agnostic as to the
 types of tokens used to key it and thus far more general purpose.</p>
 <p>It requires only that the indexed tokens be hashable. This is verified
 at runtime using the <a class="reference internal" href="#gentrie.Hashable" title="gentrie.Hashable"><code class="xref py py-class docutils literal notranslate"><span class="pre">gentrie.Hashable</span></code></a> protocol.</p>
 <p>Tokens in a key do NOT have to all be the same type as long as they
 can be compared for equality.</p>
-<p>Note that objects of user-defined classes are <a class="reference internal" href="#gentrie.Hashable" title="gentrie.Hashable"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hashable</span></code></a> by default, but this
-may not work as naively expected. It is unsafe to use a mutable type as a key.</p>
 <p>It can handle a <code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code> of <a class="reference internal" href="#gentrie.Hashable" title="gentrie.Hashable"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hashable</span></code></a> conforming objects as keys
 for the trie out of the box.</p>
-<p>As long as the tokens returned by a sequence are hashable, it largely ‘just works’.</p>
 <p>You can ‘mix and match’ types of objects used as token in a key as
 long as they all conform to the <a class="reference internal" href="#gentrie.Hashable" title="gentrie.Hashable"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hashable</span></code></a> protocol.</p>
 <p>The code emphasizes robustness and correctness.</p>
@@ -214,9 +213,9 @@ long as they all conform to the <a class="reference internal" href="#gentrie.Has
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gentrie</span> <span class="kn">import</span> <span class="n">GeneralizedTrie</span>
 
 <span class="n">trie</span>  <span class="o">=</span> <span class="n">GeneralizedTrie</span><span class="p">()</span>
-<span class="n">trie_id_1</span><span class="p">:</span> <span class="n">TrieEntry</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;apple&#39;</span><span class="p">])</span>
-<span class="n">trie_id_2</span><span class="p">:</span> <span class="n">TrieEntry</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">])</span>
-<span class="n">matches</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">])</span>
+<span class="n">trie_id_1</span><span class="p">:</span> <span class="n">TrieId</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;apple&#39;</span><span class="p">])</span>
+<span class="n">trie_id_2</span><span class="p">:</span> <span class="n">TrieId</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">])</span>
+<span class="n">matches</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>Example 2:</p>
@@ -231,9 +230,25 @@ long as they all conform to the <a class="reference internal" href="#gentrie.Has
 <span class="n">url_trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s2">&quot;ftp&quot;</span><span class="p">,</span> <span class="s2">&quot;net&quot;</span><span class="p">,</span> <span class="s2">&quot;example&quot;</span><span class="p">,</span> <span class="s2">&quot;ftp&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;images&quot;</span><span class="p">])</span>
 
 <span class="c1"># Find all https URLs with &quot;example.com&quot; domain</span>
-<span class="n">prefixes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">url_trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">([</span><span class="s2">&quot;https&quot;</span><span class="p">,</span> <span class="s2">&quot;com&quot;</span><span class="p">,</span> <span class="s2">&quot;example&quot;</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found URL prefixes: </span><span class="si">{</span><span class="n">prefixes</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Output: Found URL prefixes: {1}</span>
+<span class="n">prefixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">url_trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">([</span><span class="s2">&quot;https&quot;</span><span class="p">,</span> <span class="s2">&quot;com&quot;</span><span class="p">,</span> <span class="s2">&quot;example&quot;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found URL prefixes: </span><span class="si">{</span><span class="n">prefixes</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="c1"># Output:</span>
+<span class="c1"># Found URL prefixes: {TrieEntry(ident=1, key=[&#39;https&#39;, &#39;com&#39;, &#39;example&#39;, &#39;www&#39;, &#39;/&#39;, &#39;products&#39;, &#39;clothing&#39;]}</span>
 </pre></div>
+</div>
+</div></blockquote>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>GOTCHA: Using User Defined Classes As Tokens In Keys</strong></p>
+<p>Objects of user-defined classes are <a class="reference internal" href="#gentrie.Hashable" title="gentrie.Hashable"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hashable</span></code></a> by default, but <strong>this
+will not work as naively expected.</strong> The hash value of an object is based on its
+memory address by default. This results in the hash value of an object changing
+every time the object is created and means that the object will not be found in
+the trie unless you have a reference to the original object.</p>
+<p>If you want to use a user-defined class as a token in a key to look up by value
+instead of the instance, you must implement the <code class="docutils literal notranslate"><span class="pre">__eq__()</span></code> and <code class="docutils literal notranslate"><span class="pre">__hash__()</span></code>
+dunder methods in a content aware way (the hash and eq values must depend on the
+content of the object).</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="gentrie.GeneralizedTrie.add">
@@ -258,21 +273,31 @@ it returns the id for the already existing entry.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="gentrie.GeneralizedTrie.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.clear" title="Link to this definition"></a></dt>
+<dd><p>Clears all keys from the trie.</p>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trie_obj</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="gentrie.GeneralizedTrie.prefixes">
-<span class="sig-name descname"><span class="pre">prefixes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.Hashable" title="gentrie.Hashable"><span class="pre">Hashable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.prefixes" title="Link to this definition"></a></dt>
-<dd><p>Returns the ids of all keys in the trie that are a prefix of the passed key.</p>
+<span class="sig-name descname"><span class="pre">prefixes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.Hashable" title="gentrie.Hashable"><span class="pre">Hashable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><span class="pre">TrieEntry</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.prefixes" title="Link to this definition"></a></dt>
+<dd><p>Returns a set of TrieEntry instances for all keys in the trie that are a prefix of the passed key.</p>
 <p>Searches the trie for all keys that are prefix matches
-for the key and returns their ids as a set.</p>
+for the key and returns their TrieEntry instances as a set.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>key</strong> (<em>GeneralizedKey</em>) – Key for matching.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">set</span></code></a> containing TrieId identifiers for keys that are prefixes of the key.
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">set</span></code></a> containing TrieEntry instances for keys that are prefixes of the key.
 This will be an empty set if there are no matches.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">set[TrieId]</span></code></p>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">set[TrieEntry]</span></code></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#gentrie.InvalidGeneralizedKeyError" title="gentrie.InvalidGeneralizedKeyError"><strong>InvalidGeneralizedKeyError</strong></a><strong> (</strong><strong>[</strong><strong>GTM001</strong><strong>]</strong><strong>)</strong> – If key is not a valid <a class="reference internal" href="#gentrie.GeneralizedKey" title="gentrie.GeneralizedKey"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code></a>
@@ -282,20 +307,16 @@ This will be an empty set if there are no matches.</p>
 <p>Usage:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trie</span><span class="p">:</span> <span class="n">GeneralizedTrie</span> <span class="o">=</span> <span class="n">GeneralizedTrie</span><span class="p">()</span>
 <span class="n">keys</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;abcdef&#39;</span><span class="p">,</span> <span class="s1">&#39;abc&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;abcd&#39;</span><span class="p">,</span> <span class="s1">&#39;qrs&#39;</span><span class="p">]</span>
-<span class="n">keys_index</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">TrieId</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
-    <span class="n">key_index</span><span class="p">[</span><span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">entry</span><span class="p">)]</span> <span class="o">=</span> <span class="n">entry</span>
-<span class="n">matches</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieId</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefix_key_ids</span><span class="p">(</span><span class="s1">&#39;abcd&#39;</span><span class="p">)</span>
+    <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+<span class="n">matches</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">(</span><span class="s1">&#39;abcd&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">trie_entry</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">matches</span><span class="p">)):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">trie_entry</span><span class="o">.</span><span class="n">ident</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">trie_entry</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-<span class="c1"># matches now contains the set {2, 3, 4}, corresponding</span>
-<span class="c1"># to the keys &#39;abc&#39;, &#39;a&#39;, and &#39;abcd&#39; - all of which are</span>
-<span class="n">prefix</span> <span class="n">matches</span> <span class="k">for</span> <span class="s1">&#39;abcd&#39;</span><span class="o">.</span>
 
-<span class="c1"># 2: abcd</span>
-<span class="c1"># 3: a</span>
-<span class="c1"># 4: abcd</span>
-<span class="k">for</span> <span class="n">trie_id</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">matches</span><span class="p">)):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">trie_id</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">keys_index</span><span class="p">[</span><span class="n">trie_id</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="mi">2</span><span class="p">:</span> <span class="n">abcd</span>
+<span class="mi">3</span><span class="p">:</span> <span class="n">a</span>
+<span class="mi">4</span><span class="p">:</span> <span class="n">abcd</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -320,7 +341,7 @@ This will be an empty set if there are no matches.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gentrie.GeneralizedTrie.suffixes">
-<span class="sig-name descname"><span class="pre">suffixes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.Hashable" title="gentrie.Hashable"><span class="pre">Hashable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.suffixes" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">suffixes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.Hashable" title="gentrie.Hashable"><span class="pre">Hashable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><span class="pre">TrieEntry</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.suffixes" title="Link to this definition"></a></dt>
 <dd><p>Returns the ids of all suffixes of the trie_key up to depth.</p>
 <p>Searches the trie for all keys that are suffix matches for the key up
 to the specified depth below the key match and returns their ids as a set.</p>
@@ -329,15 +350,15 @@ to the specified depth below the key match and returns their ids as a set.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>key</strong> (<em>GeneralizedKey</em>) – Key for matching.</p></li>
 <li><p><strong>depth</strong> (<cite>int</cite>, default=-1) – Depth starting from the matched key to include.
-The depth determines how many ‘layers’ deeper into the trie to look for ids:
-* A depth of -1 (the default) includes ALL ids for the exact match and all children nodes.
-* A depth of 0 only includes the ids for the <em>exact</em> match for the key.
-* A depth of 1 includes ids for the exact match and the next layer down.
-* A depth of 2 includes ids for the exact match and the next two layers down.</p></li>
+The depth determines how many ‘layers’ deeper into the trie to look for suffixes.:
+* A depth of -1 (the default) includes ALL entries for the exact match and all children nodes.
+* A depth of 0 only includes the entries for the <em>exact</em> match for the key.
+* A depth of 1 includes entries for the exact match and the next layer down.
+* A depth of 2 includes entries for the exact match and the next two layers down.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Set of ids for keys that are suffix matches for the key.
+<dd class="field-even"><p>Set of TrieEntry instances for keys that are suffix matches for the key.
 This will be an empty set if there are no matches.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -355,22 +376,16 @@ This will be an empty set if there are no matches.</p>
 <p>Usage:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trie</span> <span class="o">=</span> <span class="n">GeneralizedTrie</span><span class="p">()</span>
 <span class="n">keys</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;abcdef&#39;</span><span class="p">,</span> <span class="s1">&#39;abc&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;abcd&#39;</span><span class="p">,</span> <span class="s1">&#39;qrs&#39;</span><span class="p">]</span>
-<span class="n">trie_keys_index</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">TrieId</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
-    <span class="n">trie_key_index</span><span class="p">[</span><span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">entry</span><span class="p">)]</span> <span class="o">=</span> <span class="n">entry</span>
-<span class="n">matches</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieId</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">token_suffixes</span><span class="p">(</span><span class="s1">&#39;abcd&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>After running the code above, <cite>matches</cite> contains the set {1, 4},
-corresponding to the keys ‘abcdef’ and ‘abcd’ - each of which are
-suffix matches to ‘abcd’:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">trie_id</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">matches</span><span class="p">)):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">trie_id</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">trie_keys_index</span><span class="p">[</span><span class="n">trie_id</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Output:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">1</span><span class="p">:</span> <span class="n">abcdef</span>
-<span class="mi">4</span><span class="p">:</span> <span class="n">abc</span>
+    <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+<span class="n">matches</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">token_suffixes</span><span class="p">(</span><span class="s1">&#39;abcd&#39;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">trie_entry</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">matches</span><span class="p">)):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">trie_entry</span><span class="o">.</span><span class="n">ident</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">trie_entry</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+
+<span class="mi">1</span><span class="p">:</span> <span class="n">abcdef</span>
+<span class="mi">4</span><span class="p">:</span> <span class="n">abcd</span>
 </pre></div>
 </div>
 </dd></dl>

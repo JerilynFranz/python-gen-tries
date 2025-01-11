@@ -68,7 +68,7 @@ Usage:
 
 from collections.abc import Sequence
 from textwrap import indent
-from typing import runtime_checkable, Optional, Protocol, NamedTuple, TypeAlias
+from typing import runtime_checkable, Generator, Optional, Protocol, NamedTuple, TypeAlias
 
 
 class InvalidHashableError(TypeError):
@@ -207,13 +207,8 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
     Tokens in a key do NOT have to all be the same type as long as they
     can be compared for equality.
 
-    Note that objects of user-defined classes are :class:`Hashable` by default, but this
-    may not work as naively expected. It is unsafe to use a mutable type as a key.
-
     It can handle a :class:`Sequence` of :class:`Hashable` conforming objects as keys
     for the trie out of the box.
-
-    As long as the tokens returned by a sequence are hashable, it largely 'just works'.
 
     You can 'mix and match' types of objects used as token in a key as
     long as they all conform to the :class:`Hashable` protocol.
@@ -248,6 +243,19 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         print(f"Found URL prefixes: {prefixes}")
         # Output:
         # Found URL prefixes: {TrieEntry(ident=1, key=['https', 'com', 'example', 'www', '/', 'products', 'clothing']}
+
+   .. warning:: **GOTCHA: Using User Defined Classes As Tokens In Keys**
+
+        Objects of user-defined classes are :class:`Hashable` by default, but **this
+        will not work as naively expected.** The hash value of an object is based on its
+        memory address by default. This results in the hash value of an object changing
+        every time the object is created and means that the object will not be found in
+        the trie unless you have a reference to the original object.
+
+        If you want to use a user-defined class as a token in a key to look up by value
+        instead of the instance, you must implement the ``__eq__()`` and ``__hash__()``
+        dunder methods in a content aware way (the hash and eq values must depend on the
+        content of the object).
 
     """
 
@@ -498,21 +506,19 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         self._trie_id = 0
         self._trie_id_counter = {"trie_number": 0}
 
-    def __contains__(self, key: GeneralizedKey) -> bool:
-        """Returns True if the trie contains a key matching the passed key.
+    def __contains__(self, key: TrieId) -> bool:
+        """Returns True if the trie contains a TrieId matching the passed key.
 
         Args:
-            key (GeneralizedKey):
-                key for matching.
+            key (TrieId):
+                Id key for matching.
 
         Returns:
-            :class:`bool`: True if there is a matching key in the trie. False otherwise.
+            :class:`bool`: True if there is a matching TrieId in the trie. False otherwise.
 
         Raises:
             :class:`TypeError`:
-                If key arg is not a Sequence.
-            :class:`InvalidHashableError`:
-                If a token in the key arg does not conform with the Hashable protocol.
+                If key arg is not a TrieId.
 
         Usage::
 
@@ -521,11 +527,11 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             for entry in keys:
                 trie.add(entry)
 
-            if 'abc' in trie:
-                print('abc is in the trie')
+            if 1 in trie:
+                print('id 1 is in the trie')
 
         """
-        return bool(self.suffixes(key, 0))
+        return bool(key in self._trie_index)
 
     def __len__(self) -> int:
         """Returns the number of keys in the trie.
@@ -568,3 +574,28 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             output.append(f"  trie index = {self._trie_index.keys()}")
         output.append("}")
         return "\n".join(output)
+
+    def __del__(self) -> None:
+        """Deletes the trie object."""
+        self.clear()
+        del self
+
+    def __iter__(self) -> Generator[TrieId, None, None]:
+        """Returns an iterator for the trie.
+
+        The generator yields the :class:`TrieId`for each key in the trie.
+
+        Returns:
+            :class:`Generator[TrieId, None, None]`: Generator for the trie.
+        """
+        return (entry for entry in self._trie_entries.keys())  # pylint: disable=consider-iterating-dictionary
+
+    def __getitem__(self, trie_id: TrieId) -> TrieEntry:
+        """Returns the TrieEntry for the key with the passed trie_id.
+
+        Args:
+            trie_id (TrieId): Id of the key to retrieve.
+
+        Returns: :class:`TrieEntry`: TrieEntry for the key with the passed trie_id.
+        """
+        return self._trie_entries[trie_id]

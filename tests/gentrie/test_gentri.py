@@ -857,27 +857,27 @@ class TestGeneralizedTrie(unittest.TestCase):
         trie: GeneralizedTrie = GeneralizedTrie()
         tests: list[TestConfig] = [
             TestConfig(
-                name="[TC001] trie.__contains__('a')",
+                name="[TC001] trie.__contains__(1)",
                 action=trie.__contains__,
-                args=['a'],
+                args=[1],
                 expected=False
             ),
             TestConfig(
                 name="[TC002] trie.add('a')", action=trie.add, args=["a"], expected=1
             ),
             TestConfig(
-                name="[TC003] trie.__contains__('a')",
+                name="[TC003] trie.__contains__(1)",
                 action=trie.__contains__,
-                args=['a'],
+                args=[1],
                 expected=True
             ),
             TestConfig(
                 name="[TC004] trie.remove(1)", action=trie.remove, args=[1], expected=None
             ),
             TestConfig(
-                name="[TC006] trie.__contains__('a')",
+                name="[TC006] trie.__contains__(1)",
                 action=trie.__contains__,
-                args=['a'],
+                args=[1],
                 expected=False
             ),
         ]
