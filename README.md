@@ -30,24 +30,27 @@ As long as the tokens returned by a sequence are hashable, it largely 'just work
 You can 'mix and match' types of objects used as token in a key as
 long as they all conform to the `Hashable` protocol.
 
-When keys are inserted into the trie, they are assigned a unique id which is returned to the
-caller. It is the caller's responsibilty to save the id's for reference when doing lookups from
-the trie. Because the keys are not necessarily strings it
 
 ## Usage
 
-Example 1:
-```
+### Example 1:
+```python3
     from gentrie import GeneralizedTrie
 
     trie  = GeneralizedTrie()
-    trie_id_1: TrieEntry = trie.add(['ape', 'green', 'apple'])
-    trie_id_2: TrieEntry = trie.add(['ape', 'green'])
-    matches: list[TrieEntry] = trie.prefixes(['ape', 'green'])
+    trie.add(['ape', 'green', 'apple'])
+    trie.add(['ape', 'green'])
+    matches: set[TrieEntry] = trie.prefixes(['ape', 'green'])
+    print(matches)
 ```
 
-Example 2:
+### Example 1 Output:
+```python3
+{TrieEntry(TrieId(1), ['ape', 'green', 'apple']), TrieEntry(Trieid(2), ['ape','green'])}
 ```
+
+### Example 2:
+```python3
     from gentrie import GeneralizedTrie
 
     # Create a trie to store website URLs
@@ -59,8 +62,13 @@ Example 2:
     url_trie.add(["ftp", "net", "example", "ftp", "/", "data", "images"])
 
     # Find all https URLs with "example.com" domain
-    prefixes: list[TrieEntry] = url_trie.prefixes(["https", "com", "example"])
-    print(f"Found URL prefixes: {prefixes}")  # Output: Found URL prefixes: {1}
+    prefixes: set[TrieEntry] = url_trie.prefixes(["https", "com", "example"])
+    print(f"Found URL prefixes: {prefixes}")
+```
+
+### Example 3 Output:
+```
+{TrieEntry(TrieId(1), ["https", "com", "example", "www", "/", "products", "clothing"])}
 ```
 
 ## Authors and acknowledgment
@@ -69,7 +77,7 @@ Example 2:
 
 ## Copyright
 
-Copyright 2024 Jerilyn Franz
+Copyright 2025 Jerilyn Franz
 
 ## License
 
