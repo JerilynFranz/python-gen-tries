@@ -6,4 +6,4 @@ Stuff goes here
 
 .. _gentrie-installation:
 Installation
-============
+------------
