@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# This plan contains tests that demonstrate failures as well.
 """Testplan for testing the gentri module."""
 
 # pylint: disable=import-error
