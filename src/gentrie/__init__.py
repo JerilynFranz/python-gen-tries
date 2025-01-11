@@ -478,35 +478,25 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
         return matches
 
-    def _contained_ids(self, depth: int = -1) -> set[TrieId]:
-        """Returns a set containing all key ids defined for this node and/or its children up to
-        the requested depth.
+    def clear(self) -> None:
+        """Clears all keys from the trie.
 
-        Args:
-            depth (int): Depth counter to limit the depth of contained ids to include.
-                * A negative (-1 or lower) depth includes ALL ids for this node and all children
-                  nodes.
-                * A depth of 0 includes ONLY the ids for this node.
-                * A depth of 1 includes ids for this node and its direct child nodes.
-                * A depth of 2 includes ids for this node and the next two layers below it.
-                * and so on.
+        Usage::
 
-        Returns:
-            :class:`set[TrieId]`: Set containing the ids of all contained keys.
+            trie_obj.clear()
+
         """
-        assert isinstance(depth, int), "[GTCI002] depth arg must be an int or sub-class"
-        ids: set[TrieId] = set()
-        stack = [(self, depth)]
-
-        while stack:
-            node, current_depth = stack.pop()
-            if node._trie_id:
-                ids.add(node._trie_id)
-            if current_depth != 0:
-                for child in node._children.values():
-                    stack.append((child, current_depth - 1))  # type: ignore[reportArgumentType]
-
-        return ids
+        all_ids = list(self._trie_index.keys())
+        for ident in all_ids:
+            self.remove(ident)
+        self._root_node = True
+        self._node_token = None
+        self._parent = None
+        self._children = {}
+        self._trie_index = {}
+        self._trie_entries = {}
+        self._trie_id = 0
+        self._trie_id_counter = {"trie_number": 0}
 
     def __contains__(self, key: GeneralizedKey) -> bool:
         """Returns True if the trie contains a key matching the passed key.
@@ -528,9 +518,8 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
             trie = GeneralizedTrie()
             keys: list[str] = ['abcdef', 'abc', 'a', 'abcd', 'qrs']
-            keys_index: dict[TrieId, str] = {}
             for entry in keys:
-                key_index[trie.add(entry)] = entry
+                trie.add(entry)
 
             if 'abc' in trie:
                 print('abc is in the trie')
