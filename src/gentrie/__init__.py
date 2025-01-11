@@ -135,7 +135,7 @@ Examples:
 """
 
 
-TrieId = int
+TrieId: TypeAlias = int
 """Unique identifier for a key in a trie."""
 
 
@@ -148,17 +148,19 @@ class TrieEntry(NamedTuple):
 
 
 def is_hashable(token: Hashable) -> bool:
-    """Tests token for whether it is a valid ``Hashable``.
+    """Tests token for whether it is a valid :class:`Hashable`.
 
-    A valid ``Hashable`` is a hashable object.
+    A valid :class:`Hashable` is a hashable object.
 
-    Examples: ``bool``, ``bytes``, ``float``, ``frozenset``, ``int``, ``str``, ``None``
+    Examples:
+    :class:`bool`, :class:`bytes`, :class:`float`, :class:`frozenset`,
+    :class:`int`, :class:`str`, :class:`None`, :class:`tuple`.
 
     Args:
         token (GeneralizedKey): Object for testing.
 
     Returns:
-        True if a valid ``Hashable``, False otherwise.
+        :class:`bool`: ``True`` if a valid :class:`Hashable`, ``False`` otherwise.
     """
     return isinstance(token, Hashable)  # type: ignore[reportUnnecessaryIsInstance]]
 
@@ -166,15 +168,15 @@ def is_hashable(token: Hashable) -> bool:
 def is_generalizedkey(key: GeneralizedKey) -> bool:
     """Tests key for whether it is a valid `GeneralizedKey`.
 
-    A valid ``GeneralizedKey`` is a ``Sequence`` that returns
-    ``Hashable`` protocol conformant objects when
+    A valid :class:`GeneralizedKey` is a :class:`Sequence` that returns
+    :class:`Hashable` protocol conformant objects when
     iterated. It must have at least one token.
 
     Parameters:
         key (GeneralizedKey): Key for testing.
 
     Returns:
-        True if a valid ``GeneralizedKey``, False otherwise.
+        :class:`bool`: ``True`` if a valid :class:`GeneralizedKey`, ``False`` otherwise.
     """
     return (
         isinstance(key, Sequence) and  # type: ignore[reportUnnecessaryIsInstance]
@@ -190,21 +192,21 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
     types of tokens used to key it and thus far more general purpose.
 
     It requires only that the indexed tokens be hashable. This is verified
-    at runtime using the ``gentrie.Hashable`` protocol.
+    at runtime using the :class:`gentrie.Hashable` protocol.
 
     Tokens in a key do NOT have to all be the same type as long as they
     can be compared for equality.
 
-    Note that objects of user-defined classes are Hashable by default, but this
-    may not work as naively expected.
+    Note that objects of user-defined classes are :class:`Hashable` by default, but this
+    may not work as naively expected. It is unsafe to use a mutable type as a key.
 
-    It can handle a ``Sequence`` of ``Hashable`` conforming objects as keys
+    It can handle a :class:`Sequence` of :class:`Hashable` conforming objects as keys
     for the trie out of the box.
 
     As long as the tokens returned by a sequence are hashable, it largely 'just works'.
 
     You can 'mix and match' types of objects used as token in a key as
-    long as they all conform to the ``Hashable`` protocol.
+    long as they all conform to the :class:`Hashable` protocol.
 
     The code emphasizes robustness and correctness.
 
