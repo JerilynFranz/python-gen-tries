@@ -186,6 +186,49 @@ def is_generalizedkey(key: GeneralizedKey) -> bool:
         all(isinstance(t, Hashable) for t in key))  # type: ignore[reportGeneralTypeIssues]
 
 
+class _Node:  # pylint: disable=too-few-public-methods
+    """A node in the trie.
+
+    A node is a container for a key in the trie. It has a unique identifier
+    and a reference to the key.
+
+    Attributes:
+        ident (TrieId): Unique identifier for the key.
+        token (Hashable): Token for the key.
+        parent (_Node): Reference to the parent node.
+        childern (dict[Hashable, _Node]): Dictionary of child nodes.
+    """
+    def __init__(self, token: Hashable, parent: 'GeneralizedTrie | _Node') -> None:
+        self.ident: Optional[TrieId] = None
+        self.token: Hashable = token
+        self.parent: Optional[GeneralizedTrie | _Node] = parent
+        self.children: dict[Hashable, _Node] = {}
+
+    def __str__(self) -> str:
+        """Generates a stringified version of the trie for visual examination.
+
+        The output IS NOT executable code but more in the nature of debug and testing support."""
+        output: list[str] = ["{"]
+        if self.parent is None:
+            output.append("  parent = None")
+        elif isinstance(self.parent, GeneralizedTrie):
+            output.append("  parent = root node")
+        else:
+            output.append(f"  parent = {repr(self.parent.token)}")
+        output.append(f"  node token = {repr(self.token)}")
+        if self.ident:
+            output.append(f"  trie id = {self.ident}")
+        if self.children:
+            output.append("  children = {")
+            for child_key, child_value in self.children.items():
+                output.append(
+                    f"    {repr(child_key)} = " + indent(str(child_value), "    ").lstrip()
+                )
+            output.append("  }")
+        output.append("}")
+        return "\n".join(output)
+
+
 class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
     """A general purpose trie.
 
@@ -222,14 +265,13 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
     """
     def __init__(self) -> None:
-        self._root_node: bool = True
-        self._node_token: Optional[Hashable] = None
-        self._parent: Optional[GeneralizedTrie] = None
-        self._children: dict[Hashable, GeneralizedTrie] = {}
-        self._trie_index: dict[TrieId, GeneralizedTrie] = {}
+        self.token: Optional[Hashable] = None
+        self.parent: Optional[GeneralizedTrie | _Node] = None
+        self.children: dict[Hashable, _Node] = {}
+        self.ident: TrieId = 0
+        self._ident_counter: TrieId = 0
+        self._trie_index: dict[TrieId, _Node] = {}
         self._trie_entries: dict[TrieId, TrieEntry] = {}
-        self._trie_id: TrieId = 0
-        self._trie_id_counter: dict[str, TrieId] = {"trie_number": 0}
 
     def add(self, key: GeneralizedKey) -> TrieId:
         """Adds the key to the trie.
@@ -252,75 +294,70 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         # Traverse the trie to find the insertion point for the key
         current_node = self
         for token in key:
-            if token not in current_node._children:
-                child_node = GeneralizedTrie()  # type: ignore[reportArgumentType]
-                child_node._root_node = False
-                child_node._node_token = token  # type: ignore[reportAttributeAccess]
-                child_node._parent = current_node
-                current_node._children[token] = child_node  # type: ignore[reportArgumentType]
-            current_node = current_node._children[token]  # type: ignore[reportArgumentType]
+            if token not in current_node.children:
+                child_node = _Node(token=token, parent=current_node)
+                current_node.children[token] = child_node
+            current_node = current_node.children[token]
 
         # If the node already has a trie id, return it
-        if current_node._trie_id:
-            return current_node._trie_id
+        if current_node.ident:
+            return current_node.ident
 
         # Assign a new trie id for the node
-        new_trie_id: TrieId = self._trie_id_counter["trie_number"] + 1
-        current_node._trie_id = new_trie_id
-        self._trie_id_counter["trie_number"] = new_trie_id
-        self._trie_index[new_trie_id] = current_node
-        self._trie_entries[new_trie_id] = TrieEntry(new_trie_id, key)
-        return new_trie_id
+        self._ident_counter += 1
+        current_node.ident = self._ident_counter
+        self._trie_index[self._ident_counter] = current_node  # type: ignore[assignment]
+        self._trie_entries[self._ident_counter] = TrieEntry(self._ident_counter, key)
+        return self._ident_counter
 
-    def remove(self, trie_id: TrieId) -> None:
-        """Remove the key with the passed trie_id from the trie.
+    def remove(self, ident: TrieId) -> None:
+        """Remove the key with the passed ident from the trie.
 
         Args:
-            trie_id (TrieId): id of the key to remove.
+            ident (TrieId): id of the key to remove.
 
         Raises:
-            TypeError ([GTR001]): if the trie_id arg is not a :class:`TrieId`.
-            ValueError ([GTR002]): if the trie_id arg is not a legal value.
-            KeyError ([GTR003]): if the trie_id does not match the id of any keys.
+            TypeError ([GTR001]): if the ident arg is not a :class:`TrieId`.
+            ValueError ([GTR002]): if the ident arg is not a legal value.
+            KeyError ([GTR003]): if the ident does not match the id of any keys.
         """
-        # pylint: disable=protected-access
-        if not isinstance(trie_id, TrieId):  # type: ignore
-            raise TypeError("[GTR001] trie_id arg must be of type TrieId")
-        if trie_id < 1:
-            raise KeyError("[GTR002] trie_id is not valid")
+        if not isinstance(ident, TrieId):  # type: ignore
+            raise TypeError("[GTR001] ident arg must be of type TrieId")
+        if ident < 1:
+            raise KeyError("[GTR002] ident is not valid")
 
         # Not a known trie id
-        if trie_id not in self._trie_index:
-            raise KeyError("[GTR003] trie_id arg does not match any key ids")
+        if ident not in self._trie_index:
+            raise KeyError("[GTR003] ident arg does not match any key ids")
 
         # Find the node and delete its id from the trie index
-        node: GeneralizedTrie = self._trie_index[trie_id]
-        del self._trie_index[trie_id]
-        del self._trie_entries[trie_id]
+        node: GeneralizedTrie | _Node = self._trie_index[ident]
+        del self._trie_index[ident]
+        del self._trie_entries[ident]
 
         # Remove the id from the node
-        node._trie_id = 0
+        node.ident = 0
 
         # If the node still has other trie ids or children, we're done: return
-        if node._children:
+        if node.children:
             return
 
         # No trie ids or children are left for this node, so prune
         # nodes up the trie tree as needed.
-        node_token: Optional[Hashable] = node._node_token
-        parent_node = node._parent
-        while parent_node is not None:
-            del parent_node._children[node_token]  # type: ignore[arg-type, reportArgumentType]
+        token: Optional[Hashable] = node.token
+        parent = node.parent
+        while parent is not None:
+            del parent.children[token]
             # explicitly break possible cyclic references
-            node._parent = node._node_token = None
+            node.parent = node.token = None
 
             # If the parent node has a trie id or children, we're done: return
-            if parent_node._trie_id or parent_node._children:
+            if parent.ident or parent.children:
                 return
             # Keep purging nodes up the tree
-            node_token = parent_node._node_token
-            node = parent_node
-            parent_node = node._parent
+            token = parent.token
+            node = parent
+            parent = node.parent
         return
 
     def prefixes(self, key: GeneralizedKey) -> set[TrieEntry]:
@@ -365,14 +402,14 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         current_node = self
 
         for token in key:
-            if current_node._trie_id:
-                matched.add(self._trie_entries[current_node._trie_id])
-            if token not in current_node._children:
+            if current_node.ident:
+                matched.add(self._trie_entries[current_node.ident])
+            if token not in current_node.children:
                 break
-            current_node = current_node._children[token]
+            current_node = current_node.children[token]
 
-        if current_node._trie_id:
-            matched.add(self._trie_entries[current_node._trie_id])
+        if current_node.ident:
+            matched.add(self._trie_entries[current_node.ident])
 
         return matched
 
@@ -432,9 +469,9 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
         current_node = self
         for token in key:
-            if token not in current_node._children:
+            if token not in current_node.children:
                 return set()  # no match
-            current_node = current_node._children[token]  # type: ignore[reportGeneralTypeIssues]
+            current_node = current_node.children[token]
 
         # Perform a breadth-first search to collect suffixes up to the specified depth
         queue = [(current_node, depth)]
@@ -442,10 +479,10 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
         while queue:
             node, current_depth = queue.pop(0)
-            if node._trie_id:
-                matches.add(self._trie_entries[node._trie_id])
+            if node.ident:
+                matches.add(self._trie_entries[node.ident])
             if current_depth != 0:
-                for child in node._children.values():
+                for child in node.children.values():
                     queue.append((child, current_depth - 1))
 
         return matches
@@ -461,14 +498,13 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         all_ids = list(self._trie_index.keys())
         for ident in all_ids:
             self.remove(ident)
-        self._root_node = True
-        self._node_token = None
-        self._parent = None
-        self._children = {}
+        self.ident = 0
+        self.token = None
+        self.parent = None
+        self.children = {}
         self._trie_index = {}
         self._trie_entries = {}
-        self._trie_id = 0
-        self._trie_id_counter = {"trie_number": 0}
+        self._ident_counter = 0
 
     def __contains__(self, key: TrieId) -> bool:
         """Returns True if the trie contains a TrieId matching the passed key.
@@ -515,27 +551,15 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
         The output IS NOT executable code but more in the nature of debug and testing support."""
         output: list[str] = ["{"]
-        if self._root_node:
-            output.append(f"  trie number = {self._trie_id_counter['trie_number']}")
-        else:
-            if self._parent is None:
-                output.append("  parent = None")
-            elif self._parent._root_node:
-                output.append("  parent = root node")
-            else:
-                output.append(f"  parent = {repr(self._parent._node_token)}")
-        output.append(f"  node token = {repr(self._node_token)}")
-        if self._trie_id:
-            output.append(f"  trie id = {self._trie_id}")
-        if self._children:
+        output.append(f"  trie number = {self._ident_counter}")
+        if self.children:
             output.append("  children = {")
-            for child_key, child_value in self._children.items():
+            for child_key, child_value in self.children.items():
                 output.append(
                     f"    {repr(child_key)} = " + indent(str(child_value), "    ").lstrip()
                 )
             output.append("  }")
-        if self._root_node:
-            output.append(f"  trie index = {self._trie_index.keys()}")
+        output.append(f"  trie index = {self._trie_index.keys()}")
         output.append("}")
         return "\n".join(output)
 
@@ -554,15 +578,15 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         """
         return (entry for entry in self._trie_entries.keys())  # pylint: disable=consider-iterating-dictionary
 
-    def __getitem__(self, trie_id: TrieId) -> TrieEntry:
-        """Returns the TrieEntry for the key with the passed trie_id.
+    def __getitem__(self, ident: TrieId) -> TrieEntry:
+        """Returns the TrieEntry for the key with the passed ident.
 
         Args:
-            trie_id (TrieId): Id of the key to retrieve.
+            ident (TrieId): Id of the key to retrieve.
 
-        Returns: :class:`TrieEntry`: TrieEntry for the key with the passed trie_id.
+        Returns: :class:`TrieEntry`: TrieEntry for the key with the passed ident.
         """
-        return self._trie_entries[trie_id]
+        return self._trie_entries[ident]
 
     def keys(self) -> Generator[TrieId, None, None]:
         """Returns an iterator for all the TrieId keys in the trie.

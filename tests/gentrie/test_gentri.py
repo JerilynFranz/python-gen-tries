@@ -212,7 +212,6 @@ class TestGeneralizedTrie(unittest.TestCase):
                 expected=dedent("""\
                 {
                   trie number = 1
-                  node token = None
                   children = {
                     'tree' = {
                       parent = root node
@@ -247,7 +246,6 @@ class TestGeneralizedTrie(unittest.TestCase):
                 expected=dedent("""\
                 {
                   trie number = 2
-                  node token = None
                   children = {
                     'tree' = {
                       parent = root node
@@ -785,7 +783,6 @@ class TestGeneralizedTrie(unittest.TestCase):
         expected: str = dedent("""\
         {
           trie number = 1
-          node token = None
           children = {
             'a' = {
               parent = root node
@@ -804,7 +801,6 @@ class TestGeneralizedTrie(unittest.TestCase):
         expected = dedent("""\
         {
           trie number = 1
-          node token = None
           children = {
             'a' = {
               parent = root node
@@ -829,7 +825,6 @@ class TestGeneralizedTrie(unittest.TestCase):
         expected = dedent("""\
         {
           trie number = 1
-          node token = None
           children = {
             'a' = {
               parent = root node

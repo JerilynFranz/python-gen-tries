@@ -10,7 +10,7 @@ Stuff goes here
 Installation
 ------------
 
-``pip3 install gen-trie``
+``pip3 install gen-tries``
 
 -----
 Usage
