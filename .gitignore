@@ -1,6 +1,5 @@
 # Sphinx stuff
 docs/_build
-docs/source
 docs/make.bat
 docs/html/.buildinfo
 
