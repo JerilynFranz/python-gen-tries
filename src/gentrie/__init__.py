@@ -195,7 +195,7 @@ class _Node:  # pylint: disable=too-few-public-methods
     Attributes:
         ident (TrieId): Unique identifier for the key.
         token (Hashable): Token for the key.
-        parent (_Node): Reference to the parent node.
+        parent (Optional[GeneralizedTrie | _Node): Reference to the parent node.
         childern (dict[Hashable, _Node]): Dictionary of child nodes.
     """
     def __init__(self, token: Hashable, parent: 'GeneralizedTrie | _Node') -> None:
