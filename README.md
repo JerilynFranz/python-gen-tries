@@ -1,8 +1,8 @@
-# python-gen-tries
+# gen-tries
 
 ## Name
 
-python-gen-tries
+gen-tries
 
 ## Description
 
