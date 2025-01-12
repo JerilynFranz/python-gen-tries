@@ -15,6 +15,8 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
+
+# pylint: disable=invalid-name, missing-module-docstring
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path('..', '..', 'src').resolve()))
@@ -22,7 +24,7 @@ sys.path.insert(0, str(Path('..', '..', 'src').resolve()))
 # -- Project information -----------------------------------------------------
 
 project = 'gen-tries'
-copyright = '2025, Jerilyn Franz'
+copyright = '2025, Jerilyn Franz'  # pylint: disable=redefined-builtin
 author = 'Jerilyn Franz'
 
 # The short X.Y version
