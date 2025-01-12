@@ -7,3 +7,4 @@
 * 0.2.0 - Refactored internal node implementation
 * 0.2.1 - Updated examples code
 * 0.2.2 - More examples code
+* 0.3.0 - Added support for 'key in trie'

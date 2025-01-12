@@ -239,6 +239,45 @@
 <span class="c1">#     TrieEntry(ident=7, key=&#39;dolly&#39;)}</span>
 </pre></div>
 </div>
+<p>Example 6 - Checking if a key is in the trie:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gentrie</span> <span class="kn">import</span> <span class="n">GeneralizedTrie</span>
+
+<span class="n">trie</span> <span class="o">=</span> <span class="n">GeneralizedTrie</span><span class="p">()</span>
+<span class="n">entries</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;abcdef&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;abc&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;abcd&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;qrf&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
+    <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="s1">&#39;abc&#39;</span> <span class="ow">in</span> <span class="n">trie</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;abc is in trie&#39;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;error: abc is not in trie&#39;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="s1">&#39;abcde&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">trie</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;abcde is not in trie&#39;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;error: abcde is in trie&#39;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="s1">&#39;qrf&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">trie</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;error: qrf is not in trie&#39;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;qrf is in trie&#39;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="s1">&#39;abcdef&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">trie</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;error: abcdef is not in trie&#39;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;abcdef is in trie&#39;</span><span class="p">)</span>
+
+<span class="c1"># abc is in trie</span>
+<span class="c1"># abcde is not in trie</span>
+<span class="c1"># qrf is in trie</span>
+<span class="c1"># abcdef is in trie</span>
+</pre></div>
+</div>
 </section>
 </section>
 

@@ -506,19 +506,19 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         self._trie_entries = {}
         self._ident_counter = 0
 
-    def __contains__(self, key: TrieId) -> bool:
-        """Returns True if the trie contains a TrieId matching the passed key.
+    def __contains__(self, key: GeneralizedKey) -> bool:
+        """Returns True if the trie contains a GeneralizedKey matching the passed key.
 
         Args:
-            key (TrieId):
-                Id key for matching.
+            key (GeneralizedKey): Key for matching.
+                key for matching.
 
         Returns:
-            :class:`bool`: True if there is a matching TrieId in the trie. False otherwise.
+            :class:`bool`: True if there is a matching GeneralizedKey in the trie. False otherwise.
 
         Raises:
             :class:`TypeError`:
-                If key arg is not a TrieId.
+                If key arg is not a GeneralizedKey.
 
         Usage::
 
@@ -527,11 +527,11 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             for entry in keys:
                 trie.add(entry)
 
-            if 1 in trie:
-                print('id 1 is in the trie')
+            if 'abc' in trie:
+                print('"abc" is in the trie')
 
         """
-        return bool(key in self._trie_index)
+        return bool(self.suffixes(key, 0))
 
     def __len__(self) -> int:
         """Returns the number of keys in the trie.

@@ -852,31 +852,42 @@ class TestGeneralizedTrie(unittest.TestCase):
         trie: GeneralizedTrie = GeneralizedTrie()
         tests: list[TestConfig] = [
             TestConfig(
-                name="[TC001] trie.__contains__(1)",
+                name="[TC001] trie.__contains__('a') (false)",
                 action=trie.__contains__,
-                args=[1],
+                args=['a'],
                 expected=False
             ),
             TestConfig(
                 name="[TC002] trie.add('a')", action=trie.add, args=["a"], expected=1
             ),
             TestConfig(
-                name="[TC003] trie.__contains__(1)",
+                name="[TC003] trie.__contains__('a') (true)",
                 action=trie.__contains__,
-                args=[1],
+                args=['a'],
                 expected=True
             ),
             TestConfig(
                 name="[TC004] trie.remove(1)", action=trie.remove, args=[1], expected=None
             ),
             TestConfig(
-                name="[TC006] trie.__contains__(1)",
+                name="[TC006] trie.__contains__('a') (false after removal)",
                 action=trie.__contains__,
-                args=[1],
+                args=['a'],
                 expected=False
             ),
         ]
         run_tests_list(self, tests)
+
+        with self.subTest(msg="[TC007] [1] in trie"):
+            self.assertFalse([1] in trie)
+
+        with self.subTest(msg="[TC008] 'a' in trie"):
+            trie.add("a")
+            self.assertTrue("a" in trie)
+
+        with self.subTest(msg="[TC009] 'abc' in trie"):
+            trie.add("abc")
+            self.assertTrue("abc" in trie)
 
     def test_keys(self) -> None:
         trie: GeneralizedTrie = GeneralizedTrie()
