@@ -2,8 +2,6 @@
 Using gen-trie
 ==============
 
-Stuff goes here
-
 .. _gentrie-installation:
 
 ------------
