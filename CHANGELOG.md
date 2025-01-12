@@ -6,3 +6,4 @@
 * 0.1.5 - Fix to install instructions
 * 0.2.0 - Refactored internal node implementation
 * 0.2.1 - Updated examples code
+* 0.2.2 - More examples code

@@ -132,3 +132,39 @@ Example 5 - trie of tuples::
     #             TrieEntry(ident=2, key=[(1, 2), (3, 4)])}
     # prefixes = {TrieEntry(ident=1, key=[(1, 2), (3, 4), (5, 6)]),
     #             TrieEntry(ident=2, key=[(1, 2), (3, 4)])}
+
+Example 6 - trie used for word suggestions::
+
+    from gentrie import GeneralizedTrie, TrieEntry
+
+    trie = GeneralizedTrie()
+    entries: list[str] = [
+        'hell',
+        'hello',
+        'help',
+        'do',
+        'dog',
+        'doll',
+        'dolly',
+        'dolphin',
+        'do'
+    ]
+    for item in entries:
+        trie.add(item)
+
+    suggestions: set[TrieEntry] = trie.suffixes('do', depth=2)
+    print(f'+2 letter suggestions for "do" = {suggestions}')
+
+    suggestions = trie.suffixes('do', depth=3)
+    print(f'+3 letter suggestions for "do" = {suggestions}')
+
+    # +2 letter suggestions for "do" = {
+    #     TrieEntry(ident=6, key='doll'),
+    #     TrieEntry(ident=5, key='dog'),
+    #     TrieEntry(ident=4, key='do')}
+    #
+    # +3 letter suggestions for "do" = {
+    #     TrieEntry(ident=6, key='doll'),
+    #     TrieEntry(ident=5, key='dog'),
+    #     TrieEntry(ident=4, key='do'),
+    #     TrieEntry(ident=7, key='dolly')}
