@@ -21,16 +21,23 @@ Example 1 - trie of words::
     from gentrie import GeneralizedTrie, TrieEntry
 
     trie = GeneralizedTrie()
-    trie.add(['ape', 'green', 'apple'])
-    trie.add(['ape', 'green'])
-    matches: set[TrieEntry] = trie.prefixes(['ape', 'green'])
-    print(matches)
+    entries: list[list[str]] = [
+        ['ape', 'green', 'apple'],
+        ['ape', 'green'],
+        ['ape', 'green', 'pineapple'],
+    ]
+    for item in entries:
+        trie.add(item)
+    prefixes: set[TrieEntry] = trie.prefixes(['ape', 'green', 'apple'])
+    print(f'prefixes = {prefixes}')
+    suffixes: set[TrieEntry] = trie.suffixes(['ape', 'green'])
+    print(f'suffixes = {suffixes}')
 
-
-Example 1 Output::
-
-    {TrieEntry(ident=2, key=['ape', 'green'])}}
-
+    # prefixes = {TrieEntry(ident=1, key=['ape', 'green', 'apple']),
+    #             TrieEntry(ident=2, key=['ape', 'green'])}
+    # suffixes = {TrieEntry(ident=1, key=['ape', 'green', 'apple']),
+    #             TrieEntry(ident=3, key=['ape', 'green', 'pineapple']),
+    #             TrieEntry(ident=2, key=['ape', 'green'])}
 
 Example 2 - trie of words used for URL search::
 
@@ -48,22 +55,33 @@ Example 2 - trie of words used for URL search::
     suffixes: set[TrieEntry] = url_trie.suffixes(["https", "com", "example"])
     print(suffixes)
 
-Example 2 Output::
-
-    {TrieEntry(ident=1, key=['https', 'com', 'example', 'www', '/', 'products', 'clothing'])}
-
+    # {TrieEntry(ident=1, key=['https', 'com', 'example', 'www', '/', 'products', 'clothing'])}
 
 Example 3 - trie of letters from string::
 
     from gentrie import GeneralizedTrie, TrieEntry
 
     trie = GeneralizedTrie()
-    trie.add('abcdef')
-    trie.add('abc')
-    trie.add('qrf')
-    matches: set[TrieEntry] = trie.suffixes('ab')
-    print(matches)
+    entries: list[str] = [
+        'abcdef',
+        'abc',
+        'abcd',
+        'qrf',
+    ]
+    for item in entries:
+        trie.add(item)
 
+    suffixes: set[TrieEntry] = trie.suffixes('abcd')
+    print(f'suffixes = {suffixes}')
+
+    prefixes: set[TrieEntry] = trie.prefixes('abcdefg')
+    print(f'prefixes = {prefixes}')
+
+    # suffixes = {TrieEntry(ident=1, key='abcdef'),
+    #             TrieEntry(ident=3, key='abcd')}
+    # prefixes = {TrieEntry(ident=1, key='abcdef'),
+    #             TrieEntry(ident=3, key='abcd'),
+    #             TrieEntry(ident=2, key='abc')}
 
 Example 3 Output::
 
@@ -82,13 +100,16 @@ Example 4 - trie of numeric vectors::
     ]
     for item in entries:
         trie.add(item)
-    matches: set[TrieEntry] = trie.suffixes(128)
-    print(matches)
+    suffixes: set[TrieEntry] = trie.suffixes([128])
+    print(f'suffixes = {suffixes}')
 
+    prefixes: set[TrieEntry] = trie.prefixes([128, 256, 512, 1024])
+    print(f'prefixes = {prefixes}')
 
-Example 4 Output::
-
-    {TrieEntry(ident=1, key=[128, 256, 512]), TrieEntry(ident=2, key=[128, 256])}
+    # suffixes = {TrieEntry(ident=1, key=[128, 256, 512]),
+    #             TrieEntry(ident=2, key=[128, 256])}
+    # prefixes = {TrieEntry(ident=1, key=[128, 256, 512]),
+    #             TrieEntry(ident=2, key=[128, 256])}
 
 Example 5 - trie of tuples::
 
@@ -102,9 +123,12 @@ Example 5 - trie of tuples::
     ]
     for item in entries:
         trie.add(item)
-    matches: set[TrieEntry] = trie.suffixes([(1, 2)])
-    print(matches)
+    suffixes: set[TrieEntry] = trie.suffixes([(1, 2)])
+    print(f'suffixes = {suffixes}')
+    prefixes: set[TrieEntry] = trie.prefixes([(1, 2), (3, 4), (5, 6), (7, 8)])
+    print(f'prefixes = {prefixes}')
 
-Example 5 Output::
-
-    {TrieEntry(ident=1, key=[(1, 2), (3, 4), (5, 6)]), TrieEntry(ident=2, key=[(1, 2), (3, 4)])}
+    # suffixes = {TrieEntry(ident=1, key=[(1, 2), (3, 4), (5, 6)]),
+    #             TrieEntry(ident=2, key=[(1, 2), (3, 4)])}
+    # prefixes = {TrieEntry(ident=1, key=[(1, 2), (3, 4), (5, 6)]),
+    #             TrieEntry(ident=2, key=[(1, 2), (3, 4)])}

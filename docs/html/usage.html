@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Using gen-trie &mdash; gen-tries 0.2.0 documentation</title>
+  <title>Using gen-trie &mdash; gen-tries 0.2.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -13,7 +13,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="_static/documentation_options.js?v=37f418d5"></script>
         <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -91,14 +91,23 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gentrie</span> <span class="kn">import</span> <span class="n">GeneralizedTrie</span><span class="p">,</span> <span class="n">TrieEntry</span>
 
 <span class="n">trie</span> <span class="o">=</span> <span class="n">GeneralizedTrie</span><span class="p">()</span>
-<span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;apple&#39;</span><span class="p">])</span>
-<span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">])</span>
-<span class="n">matches</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Example 1 Output:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="n">TrieEntry</span><span class="p">(</span><span class="n">ident</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">])}}</span>
+<span class="n">entries</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;apple&#39;</span><span class="p">],</span>
+    <span class="p">[</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">],</span>
+    <span class="p">[</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;pineapple&#39;</span><span class="p">],</span>
+<span class="p">]</span>
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
+    <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+<span class="n">prefixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;apple&#39;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;prefixes = </span><span class="si">{</span><span class="n">prefixes</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">suffixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">suffixes</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;suffixes = </span><span class="si">{</span><span class="n">suffixes</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># prefixes = {TrieEntry(ident=1, key=[&#39;ape&#39;, &#39;green&#39;, &#39;apple&#39;]),</span>
+<span class="c1">#             TrieEntry(ident=2, key=[&#39;ape&#39;, &#39;green&#39;])}</span>
+<span class="c1"># suffixes = {TrieEntry(ident=1, key=[&#39;ape&#39;, &#39;green&#39;, &#39;apple&#39;]),</span>
+<span class="c1">#             TrieEntry(ident=3, key=[&#39;ape&#39;, &#39;green&#39;, &#39;pineapple&#39;]),</span>
+<span class="c1">#             TrieEntry(ident=2, key=[&#39;ape&#39;, &#39;green&#39;])}</span>
 </pre></div>
 </div>
 <p>Example 2 - trie of words used for URL search:</p>
@@ -115,21 +124,34 @@
 <span class="c1"># Find all https URLs with &quot;example.com&quot; domain</span>
 <span class="n">suffixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">url_trie</span><span class="o">.</span><span class="n">suffixes</span><span class="p">([</span><span class="s2">&quot;https&quot;</span><span class="p">,</span> <span class="s2">&quot;com&quot;</span><span class="p">,</span> <span class="s2">&quot;example&quot;</span><span class="p">])</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">suffixes</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Example 2 Output:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="n">TrieEntry</span><span class="p">(</span><span class="n">ident</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="s1">&#39;com&#39;</span><span class="p">,</span> <span class="s1">&#39;example&#39;</span><span class="p">,</span> <span class="s1">&#39;www&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="s1">&#39;products&#39;</span><span class="p">,</span> <span class="s1">&#39;clothing&#39;</span><span class="p">])}</span>
+
+<span class="c1"># {TrieEntry(ident=1, key=[&#39;https&#39;, &#39;com&#39;, &#39;example&#39;, &#39;www&#39;, &#39;/&#39;, &#39;products&#39;, &#39;clothing&#39;])}</span>
 </pre></div>
 </div>
 <p>Example 3 - trie of letters from string:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gentrie</span> <span class="kn">import</span> <span class="n">GeneralizedTrie</span><span class="p">,</span> <span class="n">TrieEntry</span>
 
 <span class="n">trie</span> <span class="o">=</span> <span class="n">GeneralizedTrie</span><span class="p">()</span>
-<span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;abcdef&#39;</span><span class="p">)</span>
-<span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;abc&#39;</span><span class="p">)</span>
-<span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;qrf&#39;</span><span class="p">)</span>
-<span class="n">matches</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">suffixes</span><span class="p">(</span><span class="s1">&#39;ab&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span>
+<span class="n">entries</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;abcdef&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;abc&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;abcd&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;qrf&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
+    <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
+<span class="n">suffixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">suffixes</span><span class="p">(</span><span class="s1">&#39;abcd&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;suffixes = </span><span class="si">{</span><span class="n">suffixes</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="n">prefixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">(</span><span class="s1">&#39;abcdefg&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;prefixes = </span><span class="si">{</span><span class="n">prefixes</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># suffixes = {TrieEntry(ident=1, key=&#39;abcdef&#39;),</span>
+<span class="c1">#             TrieEntry(ident=3, key=&#39;abcd&#39;)}</span>
+<span class="c1"># prefixes = {TrieEntry(ident=1, key=&#39;abcdef&#39;),</span>
+<span class="c1">#             TrieEntry(ident=3, key=&#39;abcd&#39;),</span>
+<span class="c1">#             TrieEntry(ident=2, key=&#39;abc&#39;)}</span>
 </pre></div>
 </div>
 <p>Example 3 Output:</p>
@@ -147,12 +169,16 @@
 <span class="p">]</span>
 <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
     <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-<span class="n">matches</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">suffixes</span><span class="p">(</span><span class="mi">128</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Example 4 Output:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="n">TrieEntry</span><span class="p">(</span><span class="n">ident</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">]),</span> <span class="n">TrieEntry</span><span class="p">(</span><span class="n">ident</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">])}</span>
+<span class="n">suffixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">suffixes</span><span class="p">([</span><span class="mi">128</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;suffixes = </span><span class="si">{</span><span class="n">suffixes</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="n">prefixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">([</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;prefixes = </span><span class="si">{</span><span class="n">prefixes</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># suffixes = {TrieEntry(ident=1, key=[128, 256, 512]),</span>
+<span class="c1">#             TrieEntry(ident=2, key=[128, 256])}</span>
+<span class="c1"># prefixes = {TrieEntry(ident=1, key=[128, 256, 512]),</span>
+<span class="c1">#             TrieEntry(ident=2, key=[128, 256])}</span>
 </pre></div>
 </div>
 <p>Example 5 - trie of tuples:</p>
@@ -166,12 +192,15 @@
 <span class="p">]</span>
 <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
     <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-<span class="n">matches</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">suffixes</span><span class="p">([(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Example 5 Output:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="n">TrieEntry</span><span class="p">(</span><span class="n">ident</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">)]),</span> <span class="n">TrieEntry</span><span class="p">(</span><span class="n">ident</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)])}</span>
+<span class="n">suffixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">suffixes</span><span class="p">([(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;suffixes = </span><span class="si">{</span><span class="n">suffixes</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">prefixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">([(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">)])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;prefixes = </span><span class="si">{</span><span class="n">prefixes</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># suffixes = {TrieEntry(ident=1, key=[(1, 2), (3, 4), (5, 6)]),</span>
+<span class="c1">#             TrieEntry(ident=2, key=[(1, 2), (3, 4)])}</span>
+<span class="c1"># prefixes = {TrieEntry(ident=1, key=[(1, 2), (3, 4), (5, 6)]),</span>
+<span class="c1">#             TrieEntry(ident=2, key=[(1, 2), (3, 4)])}</span>
 </pre></div>
 </div>
 </section>

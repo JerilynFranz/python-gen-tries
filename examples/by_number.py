@@ -10,7 +10,13 @@ entries = [
 ]
 for item in entries:
     trie.add(item)
-matches: set[TrieEntry] = trie.suffixes([128])
-print(matches)
+suffixes: set[TrieEntry] = trie.suffixes([128])
+print(f'suffixes = {suffixes}')
 
-# {TrieEntry(ident=1, key=[128, 256, 512]), TrieEntry(ident=2, key=[128, 256])}
+prefixes: set[TrieEntry] = trie.prefixes([128, 256, 512, 1024])
+print(f'prefixes = {prefixes}')
+
+# suffixes = {TrieEntry(ident=1, key=[128, 256, 512]),
+#             TrieEntry(ident=2, key=[128, 256])}
+# prefixes = {TrieEntry(ident=1, key=[128, 256, 512]),
+#             TrieEntry(ident=2, key=[128, 256])}
