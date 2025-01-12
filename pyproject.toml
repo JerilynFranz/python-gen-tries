@@ -34,7 +34,7 @@ description = "Generalized trie implementation"
 readme = "README.md"
 keywords = ["trie"]
 license = { file = "LICENSE" }
-version = "0.1.4"
+version = "0.1.5"
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Developers",
