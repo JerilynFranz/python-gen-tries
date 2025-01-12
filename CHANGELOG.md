@@ -9,3 +9,4 @@
 * 0.2.2 - More examples code
 * 0.3.0 - Added support for 'key in trie'
 * 0.3.1 - Typo correction for example 7
+* 0.3.2 - Updated installation instructions

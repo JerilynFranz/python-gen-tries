@@ -30,6 +30,21 @@ As long as the tokens returned by a sequence are hashable, it largely 'just work
 You can 'mix and match' types of objects used as token in a key as
 long as they all conform to the `Hashable` protocol.
 
+## Installation
+
+**Via PyPI**
+
+```shell
+pip3 install gen-tries
+```
+
+**From source**
+
+```shell
+git clone https://github.com/JerilynFranz/python-gen-tries
+cd python-gen-tries
+pip3 install .
+```
 
 ## Usage
 

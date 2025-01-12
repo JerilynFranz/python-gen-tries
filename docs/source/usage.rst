@@ -10,7 +10,15 @@ Stuff goes here
 Installation
 ------------
 
-``pip3 install gen-tries``
+**Via PyPI**::
+
+    pip3 install gen-tries
+    
+**From source**::
+
+    git clone https://github.com/JerilynFranz/python-gen-tries
+    cd python-gen-tries
+    pip3 install .
 
 -----
 Usage
