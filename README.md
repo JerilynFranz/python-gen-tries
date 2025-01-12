@@ -33,7 +33,7 @@ long as they all conform to the `Hashable` protocol.
 
 ## Usage
 
-### Example 1:
+### Example 1 - trie of words:
 ```python
 from gentrie import GeneralizedTrie, TrieEntry
 
@@ -49,7 +49,7 @@ print(matches)
 {TrieEntry(ident=2, key=['ape', 'green'])}}
 ```
 
-### Example 2:
+### Example 2 - trie of tokens from URLs:
 ```python
 from gentrie import GeneralizedTrie, TrieEntry
 
@@ -71,7 +71,7 @@ print(suffixes)
 {TrieEntry(ident=1, key=['https', 'com', 'example', 'www', '/', 'products', 'clothing'])}
 ```
 
-### Example 3:
+### Example 3 - trie of characters from strings:
 ```python
 from gentrie import GeneralizedTrie, TrieEntry
 
@@ -87,13 +87,60 @@ print(matches)
 ```python
 {TrieEntry(ident=2, key='abc'), TrieEntry(ident=1, key='abcdef')}
 ```
+
+### Example 4 - trie of numeric vectors:
+
+```python
+from gentrie import GeneralizedTrie, TrieEntry
+
+trie = GeneralizedTrie()
+entries = [
+    [128, 256, 512],
+    [128, 256],
+    [512, 1024],
+]
+for item in entries:
+    trie.add(item)
+matches: set[TrieEntry] = trie.suffixes(128)
+print(matches)
+```
+
+### Example 4 Output
+
+```python
+{TrieEntry(ident=1, key=[128, 256, 512]), TrieEntry(ident=2, key=[128, 256])}
+```
+
+Example 5 - trie of tuples:
+
+```python
+    from gentrie import GeneralizedTrie, TrieEntry
+
+    trie = GeneralizedTrie()
+    entries = [
+        [(1, 2), (3, 4), (5, 6)],
+        [(1, 2), (3, 4)],
+        [(5, 6), (7, 8)],
+    ]
+    for item in entries:
+        trie.add(item)
+    matches: set[TrieEntry] = trie.suffixes([(1, 2)])
+    print(matches)
+```
+
+### Example 5 Output:
+
+```python
+{TrieEntry(ident=1, key=[(1, 2), (3, 4), (5, 6)]), TrieEntry(ident=2, key=[(1, 2), (3, 4)])}
+```
+
 ## Authors and acknowledgment
 
 - Jerilyn Franz
 
 ## Copyright
 
-Copyright 2025 Jerilyn Franz
+Copyright 2025 by Jerilyn Franz
 
 ## License
 
