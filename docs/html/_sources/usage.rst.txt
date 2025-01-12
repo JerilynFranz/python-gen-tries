@@ -169,7 +169,7 @@ Example 6 - trie used for word suggestions::
     #     TrieEntry(ident=4, key='do'),
     #     TrieEntry(ident=7, key='dolly')}
 
-Example 6 - Checking if a key is in the trie::
+Example 7 - Checking if a key is in the trie::
 
     from gentrie import GeneralizedTrie
 

@@ -194,7 +194,7 @@ print(f'+3 letter suggestions for "do" = {suggestions}')
 #     TrieEntry(ident=7, key='dolly')}
 ```
 
-### Example 6 - checking if key is in the trie
+### Example 7 - checking if key is in the trie
 
 ```python
 from gentrie import GeneralizedTrie
