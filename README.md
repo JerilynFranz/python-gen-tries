@@ -14,14 +14,14 @@ and token match only at the character level, it is agnostic as to the
 types of tokens used to key it and thus far more general purpose.
 
 It requires only that the indexed tokens be hashable (this means that the have
-__eq__ and __hash__ methods). This is verified at runtime using the `gentrie.Hashable` protocol.
+\_\_eq\_\_ and \_\_hash\_\_ methods). This is verified at runtime using the `gentrie.Hashable` protocol.
 
 Tokens in a key do NOT have to all be the same type as long as they
 can be compared for equality.
 
-Note that objects of user-defined classes are Hashable by default, but this
+**Note that objects of user-defined classes are `Hashable` by default, but this
 will not work as expected unless they are immutable and have a
-content-aware __hash__ method.
+content-aware \_\_hash\_\_ method.**
 
 It can handle `Sequence`s of `Hashable` conforming objects as keys
 for the trie out of the box.
