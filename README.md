@@ -20,7 +20,8 @@ Tokens in a key do NOT have to all be the same type as long as they
 can be compared for equality.
 
 Note that objects of user-defined classes are Hashable by default, but this
-may not work as naively expected unless they are immutable.
+will not work as expected unless they are immutable and have a
+content-aware __hash__ method.
 
 It can handle `Sequence`s of `Hashable` conforming objects as keys
 for the trie out of the box.
