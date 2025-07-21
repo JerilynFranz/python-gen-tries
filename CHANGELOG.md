@@ -11,3 +11,4 @@
 * 0.3.1 - Typo correction for example 7
 * 0.3.2 - Updated installation instructions
 * 0.3.3 - Fix to readthedocs usage page
+* 0.4.0 - Deprecated gentrie.Hashable for gentrie.TrieKeyToken and updated documentation. Tuned tests and added more documentation.

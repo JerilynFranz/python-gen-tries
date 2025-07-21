@@ -14,23 +14,23 @@ and token match only at the character level, it is agnostic as to the
 types of tokens used to key it and thus far more general purpose.
 
 It requires only that the indexed tokens be hashable (this means that they have
-\_\_eq\_\_ and \_\_hash\_\_ methods). This is verified at runtime using the `gentrie.Hashable` protocol.
+\_\_eq\_\_ and \_\_hash\_\_ methods). This is verified at runtime using the `gentrie.TrieKeyToken` protocol.
 
 Tokens in a key do NOT have to all be the same type as long as they
 can be compared for equality.
 
-**Note that objects of user-defined classes are `Hashable` by default, but this
+**Note that objects of user-defined classes meet the `TrieKeyToken` by default, but this
 will not work as expected unless they are immutable and have a
 content-aware \_\_hash\_\_ method.**
 
-It can handle `Sequence`s of `Hashable` conforming objects as keys
+It can handle `Sequence`s of `TrieKeyToken` conforming objects as keys
 for the trie out of the box.
 
 As long as the tokens returned by a sequence are hashable, and the hash
 is content-aware, it largely 'just works'.
 
 You can 'mix and match' types of objects used as token in a key as
-long as they all conform to the `Hashable` protocol.
+long as they all conform to the `TrieKeyToken` protocol.
 
 ## Installation
 

@@ -4,6 +4,12 @@ This package includes classes and functions to create and manipulate a generaliz
 data structure. Unlike common trie implementations that only support strings as keys,
 this generalized trie can handle various types of tokens, as long as they are hashable.
 
+.. warning:: gentrie IS NOT thread-safe. It is not designed for concurrent use.
+It is a single-threaded data structure. If you need a thread-safe trie, you must
+use an external locking mechanism to ensure that either only read-only threads are
+accessing the trie at the same time or that only one write thread and no read threads
+are accessing the trie at the same time.
+
 Usage:
 
     Example 1::
@@ -61,10 +67,11 @@ Usage:
 from collections.abc import Sequence
 from textwrap import indent
 from typing import runtime_checkable, Generator, Optional, Protocol, NamedTuple, TypeAlias
+from warnings import deprecated
 
 
-class InvalidHashableError(TypeError):
-    """Raised when a token in a key is not a valid :class:`Hashable` object.
+class InvalidTrieKeyTokenError(TypeError):
+    """Raised when a token in a key is not a valid :class:`TrieKeyToken` object.
 
     This is a sub-class of :class:`TypeError`."""
 
@@ -74,10 +81,9 @@ class InvalidGeneralizedKeyError(TypeError):
 
     This is a sub-class of :class:`TypeError`."""
 
-
 @runtime_checkable
-class Hashable(Protocol):
-    """:class:`Hashable` is a protocol that defines key tokens that are usable with a :class:`GeneralizedTrie`.
+class TrieKeyToken(Protocol):
+    """:class:`TrieKeyToken` is a protocol that defines key tokens that are usable with a :class:`GeneralizedTrie`.
 
     The protocol requires that a token object be *hashable*. This means that it
     implements both an ``__eq__()`` method and a ``__hash__()`` method.
@@ -95,24 +101,36 @@ class Hashable(Protocol):
 
     Note: frozensets and tuples are only hashable *if their contents are hashable*.
 
-    User-defined classes are hashable by default.
-
+   .. warning:: User-defined classes are hashable by default, but you should implement the ``__eq__()`` and ``__hash__()``
+    dunder methods in a content-aware way (the hash and eq values must depend on the
+    content of the object) if you want to use them as tokens in a key. The default implementation
+    of ``__eq__()`` and ``__hash__()`` uses the memory address of the object, which means that two
+    different instances of the same class will not be considered equal.
+    
     Usage::
 
-        from gentrie import Hashable
-        if isinstance(token, Hashable):
-            print("token supports the Hashable protocol")
+        from gentrie import TrieKeyToken
+        if isinstance(token, TrieKeyToken):
+            print("token supports the TrieKeyToken protocol")
         else:
-            print("token does not support the Hashable protocol")
+            print("token does not support the TrieKeyToken protocol")
 
     """
     def __eq__(self, value: object, /) -> bool: ...
     def __hash__(self) -> int: ...
 
 
-GeneralizedKey: TypeAlias = Sequence[Hashable | str]
+@deprecated("The Hashable protocol is deprecated and will be removed in a future version. Use :class:`TrieKeyToken` instead.")
+@runtime_checkable
+class Hashable(TrieKeyToken, Protocol):
+    """The Hashable protocol is deprecated and will be removed in a future version.
+    
+    Use :class:`TrieKeyToken` instead."""
+
+
+GeneralizedKey: TypeAlias = Sequence[TrieKeyToken | str]
 """A :class:`GeneralizedKey` is an object of any class that is a :class:`Sequence` and
-that when iterated returns tokens conforming to the :class:`Hashable` protocol.
+that when iterated returns tokens conforming to the :class:`TrieKeyToken` protocol.
 
 Examples:
 
@@ -149,10 +167,10 @@ class TrieEntry(NamedTuple):
         return hash((self.ident, tuple(self.key)))
 
 
-def is_hashable(token: Hashable) -> bool:
-    """Tests token for whether it is a valid :class:`Hashable`.
+def is_triekeytoken(token: TrieKeyToken) -> bool:
+    """Tests token for whether it is a valid :class:`TrieKeyToken`.
 
-    A valid :class:`Hashable` is a hashable object.
+    A valid :class:`TrieKeyToken` is a hashable object (implements both ``__eq__()`` and ``__hash__()`` methods).
 
     Examples:
     :class:`bool`, :class:`bytes`, :class:`float`, :class:`frozenset`,
@@ -162,16 +180,23 @@ def is_hashable(token: Hashable) -> bool:
         token (GeneralizedKey): Object for testing.
 
     Returns:
-        :class:`bool`: ``True`` if a valid :class:`Hashable`, ``False`` otherwise.
+        :class:`bool`: ``True`` if a valid :class:`TrieKeyToken`, ``False`` otherwise.
     """
-    return isinstance(token, Hashable)  # type: ignore[reportUnnecessaryIsInstance]]
+    return isinstance(token, TrieKeyToken)  # type: ignore[reportUnnecessaryIsInstance]
 
+
+@deprecated("The is_hashable function is deprecated and will be removed in a future version. Use :func:`is_triekeytoken` instead.")
+def is_hashable(token: TrieKeyToken) -> bool:
+    """is_hashable is deprecated and will be removed in a future version.
+    
+    Use :func:`is_triekeytoken` instead."""
+    return is_triekeytoken(token)
 
 def is_generalizedkey(key: GeneralizedKey) -> bool:
     """Tests key for whether it is a valid `GeneralizedKey`.
 
     A valid :class:`GeneralizedKey` is a :class:`Sequence` that returns
-    :class:`Hashable` protocol conformant objects when
+    :class:`TrieKeyToken` protocol conformant objects when
     iterated. It must have at least one token.
 
     Parameters:
@@ -183,7 +208,7 @@ def is_generalizedkey(key: GeneralizedKey) -> bool:
     return (
         isinstance(key, Sequence) and  # type: ignore[reportUnnecessaryIsInstance]
         len(key) and
-        all(isinstance(t, Hashable) for t in key))  # type: ignore[reportGeneralTypeIssues]
+        all(isinstance(t, TrieKeyToken) for t in key))  # type: ignore[reportGeneralTypeIssues]
 
 
 class _Node:  # pylint: disable=too-few-public-methods
@@ -194,15 +219,15 @@ class _Node:  # pylint: disable=too-few-public-methods
 
     Attributes:
         ident (TrieId): Unique identifier for the key.
-        token (Hashable): Token for the key.
+        token (TrieKeyToken): Token for the key.
         parent (Optional[GeneralizedTrie | _Node): Reference to the parent node.
-        childern (dict[Hashable, _Node]): Dictionary of child nodes.
+        children (dict[TrieKeyToken, _Node]): Dictionary of child nodes.
     """
-    def __init__(self, token: Hashable, parent: 'GeneralizedTrie | _Node') -> None:
+    def __init__(self, token: TrieKeyToken, parent: 'GeneralizedTrie | _Node') -> None:
         self.ident: Optional[TrieId] = None
-        self.token: Hashable = token
+        self.token: TrieKeyToken = token
         self.parent: Optional[GeneralizedTrie | _Node] = parent
-        self.children: dict[Hashable, _Node] = {}
+        self.children: dict[TrieKeyToken, _Node] = {}
 
     def __str__(self) -> str:
         """Generates a stringified version of the trie for visual examination.
@@ -237,22 +262,22 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
     types of tokens used to key it and thus far more general purpose.
 
     It requires only that the indexed tokens be hashable. This is verified
-    at runtime using the :class:`gentrie.Hashable` protocol.
+    at runtime using the :class:`gentrie.TrieKeyToken` protocol.
 
     Tokens in a key do NOT have to all be the same type as long as they
     can be compared for equality.
 
-    It can handle a :class:`Sequence` of :class:`Hashable` conforming objects as keys
+    It can handle a :class:`Sequence` of :class:`TrieKeyToken` conforming objects as keys
     for the trie out of the box.
 
     You can 'mix and match' types of objects used as token in a key as
-    long as they all conform to the :class:`Hashable` protocol.
+    long as they all conform to the :class:`TrieKeyToken` protocol.
 
     The code emphasizes robustness and correctness.
 
    .. warning:: **GOTCHA: Using User Defined Classes As Tokens In Keys**
 
-        Objects of user-defined classes are :class:`Hashable` by default, but **this
+        Objects of user-defined classes are :class:`TrieKeyToken` by default, but **this
         will not work as naively expected.** The hash value of an object is based on its
         memory address by default. This results in the hash value of an object changing
         every time the object is created and means that the object will not be found in
@@ -263,11 +288,15 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         dunder methods in a content aware way (the hash and eq values must depend on the
         content of the object).
 
+        One way to do this is to use the :class:`dataclasses.dataclass` decorator
+        to create a class that is content aware. This will automatically implement the
+        ``__eq__()`` and ``__hash__()`` dunder methods for you
+
     """
     def __init__(self) -> None:
-        self.token: Optional[Hashable] = None
+        self.token: Optional[TrieKeyToken] = None
         self.parent: Optional[GeneralizedTrie | _Node] = None
-        self.children: dict[Hashable, _Node] = {}
+        self.children: dict[TrieKeyToken, _Node] = {}
         self.ident: TrieId = 0
         self._ident_counter: TrieId = 0
         self._trie_index: dict[TrieId, _Node] = {}
@@ -278,7 +307,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
         Args:
             key (GeneralizedKey): Must be an object that can be iterated and that when iterated
-                returns elements conforming to the :class:`Hashable` protocol.
+                returns elements conforming to the :class:`TrieKeyToken` protocol.
 
         Raises:
             InvalidGeneralizedKeyError ([GTA001]):
@@ -321,7 +350,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             ValueError ([GTR002]): if the ident arg is not a legal value.
             KeyError ([GTR003]): if the ident does not match the id of any keys.
         """
-        if not isinstance(ident, TrieId):  # type: ignore
+        if not isinstance(ident, TrieId):  # type: ignore[reportUnnecessaryIsInstance]
             raise TypeError("[GTR001] ident arg must be of type TrieId")
         if ident < 1:
             raise KeyError("[GTR002] ident is not valid")
@@ -344,7 +373,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
 
         # No trie ids or children are left for this node, so prune
         # nodes up the trie tree as needed.
-        token: Optional[Hashable] = node.token
+        token: Optional[TrieKeyToken] = node.token
         parent = node.parent
         while parent is not None:
             del parent.children[token]
@@ -376,7 +405,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         Raises:
             InvalidGeneralizedKeyError ([GTM001]):
                 If key is not a valid :class:`GeneralizedKey`
-                (is not a :class:`Sequence` of :class:`Hashable` objects).
+                (is not a :class:`Sequence` of :class:`TrieKeyToken` objects).
 
         Usage::
 
@@ -440,7 +469,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             ValueError ([GTS003]):
                 If depth arg is less than -1.
             InvalidGeneralizedKeyError ([GTS004]):
-                If a token in the key arg does not conform to the :class:`Hashable` protocol.
+                If a token in the key arg does not conform to the :class:`TrieKeyToken` protocol.
 
         Usage::
 
@@ -462,7 +491,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         if not is_generalizedkey(key):
             raise InvalidGeneralizedKeyError("[GTS001] key arg is not a valid GeneralizedKey")
 
-        if not isinstance(depth, int):  # type: ignore
+        if not isinstance(depth, int):  # type: ignore[reportUnnecessaryIsInstance]
             raise TypeError("[GTS002] depth must be an int")
         if depth < -1:
             raise ValueError("[GTS003] depth cannot be less than -1")
@@ -562,11 +591,6 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         output.append(f"  trie index = {self._trie_index.keys()}")
         output.append("}")
         return "\n".join(output)
-
-    def __del__(self) -> None:
-        """Deletes the trie object."""
-        self.clear()
-        del self
 
     def __iter__(self) -> Generator[TrieId, None, None]:
         """Returns an iterator for the trie.
