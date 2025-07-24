@@ -1,4 +1,4 @@
-"""Tests for the gentrie module."""
+"""Tests for the gentrie module."""  # pylint: disable=too-many-lines
 
 from collections.abc import Callable, Iterable
 from textwrap import dedent
@@ -56,7 +56,7 @@ class TestConfig(NamedTuple):
 
 def run_tests_list(test_case: unittest.TestCase, tests_list: Sequence[TestConfig]) -> None:
     """Run a list of tests based on the provided TestConfig entries.
-    
+
     This function iterates over the list of TestConfig entries and runs each test using
     the `run_test` function. It allows for a clean and organized way to execute multiple tests.
 
@@ -145,6 +145,11 @@ class MockContentAwareTrieKeyToken:
 
 
 class TestTrieKeyToken(unittest.TestCase):
+    """Test the TrieKeyToken interface and its implementation.
+
+    This test checks that the TrieKeyToken interface correctly identifies supported
+    types and their hashability.
+    """
     def test_supported_builtin_types(self) -> None:
         """Test that supported types are considered hashable.
 
@@ -182,6 +187,7 @@ class TestTrieKeyToken(unittest.TestCase):
 
 
 class TestGeneralizedKey(unittest.TestCase):
+    """Test the is_generalizedkey function and its behavior with various types."""
     def test_supported_builtin_types(self) -> None:
         """Test that supported types are considered generalized keys.
 
@@ -204,7 +210,7 @@ class TestGeneralizedKey(unittest.TestCase):
 
     def test_unsupported_builtin_types(self) -> None:
         """Test that unsupported types are not considered generalized keys.
-        
+
         This test checks that types like dict, set, and complex numbers are not
         considered valid generalized keys."""
         bad_keys: list[Any] = [
@@ -219,7 +225,7 @@ class TestGeneralizedKey(unittest.TestCase):
 
 
 class TestGeneralizedTrie(unittest.TestCase):
-
+    """Test the GeneralizedTrie class and its methods."""
     def test_create_trie(self) -> None:
         """Test the creation of a GeneralizedTrie instance.
 
@@ -229,7 +235,8 @@ class TestGeneralizedTrie(unittest.TestCase):
             TestConfig(
                 name="[TCT001] create GeneralizedTrie()",
                 action=GeneralizedTrie,
-                validate_result=lambda found: isinstance(found, GeneralizedTrie),  # type: ignore[reportUnknownMemberType]
+                validate_result=lambda found: isinstance(found,  # type: ignore[reportUnknownMemberType]
+                                                         GeneralizedTrie),
             ),
             TestConfig(
                 name="[TCT002] create GeneralizedTrie(filter_id=1)",
@@ -242,7 +249,7 @@ class TestGeneralizedTrie(unittest.TestCase):
 
     def test_add(self) -> None:
         """Test the add method of GeneralizedTrie.
-        
+
         This test covers adding various types of keys to the trie, including strings,
         lists, and frozensets, and checks the expected behavior of the trie after each addition.
         It also includes tests for error handling when invalid keys are added."""
@@ -391,7 +398,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 args=[["a"], ["b"]],
                 exception=TypeError,
             ),
-        
+
             # Validate the length of the trie after all additions
             TestConfig(name="[TA015] len(trie)", action=len, args=[trie], expected=7),
             # Add duplicate entry ['tree', 'value', 'ape'] and validate we get the original id for it
@@ -404,13 +411,13 @@ class TestGeneralizedTrie(unittest.TestCase):
             ),
             # Validate the length of the trie after adding duplicate ['tree', 'value', 'ape'] is unchanged
             TestConfig(name="[TA017] len(trie)", action=len, args=[trie], expected=7),
-        
+
         ]
         run_tests_list(self, tests)
 
     def test_add_user_defined_classes(self) -> None:
         """Test adding user-defined classes to GeneralizedTrie.
-        
+
         This test checks that the trie can handle user-defined classes that implement
         the TrieKeyToken interface and that it can distinguish between different instances
         of these classes based on their content."""
@@ -459,7 +466,7 @@ class TestGeneralizedTrie(unittest.TestCase):
 
     def test_prefixes(self) -> None:
         """Test the prefixes method of GeneralizedTrie.
-        
+
         This test checks that the prefixes method correctly identifies all prefixes
         of a given key in the trie, including those that are not complete entries."""
         trie: GeneralizedTrie = GeneralizedTrie()
@@ -490,7 +497,7 @@ class TestGeneralizedTrie(unittest.TestCase):
 
     def test_deeply_nested_keys(self):
         """Test that deeply nested keys can be added and queried correctly.
-        
+
         This test checks that the trie can handle keys with a large number of elements
         and that it correctly identifies prefixes and suffixes for such keys."""
         trie = GeneralizedTrie()
@@ -503,7 +510,7 @@ class TestGeneralizedTrie(unittest.TestCase):
 
     def test_unicode_and_bytes_keys(self):
         """Test that unicode and bytes keys can coexist in the trie.
-        
+
         This test checks that the trie can handle both unicode strings and byte strings
         as keys, and that they are treated as distinct entries."""
         trie = GeneralizedTrie()
@@ -531,6 +538,7 @@ class TestGeneralizedTrie(unittest.TestCase):
         self.assertTrue(["a", "b"] in trie)
 
     def test_invalid_argument_types(self):
+        """Test that invalid argument types raise TypeError."""
         trie = GeneralizedTrie()
         with self.assertRaises(TypeError):
             trie.prefixes(12345)  # type: ignore[reportGeneralTypeIssues]  # int is not a valid key intentionally
@@ -549,7 +557,7 @@ class TestGeneralizedTrie(unittest.TestCase):
 
     def test_bytes_vs_str(self):
         """Test that adding a string and bytes with the same content generates different IDs.
-        
+
         This test checks that the trie treats strings and bytes as distinct types."""
         trie = GeneralizedTrie()
         id1 = trie.add("abc")
@@ -576,7 +584,7 @@ class TestGeneralizedTrie(unittest.TestCase):
 
     def test_remove_and_readd(self):
         """Test removing an entry and then re-adding it to ensure a new ID is generated.
-        
+
         This test checks that after removing an entry, adding the same key again
         generates a new ID, confirming that the trie correctly handles the removal
         and re-adding of entries."""
@@ -590,15 +598,15 @@ class TestGeneralizedTrie(unittest.TestCase):
 
     def test_remove(self) -> None:
         """Test the remove method of GeneralizedTrie.
-        
+
         This test covers adding, removing, and checking the state of the trie.
-        
+
         It includes various scenarios such as removing existing entries, handling
         non-existing entries, and checking the length of the trie after removals.
-        
+
         The test also checks for correct exception handling when trying to remove
         non-existing entries or entries with invalid types.
-        
+
         This test is designed to ensure that the remove method behaves correctly
         and maintains the integrity of the trie structure."""
         trie: GeneralizedTrie = GeneralizedTrie()
@@ -717,12 +725,12 @@ class TestGeneralizedTrie(unittest.TestCase):
 
     def test_str(self) -> None:
         """Test the string representation of GeneralizedTrie.
-        
+
         This test checks the output of the __str__ method of GeneralizedTrie
         for various string inputs. It verifies that the string representation
         correctly reflects the structure of the trie, including the children,
         parent nodes, and trie IDs.
-        
+
         The test includes multiple scenarios with different string lengths
         and ensures that the output matches the expected format."""
         trie = GeneralizedTrie()
@@ -802,12 +810,12 @@ class TestGeneralizedTrie(unittest.TestCase):
 
     def test_contains(self) -> None:
         """Test the __contains__ method of GeneralizedTrie.
-        
+
         This test checks whether the trie correctly identifies the presence
         or absence of various keys. It includes tests for both existing and
         non-existing keys, as well as checks for keys that have been added
         and then removed.
-        
+
         The test verifies that the __contains__ method returns the expected
         boolean values for each key, ensuring that the trie behaves correctly
         when checking for membership."""
@@ -853,10 +861,10 @@ class TestGeneralizedTrie(unittest.TestCase):
 
     def test_keys(self) -> None:
         """Test the keys method of GeneralizedTrie.
-        
+
         This test checks the functionality of the keys method, which should
         return an iterable of TrieId objects representing the keys in the trie.
-        
+
         The test includes scenarios for an empty trie, adding keys, and
         removing keys. It verifies that the keys method returns the expected
         TrieId objects in the correct order."""
@@ -904,7 +912,7 @@ class TestGeneralizedTrie(unittest.TestCase):
 
     def test_values(self) -> None:
         """Test the values method of GeneralizedTrie.
-        
+
         This test checks the functionality of the values method, which should
         return an iterable of TrieEntry objects representing the values in the trie.
         The test includes scenarios for an empty trie, adding entries, and
@@ -953,7 +961,7 @@ class TestGeneralizedTrie(unittest.TestCase):
 
     def test_items(self) -> None:
         """Test the items method of GeneralizedTrie.
-        
+
         This test checks the functionality of the items method, which should
         return an iterable of tuples containing TrieId and TrieEntry objects.
         The test includes scenarios for an empty trie, adding entries, and
@@ -1039,6 +1047,7 @@ class TestGeneralizedTrie(unittest.TestCase):
             a: TrieEntry = trie[3]  # noqa: F841  # type: ignore  # pylint: disable=unused-variable
 
     def test_iter(self) -> None:
+        """Test the iteration over GeneralizedTrie."""
         trie: GeneralizedTrie = GeneralizedTrie()
 
         with self.subTest(msg="[TITER001] for entry in trie:"):
@@ -1074,7 +1083,7 @@ class TestGeneralizedTrie(unittest.TestCase):
 
     def test_bool(self) -> None:
         """Test the __bool__ method of GeneralizedTrie.
-        
+
         This test checks the functionality of the __bool__ method, which should
         return True if the trie contains any entries, and False if it is empty.
         The test includes scenarios for an empty trie, adding entries, and removing

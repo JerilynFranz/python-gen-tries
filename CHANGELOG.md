@@ -12,3 +12,4 @@
 * 0.3.2 - Updated installation instructions
 * 0.3.3 - Fix to readthedocs usage page
 * 0.4.0 - Deprecated gentrie.Hashable for gentrie.TrieKeyToken and updated documentation. Tuned tests and added more documentation.
+* 0.4.1 - Removed use of '@deprecated' decorator as it is only available from Python 3.13 and later. Added example of using dataclass for a class usable as a content-aware trie key token. Added docstrings for test classes. Tweaked clear() method for performance. Simplified prefixes() method slightly. Addressed various minor lint issues.
