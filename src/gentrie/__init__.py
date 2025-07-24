@@ -75,7 +75,7 @@ Usage:
 from collections import deque
 from collections.abc import Sequence
 from textwrap import indent
-from typing import runtime_checkable, Generator, Optional, Protocol, NamedTuple, TypeAlias
+from typing import Any, runtime_checkable, Generator, Optional, Protocol, NamedTuple, TypeAlias
 
 
 class InvalidTrieKeyTokenError(TypeError):
@@ -171,6 +171,8 @@ class TrieEntry(NamedTuple):
     """:class:`TrieId` Unique identifier for a key in the trie. Alias for field number 0."""
     key: GeneralizedKey
     """:class:`GeneralizedKey` Key for an entry in the trie. Alias for field number 1."""
+    value: Optional[Any] = None
+    """Optional value for the entry in the trie. Alias for field number 2."""
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, TrieEntry):
@@ -240,9 +242,10 @@ class _Node:  # pylint: disable=too-few-public-methods
         parent (Optional[GeneralizedTrie | _Node): Reference to the parent node.
         children (dict[TrieKeyToken, _Node]): Dictionary of child nodes.
     """
-    def __init__(self, token: TrieKeyToken, parent: 'GeneralizedTrie | _Node') -> None:
+    def __init__(self, token: TrieKeyToken, parent: 'GeneralizedTrie | _Node', value: Optional[Any] = None) -> None:
         self.ident: Optional[TrieId] = None
         self.token: TrieKeyToken = token
+        self.value: Optional[Any] = value
         self.parent: Optional[GeneralizedTrie | _Node] = parent
         self.children: dict[TrieKeyToken, _Node] = {}
 
@@ -270,6 +273,15 @@ class _Node:  # pylint: disable=too-few-public-methods
         output.append("}")
         return "\n".join(output)
 
+
+    def as_json(self) -> dict[str, Any]:
+        """Returns a JSON serializable representation of the node."""
+        return {
+            "ident": self.ident,
+            "token": str(self.token),
+            "parent": str(self.parent.token) if self.parent else None,
+            "children": {str(k): v.as_json() for k, v in self.children.items()}
+        }
 
 class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
     """A general purpose trie.
@@ -335,6 +347,7 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
     """
     def __init__(self) -> None:
         self.token: Optional[TrieKeyToken] = None
+        self.value: Optional[Any] = None
         self.parent: Optional[GeneralizedTrie | _Node] = None
         self.children: dict[TrieKeyToken, _Node] = {}
         self.ident: TrieId = 0
@@ -342,20 +355,25 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         self._trie_index: dict[TrieId, _Node] = {}
         self._trie_entries: dict[TrieId, TrieEntry] = {}
 
-    def add(self, key: GeneralizedKey) -> TrieId:
+    def add(self, key: GeneralizedKey, value: Optional[Any] = None) -> TrieId:
         """Adds the key to the trie.
 
         Args:
             key (GeneralizedKey): Must be an object that can be iterated and that when iterated
                 returns elements conforming to the :class:`TrieKeyToken` protocol.
+            value (Optional[Any], default=None): Optional value to associate with the key.
 
         Raises:
             InvalidGeneralizedKeyError ([GTA001]):
                 If key is not a valid :class:`GeneralizedKey`.
+            AttemptedDuplicateKeyError ([GTA002]):
+                If the key is already in the trie but with a different value.
 
         Returns:
-            :class:`TrieId`: Id of the inserted key. If the key was already in the trie,
-            it returns the id for the already existing entry.
+            :class:`TrieId`: Id of the inserted key. If the key was already in the trie with the same value
+            it returns the id for the already existing entry. If the key was not in the trie,
+            it returns the id of the new entry. If the key was already in the trie but with a different value,
+            it raises an :class:`AttemptedDuplicateKeyError`.
         """
         if not is_generalizedkey(key):
             raise InvalidGeneralizedKeyError("[GTA001] key is not a valid `GeneralizedKey`")
@@ -372,11 +390,53 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         if current_node.ident:
             return current_node.ident
 
-        # Assign a new trie id for the node
+        # Assign a new trie id for the node and set the value if provided
         self._ident_counter += 1
         current_node.ident = self._ident_counter
         self._trie_index[self._ident_counter] = current_node  # type: ignore[assignment]
-        self._trie_entries[self._ident_counter] = TrieEntry(self._ident_counter, key)
+        self._trie_entries[self._ident_counter] = TrieEntry(self._ident_counter, key, value)
+        return self._ident_counter
+
+
+    def update(self, key: GeneralizedKey, value: Optional[Any] = None) -> TrieId:
+        """Updates the key in the trie.
+
+        Args:
+            key (GeneralizedKey): Must be an object that can be iterated and that when iterated
+                returns elements conforming to the :class:`TrieKeyToken` protocol.
+            value (Optional[Any], default=None): Optional value to associate with the key.
+
+        Raises:
+            InvalidGeneralizedKeyError ([GTU001]):
+                If key is not a valid :class:`GeneralizedKey`.
+
+        Returns:
+            :class:`TrieId`: Id of the inserted key. If the key was already in the trie with the same value
+            it returns the id for the already existing entry. If the key was not in the trie,
+            it returns the id of the new entry. If the key was already in the trie but with a different value,
+            it replaces the value and returns the id of the existing entry.
+        """
+        if not is_generalizedkey(key):
+            raise InvalidGeneralizedKeyError("[GTU001] key is not a valid `GeneralizedKey`")
+
+        # Traverse the trie to find the insertion point for the key
+        current_node = self
+        for token in key:
+            if token not in current_node.children:
+                child_node = _Node(token=token, parent=current_node)
+                current_node.children[token] = child_node
+            current_node = current_node.children[token]
+
+        # If the node already has a trie id, update the node's value and return the id
+        if current_node.ident:
+            current_node.value = value
+            return current_node.ident
+
+        # Assign a new trie id for the node and set the value
+        self._ident_counter += 1
+        current_node.ident = self._ident_counter
+        self._trie_index[self._ident_counter] = current_node  # type: ignore[assignment]
+        self._trie_entries[self._ident_counter] = TrieEntry(self._ident_counter, key, value)
         return self._ident_counter
 
     def remove(self, ident: TrieId) -> None:
