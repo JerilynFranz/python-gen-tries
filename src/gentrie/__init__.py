@@ -72,6 +72,7 @@ Usage:
 """
 # pylint: disable=protected-access
 
+from collections import deque
 from collections.abc import Sequence
 from textwrap import indent
 from typing import runtime_checkable, Generator, Optional, Protocol, NamedTuple, TypeAlias
@@ -548,11 +549,11 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             current_node = current_node.children[token]
 
         # Perform a breadth-first search to collect suffixes up to the specified depth
-        queue = [(current_node, depth)]
+        queue = deque([(current_node, depth)])
         matches: set[TrieEntry] = set()
 
         while queue:
-            node, current_depth = queue.pop(0)
+            node, current_depth = queue.popleft()
             if node.ident:
                 matches.add(self._trie_entries[node.ident])
             if current_depth != 0:
@@ -603,7 +604,16 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
                 print('"abc" is in the trie')
 
         """
-        return bool(self.suffixes(key, 0))
+        if not is_generalizedkey(key):
+            raise InvalidGeneralizedKeyError("[GTC001] key is not a valid `GeneralizedKey`")
+
+        current_node = self
+        for token in key:
+            if token not in current_node.children:
+                return False
+            current_node = current_node.children[token]
+
+        return current_node.ident is not None
 
     def __len__(self) -> int:
         """Returns the number of keys in the trie.
