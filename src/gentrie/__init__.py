@@ -274,13 +274,18 @@ class _Node:  # pylint: disable=too-few-public-methods
         return "\n".join(output)
 
 
-    def as_json(self) -> dict[str, Any]:
-        """Returns a JSON serializable representation of the node."""
+    def as_dict(self) -> dict[str, Any]:
+        """Converts the node to a dictionary representation.
+
+        This is useful for tests and debugging purposes and is not intended
+        for general purpose serialization of the trie.
+        """
         return {
             "ident": self.ident,
-            "token": str(self.token),
-            "parent": str(self.parent.token) if self.parent else None,
-            "children": {str(k): v.as_json() for k, v in self.children.items()}
+            "token": self.token,
+            "value": self.value,
+            "parent": self.parent.token if self.parent else None,
+            "children": {str(k): v.as_dict() for k, v in self.children.items()}
         }
 
 class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes

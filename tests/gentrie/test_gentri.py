@@ -393,9 +393,9 @@ class TestGeneralizedTrie(unittest.TestCase):
             # Attempt to pass add the wrong number of arguments and validate we get the expected exception
             TestConfig(name="[TA013] trie.add()", action=trie.add, exception=TypeError),
             TestConfig(
-                name="[TA014] trie.add(['a'], ['b'])",
+                name="[TA014] trie.add(['a'], ['b'], ['c'])",
                 action=trie.add,
-                args=[["a"], ["b"]],
+                args=[["a"], ["b"], ["c"]],
                 exception=TypeError,
             ),
 
