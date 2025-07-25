@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Welcome to gen-trie’s documentation! &mdash; gen-tries 0.4.2 documentation</title>
@@ -13,9 +13,9 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=ff822928"></script>
-        <script src="_static/doctools.js?v=9a2dae69"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=ddf8ff60"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -74,7 +74,7 @@
            <div itemprop="articleBody">
              
   <section id="welcome-to-gen-trie-s-documentation">
-<h1>Welcome to gen-trie’s documentation!<a class="headerlink" href="#welcome-to-gen-trie-s-documentation" title="Link to this heading"></a></h1>
+<h1>Welcome to gen-trie’s documentation!<a class="headerlink" href="#welcome-to-gen-trie-s-documentation" title="Permalink to this heading"></a></h1>
 <p><strong>gen-trie</strong> is a Python library for creating and manipulating
 ‘generalized’ trie data structures.</p>
 <p>Unlike common trie implementations that only support strings as keys, this
@@ -83,10 +83,11 @@ generalized trie can handle various types of tokens in keys, as long as they are
 how to do <a class="reference internal" href="usage.html#gentrie-installation"><span class="std std-ref">Installation</span></a> of the project.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This project is under active development.</p>
+<p>This project is under active development and the API may change.
+Please refer to the documentation for the most up-to-date information.</p>
 </div>
 <section id="contents">
-<h2>Contents<a class="headerlink" href="#contents" title="Link to this heading"></a></h2>
+<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this heading"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Using gen-trie</a><ul>
@@ -96,6 +97,7 @@ how to do <a class="reference internal" href="usage.html#gentrie-installation"><
 </li>
 <li class="toctree-l1"><a class="reference internal" href="gentrie.html">gentrie package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="gentrie.html#module-gentrie">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.DuplicateKeyError"><code class="docutils literal notranslate"><span class="pre">DuplicateKeyError</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.GeneralizedKey"><code class="docutils literal notranslate"><span class="pre">GeneralizedKey</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.GeneralizedTrie"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="gentrie.html#gentrie.GeneralizedTrie.add"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.add()</span></code></a></li>
@@ -105,6 +107,7 @@ how to do <a class="reference internal" href="usage.html#gentrie-installation"><
 <li class="toctree-l4"><a class="reference internal" href="gentrie.html#gentrie.GeneralizedTrie.prefixes"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.prefixes()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="gentrie.html#gentrie.GeneralizedTrie.remove"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.remove()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="gentrie.html#gentrie.GeneralizedTrie.suffixes"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.suffixes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="gentrie.html#gentrie.GeneralizedTrie.update"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.update()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="gentrie.html#gentrie.GeneralizedTrie.values"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.values()</span></code></a></li>
 </ul>
 </li>
@@ -114,6 +117,7 @@ how to do <a class="reference internal" href="usage.html#gentrie-installation"><
 <li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.TrieEntry"><code class="docutils literal notranslate"><span class="pre">TrieEntry</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="gentrie.html#gentrie.TrieEntry.ident"><code class="docutils literal notranslate"><span class="pre">TrieEntry.ident</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="gentrie.html#gentrie.TrieEntry.key"><code class="docutils literal notranslate"><span class="pre">TrieEntry.key</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="gentrie.html#gentrie.TrieEntry.value"><code class="docutils literal notranslate"><span class="pre">TrieEntry.value</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.TrieId"><code class="docutils literal notranslate"><span class="pre">TrieId</span></code></a></li>

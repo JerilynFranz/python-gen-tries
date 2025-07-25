@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>gentrie package &mdash; gen-tries 0.4.2 documentation</title>
@@ -13,9 +13,9 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=ff822928"></script>
-        <script src="_static/doctools.js?v=9a2dae69"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=ddf8ff60"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -48,6 +48,7 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Using gen-trie</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">gentrie package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#module-gentrie">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gentrie.DuplicateKeyError"><code class="docutils literal notranslate"><span class="pre">DuplicateKeyError</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gentrie.GeneralizedKey"><code class="docutils literal notranslate"><span class="pre">GeneralizedKey</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gentrie.GeneralizedTrie"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#gentrie.GeneralizedTrie.add"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.add()</span></code></a></li>
@@ -57,6 +58,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#gentrie.GeneralizedTrie.prefixes"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.prefixes()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gentrie.GeneralizedTrie.remove"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.remove()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gentrie.GeneralizedTrie.suffixes"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.suffixes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gentrie.GeneralizedTrie.update"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.update()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gentrie.GeneralizedTrie.values"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.values()</span></code></a></li>
 </ul>
 </li>
@@ -66,6 +68,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#gentrie.TrieEntry"><code class="docutils literal notranslate"><span class="pre">TrieEntry</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#gentrie.TrieEntry.ident"><code class="docutils literal notranslate"><span class="pre">TrieEntry.ident</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gentrie.TrieEntry.key"><code class="docutils literal notranslate"><span class="pre">TrieEntry.key</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gentrie.TrieEntry.value"><code class="docutils literal notranslate"><span class="pre">TrieEntry.value</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#gentrie.TrieId"><code class="docutils literal notranslate"><span class="pre">TrieId</span></code></a></li>
@@ -104,9 +107,9 @@
            <div itemprop="articleBody">
              
   <section id="gentrie-package">
-<h1>gentrie package<a class="headerlink" href="#gentrie-package" title="Link to this heading"></a></h1>
+<h1>gentrie package<a class="headerlink" href="#gentrie-package" title="Permalink to this heading"></a></h1>
 <section id="module-gentrie">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-gentrie" title="Link to this heading"></a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-gentrie" title="Permalink to this heading"></a></h2>
 <p>Package providing a generalized trie implementation.</p>
 <p>This package includes classes and functions to create and manipulate a generalized trie
 data structure. Unlike common trie implementations that only support strings as keys,
@@ -127,7 +130,7 @@ read-only threads.</p>
 <p>Usage:</p>
 <blockquote>
 <div><p>Example 1:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gentrie</span> <span class="kn">import</span> <span class="n">GeneralizedTrie</span><span class="p">,</span> <span class="n">TrieEntry</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gentrie</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeneralizedTrie</span><span class="p">,</span> <span class="n">TrieEntry</span>
 
 <span class="n">trie</span> <span class="o">=</span> <span class="n">GeneralizedTrie</span><span class="p">()</span>
 <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;apple&#39;</span><span class="p">])</span>
@@ -141,7 +144,7 @@ read-only threads.</p>
 </pre></div>
 </div>
 <p>Example 2:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gentrie</span> <span class="kn">import</span> <span class="n">GeneralizedTrie</span><span class="p">,</span> <span class="n">TrieEntry</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gentrie</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeneralizedTrie</span><span class="p">,</span> <span class="n">TrieEntry</span>
 
 <span class="c1"># Create a trie to store website URLs</span>
 <span class="n">url_trie</span> <span class="o">=</span> <span class="n">GeneralizedTrie</span><span class="p">()</span>
@@ -161,7 +164,7 @@ read-only threads.</p>
 </pre></div>
 </div>
 <p>Example 3:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gentrie</span> <span class="kn">import</span> <span class="n">GeneralizedTrie</span><span class="p">,</span> <span class="n">TrieEntry</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gentrie</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeneralizedTrie</span><span class="p">,</span> <span class="n">TrieEntry</span>
 
 <span class="n">trie</span> <span class="o">=</span> <span class="n">GeneralizedTrie</span><span class="p">()</span>
 <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;abcdef&#39;</span><span class="p">)</span>
@@ -176,11 +179,30 @@ read-only threads.</p>
 </pre></div>
 </div>
 </div></blockquote>
-<dl class="py data">
+<dl class="py exception">
+<dt class="sig sig-object py" id="gentrie.DuplicateKeyError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">DuplicateKeyError</span></span><a class="headerlink" href="#gentrie.DuplicateKeyError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">KeyError</span></code></a></p>
+<p>Raised when an attempt is made to add a key that is already in the trie with a different associated value.</p>
+<p>This is a sub-class of <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">KeyError</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="gentrie.GeneralizedKey">
-<span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">GeneralizedKey</span></span><a class="headerlink" href="#gentrie.GeneralizedKey" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">GeneralizedKey</span></span><a class="headerlink" href="#gentrie.GeneralizedKey" title="Permalink to this definition"></a></dt>
 <dd><p>A <a class="reference internal" href="#gentrie.GeneralizedKey" title="gentrie.GeneralizedKey"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code></a> is an object of any class that is a <code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code> and
 that when iterated returns tokens conforming to the <a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieKeyToken</span></code></a> protocol.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>Keys Must Be Immutable</strong></p>
+<p>Once a key is added to the trie, neither the key sequence itself nor any of its
+constituent tokens should be mutated. Modifying a key after it has been added
+can corrupt the internal state of the trie, leading to unpredictable behavior
+and making entries unreachable. The trie does not create a deep copy of keys
+for performance reasons.</p>
+<p>If you need to modify a key, you should remove the old key and add a new one
+with the modified value.</p>
+</div>
 <p class="rubric">Examples</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p></li>
@@ -192,12 +214,11 @@ that when iterated returns tokens conforming to the <a class="reference internal
 <li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">list[Optional[str]]</span></code></p></li>
 <li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple[int,</span> <span class="pre">int,</span> <span class="pre">str]</span></code></p></li>
 </ul>
-<p>alias of <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code></a>[<a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieKeyToken</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="gentrie.GeneralizedTrie">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">GeneralizedTrie</span></span><a class="headerlink" href="#gentrie.GeneralizedTrie" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">GeneralizedTrie</span></span><a class="headerlink" href="#gentrie.GeneralizedTrie" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A general purpose trie.</p>
 <blockquote>
@@ -236,12 +257,12 @@ is to use the <code class="xref py py-class docutils literal notranslate"><span 
 <code class="docutils literal notranslate"><span class="pre">eq=True</span></code> options . This will automatically implement appropriate <code class="docutils literal notranslate"><span class="pre">__eq__()</span></code>
 and <code class="docutils literal notranslate"><span class="pre">__hash__()</span></code> methods for you.</p>
 <p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 
-<span class="kn">from</span> <span class="nn">gentrie</span> <span class="kn">import</span> <span class="n">TrieKeyToken</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gentrie</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrieKeyToken</span>
 
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eq</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">MyTokenClass</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyTokenClass</span><span class="p">:</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">value</span><span class="p">:</span> <span class="nb">int</span>
 
@@ -259,19 +280,38 @@ and <code class="docutils literal notranslate"><span class="pre">__hash__()</spa
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="gentrie.GeneralizedTrie.add">
-<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><span class="pre">TrieKeyToken</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.add" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><span class="pre">TrieKeyToken</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.add" title="Permalink to this definition"></a></dt>
 <dd><p>Adds the key to the trie.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>Keys Must Be Immutable</strong></p>
+<p>Once a key is added to the trie, neither the key sequence itself nor any of its
+constituent tokens should be mutated. Modifying a key after it has been added
+can corrupt the internal state of the trie, leading to unpredictable behavior
+and making entries unreachable. The trie does not create a deep copy of keys
+for performance reasons.</p>
+<p>If you need to modify a key, you should remove the old key and add a new one
+with the modified value.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>key</strong> (<em>GeneralizedKey</em>) – Must be an object that can be iterated and that when iterated
-returns elements conforming to the <a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieKeyToken</span></code></a> protocol.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<em>GeneralizedKey</em>) – Must be an object that can be iterated and that when iterated
+returns elements conforming to the <a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieKeyToken</span></code></a> protocol.</p></li>
+<li><p><strong>value</strong> (<em>Optional</em><em>[</em><em>Any</em><em>]</em><em>, </em><em>default=None</em>) – Optional value to associate with the key.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="#gentrie.InvalidGeneralizedKeyError" title="gentrie.InvalidGeneralizedKeyError"><strong>InvalidGeneralizedKeyError</strong></a><strong> (</strong><strong>[</strong><strong>GTA001</strong><strong>]</strong><strong>)</strong> – If key is not a valid <a class="reference internal" href="#gentrie.GeneralizedKey" title="gentrie.GeneralizedKey"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code></a>.</p>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="#gentrie.InvalidGeneralizedKeyError" title="gentrie.InvalidGeneralizedKeyError"><strong>InvalidGeneralizedKeyError</strong></a><strong> (</strong><strong>[</strong><strong>GTU001</strong><strong>]</strong><strong>)</strong> – If key is not a valid <a class="reference internal" href="#gentrie.GeneralizedKey" title="gentrie.GeneralizedKey"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code></a>.</p></li>
+<li><p><a class="reference internal" href="#gentrie.DuplicateKeyError" title="gentrie.DuplicateKeyError"><strong>DuplicateKeyError</strong></a><strong> (</strong><strong>[</strong><strong>GTU002</strong><strong>]</strong><strong>)</strong> – If the key is already in the trie but with a different value.</p></li>
+</ul>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Id of the inserted key. If the key was already in the trie,
-it returns the id for the already existing entry.</p>
+<dd class="field-odd"><p>Id of the inserted key. If the key was already in the trie with the same value
+it returns the id for the already existing entry. If the key was not in the trie,
+it returns the id of the new entry. If the key was already in the trie but with a different value,
+it raises an <a class="reference internal" href="#gentrie.DuplicateKeyError" title="gentrie.DuplicateKeyError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DuplicateKeyError</span></code></a>.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#gentrie.TrieId" title="gentrie.TrieId"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieId</span></code></a></p>
@@ -281,7 +321,7 @@ it returns the id for the already existing entry.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gentrie.GeneralizedTrie.clear">
-<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.clear" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.clear" title="Permalink to this definition"></a></dt>
 <dd><p>Clears all keys from the trie.</p>
 <p>Usage:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trie_obj</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
@@ -291,7 +331,7 @@ it returns the id for the already existing entry.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gentrie.GeneralizedTrie.items">
-<span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generator" title="(in Python v3.13)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><span class="pre">TrieEntry</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.items" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generator" title="(in Python v3.13)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><span class="pre">gentrie.TrieEntry</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.items" title="Permalink to this definition"></a></dt>
 <dd><p>Returns an iterator for the trie.</p>
 <p>The generator yields the <a class="reference internal" href="#gentrie.TrieId" title="gentrie.TrieId"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieId</span></code></a> and <a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieEntry</span></code></a> for each key in the trie.</p>
 <dl class="field-list simple">
@@ -306,7 +346,7 @@ it returns the id for the already existing entry.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gentrie.GeneralizedTrie.keys">
-<span class="sig-name descname"><span class="pre">keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generator" title="(in Python v3.13)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.keys" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generator" title="(in Python v3.13)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.keys" title="Permalink to this definition"></a></dt>
 <dd><p>Returns an iterator for all the TrieId keys in the trie.</p>
 <p>The generator yields the <a class="reference internal" href="#gentrie.TrieId" title="gentrie.TrieId"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieId</span></code></a> for each key in the trie.</p>
 <dl class="field-list simple">
@@ -321,7 +361,7 @@ it returns the id for the already existing entry.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gentrie.GeneralizedTrie.prefixes">
-<span class="sig-name descname"><span class="pre">prefixes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><span class="pre">TrieKeyToken</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><span class="pre">TrieEntry</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.prefixes" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">prefixes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><span class="pre">TrieKeyToken</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><span class="pre">gentrie.TrieEntry</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.prefixes" title="Permalink to this definition"></a></dt>
 <dd><p>Returns a set of TrieEntry instances for all keys in the trie that are a prefix of the passed key.</p>
 <p>Searches the trie for all keys that are prefix matches
 for the key and returns their TrieEntry instances as a set.</p>
@@ -342,7 +382,7 @@ This will be an empty set if there are no matches.</p>
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gentrie</span> <span class="kn">import</span> <span class="n">GeneralizedTrie</span><span class="p">,</span> <span class="n">TrieEntry</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gentrie</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeneralizedTrie</span><span class="p">,</span> <span class="n">TrieEntry</span>
 
 <span class="n">trie</span><span class="p">:</span> <span class="n">GeneralizedTrie</span> <span class="o">=</span> <span class="n">GeneralizedTrie</span><span class="p">()</span>
 <span class="n">keys</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;abcdef&#39;</span><span class="p">,</span> <span class="s1">&#39;abc&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;abcd&#39;</span><span class="p">,</span> <span class="s1">&#39;qrs&#39;</span><span class="p">]</span>
@@ -361,7 +401,7 @@ This will be an empty set if there are no matches.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gentrie.GeneralizedTrie.remove">
-<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ident</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.remove" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ident</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.remove" title="Permalink to this definition"></a></dt>
 <dd><p>Remove the key with the passed ident from the trie.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -379,7 +419,7 @@ This will be an empty set if there are no matches.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gentrie.GeneralizedTrie.suffixes">
-<span class="sig-name descname"><span class="pre">suffixes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><span class="pre">TrieKeyToken</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><span class="pre">TrieEntry</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.suffixes" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">suffixes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><span class="pre">TrieKeyToken</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><span class="pre">gentrie.TrieEntry</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.suffixes" title="Permalink to this definition"></a></dt>
 <dd><p>Returns the ids of all suffixes of the trie_key up to depth.</p>
 <p>Searches the trie for all keys that are suffix matches for the key up
 to the specified depth below the key match and returns their ids as a set.</p>
@@ -412,7 +452,7 @@ This will be an empty set if there are no matches.</p>
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gentrie</span> <span class="kn">import</span> <span class="n">GeneralizedTrie</span><span class="p">,</span> <span class="n">TrieEntry</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gentrie</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeneralizedTrie</span><span class="p">,</span> <span class="n">TrieEntry</span>
 
 <span class="n">trie</span> <span class="o">=</span> <span class="n">GeneralizedTrie</span><span class="p">()</span>
 <span class="n">keys</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;abcdef&#39;</span><span class="p">,</span> <span class="s1">&#39;abc&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;abcd&#39;</span><span class="p">,</span> <span class="s1">&#39;qrs&#39;</span><span class="p">]</span>
@@ -430,8 +470,45 @@ This will be an empty set if there are no matches.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="gentrie.GeneralizedTrie.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><span class="pre">TrieKeyToken</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.update" title="Permalink to this definition"></a></dt>
+<dd><p>Updates the key/value pair in the trie.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>Keys Must Be Immutable</strong></p>
+<p>Once a key is added to the trie, neither the key sequence itself nor any of its
+constituent tokens should be mutated. Modifying a key after it has been added
+can corrupt the internal state of the trie, leading to unpredictable behavior
+and making entries unreachable. The trie does not create a deep copy of keys
+for performance reasons.</p>
+<p>If you need to modify a key, you should remove the old key and add a new one
+with the modified value.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<em>GeneralizedKey</em>) – Must be an object that can be iterated and that when iterated
+returns elements conforming to the <a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieKeyToken</span></code></a> protocol.</p></li>
+<li><p><strong>value</strong> (<em>Optional</em><em>[</em><em>Any</em><em>]</em><em>, </em><em>default=None</em>) – Optional value to associate with the key.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#gentrie.InvalidGeneralizedKeyError" title="gentrie.InvalidGeneralizedKeyError"><strong>InvalidGeneralizedKeyError</strong></a><strong> (</strong><strong>[</strong><strong>GTSE001</strong><strong>]</strong><strong>)</strong> – If key is not a valid <a class="reference internal" href="#gentrie.GeneralizedKey" title="gentrie.GeneralizedKey"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code></a>.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Id of the inserted key. If the key was already in the trie with the same value
+it returns the id for the already existing entry. If the key was not already in the trie,
+it returns the id for a new entry.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#gentrie.TrieId" title="gentrie.TrieId"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieId</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="gentrie.GeneralizedTrie.values">
-<span class="sig-name descname"><span class="pre">values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generator" title="(in Python v3.13)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><span class="pre">TrieEntry</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.values" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generator" title="(in Python v3.13)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><span class="pre">TrieEntry</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.values" title="Permalink to this definition"></a></dt>
 <dd><p>Returns an iterator for all the TrieEntry entries in the trie.</p>
 <p>The generator yields the <a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieEntry</span></code></a> for each key in the trie.</p>
 <dl class="field-list simple">
@@ -448,7 +525,7 @@ This will be an empty set if there are no matches.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="gentrie.Hashable">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">Hashable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.Hashable" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">Hashable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.Hashable" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieKeyToken</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Protocol" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></a></p>
 <p>The Hashable protocol is deprecated and will be removed in a future version.</p>
 <p>This protocol is a sub-class of <a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieKeyToken</span></code></a> and is only provided for backward compatibility.</p>
@@ -457,7 +534,7 @@ This will be an empty set if there are no matches.</p>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="gentrie.InvalidGeneralizedKeyError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">InvalidGeneralizedKeyError</span></span><a class="headerlink" href="#gentrie.InvalidGeneralizedKeyError" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">InvalidGeneralizedKeyError</span></span><a class="headerlink" href="#gentrie.InvalidGeneralizedKeyError" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeError</span></code></a></p>
 <p>Raised when a key is not a valid <a class="reference internal" href="#gentrie.GeneralizedKey" title="gentrie.GeneralizedKey"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code></a> object.</p>
 <p>This is a sub-class of <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeError</span></code></a>.</p>
@@ -465,7 +542,7 @@ This will be an empty set if there are no matches.</p>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="gentrie.InvalidTrieKeyTokenError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">InvalidTrieKeyTokenError</span></span><a class="headerlink" href="#gentrie.InvalidTrieKeyTokenError" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">InvalidTrieKeyTokenError</span></span><a class="headerlink" href="#gentrie.InvalidTrieKeyTokenError" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeError</span></code></a></p>
 <p>Raised when a token in a key is not a valid <a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieKeyToken</span></code></a> object.</p>
 <p>This is a sub-class of <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeError</span></code></a>.</p>
@@ -473,32 +550,38 @@ This will be an empty set if there are no matches.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="gentrie.TrieEntry">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">TrieEntry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ident</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><span class="pre">TrieKeyToken</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.TrieEntry" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">TrieEntry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ident</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><span class="pre">TrieKeyToken</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.TrieEntry" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.NamedTuple" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></a></p>
 <p>A <a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieEntry</span></code></a> is a <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code> containing the unique identifer and key for an entry in the trie.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="gentrie.TrieEntry.ident">
-<span class="sig-name descname"><span class="pre">ident</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#gentrie.TrieEntry.ident" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">ident</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#gentrie.TrieEntry.ident" title="Permalink to this definition"></a></dt>
 <dd><p><a class="reference internal" href="#gentrie.TrieId" title="gentrie.TrieId"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieId</span></code></a> Unique identifier for a key in the trie. Alias for field number 0.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="gentrie.TrieEntry.key">
-<span class="sig-name descname"><span class="pre">key</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><span class="pre">TrieKeyToken</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#gentrie.TrieEntry.key" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">key</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><span class="pre">TrieKeyToken</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#gentrie.TrieEntry.key" title="Permalink to this definition"></a></dt>
 <dd><p><a class="reference internal" href="#gentrie.GeneralizedKey" title="gentrie.GeneralizedKey"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code></a> Key for an entry in the trie. Alias for field number 1.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.TrieEntry.value">
+<span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#gentrie.TrieEntry.value" title="Permalink to this definition"></a></dt>
+<dd><p>Optional value for the entry in the trie. Alias for field number 2.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="gentrie.TrieId">
-<span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">TrieId</span></span><a class="headerlink" href="#gentrie.TrieId" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">TrieId</span></span><a class="headerlink" href="#gentrie.TrieId" title="Permalink to this definition"></a></dt>
 <dd><p>Unique identifier for a key in a trie.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="gentrie.TrieKeyToken">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">TrieKeyToken</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.TrieKeyToken" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">TrieKeyToken</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.TrieKeyToken" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Protocol" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></a></p>
 <p><a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieKeyToken</span></code></a> is a protocol that defines key tokens that are usable with a <a class="reference internal" href="#gentrie.GeneralizedTrie" title="gentrie.GeneralizedTrie"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedTrie</span></code></a>.</p>
 <blockquote>
@@ -517,7 +600,7 @@ implements both an <code class="docutils literal notranslate"><span class="pre">
 </div></blockquote>
 <p>Note: frozensets and tuples are only hashable <em>if their contents are hashable</em>.</p>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gentrie</span> <span class="kn">import</span> <span class="n">TrieKeyToken</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gentrie</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrieKeyToken</span>
 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">TrieKeyToken</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;token supports the TrieKeyToken protocol&quot;</span><span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
@@ -538,7 +621,7 @@ means that two different instances of the same class will not be considered equa
 
 <dl class="py function">
 <dt class="sig sig-object py" id="gentrie.is_generalizedkey">
-<span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">is_generalizedkey</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><span class="pre">TrieKeyToken</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#gentrie.is_generalizedkey" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">is_generalizedkey</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><span class="pre">TrieKeyToken</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#gentrie.is_generalizedkey" title="Permalink to this definition"></a></dt>
 <dd><p>Tests key for whether it is a valid <cite>GeneralizedKey</cite>.</p>
 <p>A valid <a class="reference internal" href="#gentrie.GeneralizedKey" title="gentrie.GeneralizedKey"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code></a> is a <code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code> that returns
 <a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieKeyToken</span></code></a> protocol conformant objects when
@@ -558,7 +641,7 @@ iterated. It must have at least one token.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="gentrie.is_hashable">
-<span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">is_hashable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><span class="pre">TrieKeyToken</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#gentrie.is_hashable" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">is_hashable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><span class="pre">TrieKeyToken</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#gentrie.is_hashable" title="Permalink to this definition"></a></dt>
 <dd><p>is_hashable is deprecated and will be removed in a future version.</p>
 <p>This function is a wrapper for <a class="reference internal" href="#gentrie.is_triekeytoken" title="gentrie.is_triekeytoken"><code class="xref py py-func docutils literal notranslate"><span class="pre">is_triekeytoken()</span></code></a> and is only provided for backward compatibility.</p>
 <p>Use <a class="reference internal" href="#gentrie.is_triekeytoken" title="gentrie.is_triekeytoken"><code class="xref py py-func docutils literal notranslate"><span class="pre">is_triekeytoken()</span></code></a> instead.</p>
@@ -566,7 +649,7 @@ iterated. It must have at least one token.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="gentrie.is_triekeytoken">
-<span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">is_triekeytoken</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><span class="pre">TrieKeyToken</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#gentrie.is_triekeytoken" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">is_triekeytoken</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><span class="pre">TrieKeyToken</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#gentrie.is_triekeytoken" title="Permalink to this definition"></a></dt>
 <dd><p>Tests token for whether it is a valid <a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieKeyToken</span></code></a>.</p>
 <p>A valid <a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieKeyToken</span></code></a> is a hashable object (implements both <code class="docutils literal notranslate"><span class="pre">__eq__()</span></code> and <code class="docutils literal notranslate"><span class="pre">__hash__()</span></code> methods).</p>
 <p>Examples:
