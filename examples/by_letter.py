@@ -18,8 +18,8 @@ print(f'suffixes = {suffixes}')
 prefixes: set[TrieEntry] = trie.prefixes('abcdefg')
 print(f'prefixes = {prefixes}')
 
-# suffixes = {TrieEntry(ident=1, key='abcdef'),
-#             TrieEntry(ident=3, key='abcd')}
-# prefixes = {TrieEntry(ident=1, key='abcdef'),
-#             TrieEntry(ident=3, key='abcd'),
-#             TrieEntry(ident=2, key='abc')}
+# suffixes = {TrieEntry(ident=1, key='abcdef', value=None),
+#             TrieEntry(ident=3, key='abcd', value=None)}
+# prefixes = {TrieEntry(ident=1, key='abcdef', value=None),
+#             TrieEntry(ident=3, key='abcd', value=None),
+#             TrieEntry(ident=2, key='abc', value=None)}

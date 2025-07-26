@@ -24,12 +24,12 @@ suggestions = trie.suffixes('do', depth=3)
 print(f'+3 letter suggestions for "do" = {suggestions}')
 
 # +2 letter suggestions for "do" = {
-#     TrieEntry(ident=6, key='doll'),
-#     TrieEntry(ident=5, key='dog'),
-#     TrieEntry(ident=4, key='do')}
+#     TrieEntry(ident=6, key='doll', value=None),
+#     TrieEntry(ident=5, key='dog', value=None),
+#     TrieEntry(ident=4, key='do', value=None)}
 #
 # +3 letter suggestions for "do" = {
-#     TrieEntry(ident=6, key='doll'),
-#     TrieEntry(ident=5, key='dog'),
-#     TrieEntry(ident=4, key='do'),
-#     TrieEntry(ident=7, key='dolly')}
+#     TrieEntry(ident=6, key='doll', value=None),
+#     TrieEntry(ident=5, key='dog', value=None),
+#     TrieEntry(ident=4, key='do', value=None),
+#     TrieEntry(ident=7, key='dolly', value=None)}
