@@ -34,7 +34,7 @@ description = "Generalized trie implementation"
 readme = "README.md"
 keywords = ["trie"]
 license = { file = "LICENSE" }
-version = "0.4.2"
+version = "0.5.0"
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Developers",
@@ -44,6 +44,8 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
 requires-python = ">=3.10"

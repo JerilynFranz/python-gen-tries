@@ -12,7 +12,8 @@ how to do :ref:`gentrie-installation` of the project.
 
 .. note::
 
-   This project is under active development.
+   This project is under active development and the API may change.
+   Please refer to the documentation for the most up-to-date information.
 
 Contents
 --------

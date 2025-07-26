@@ -6,7 +6,8 @@ import traceback
 from typing import Any, NamedTuple, Optional, Sequence
 import unittest
 
-from src.gentrie import GeneralizedTrie, TrieEntry, TrieId, TrieKeyToken, InvalidGeneralizedKeyError, is_generalizedkey
+from src.gentrie import DuplicateKeyError, GeneralizedTrie, TrieEntry, TrieId, TrieKeyToken, \
+    InvalidGeneralizedKeyError, is_generalizedkey
 
 
 class NoExpectedValue:  # pylint: disable=too-few-public-methods
@@ -171,7 +172,7 @@ class TestTrieKeyToken(unittest.TestCase):
 
     def test_unsupported_builtin_types(self) -> None:
         """Test that unsupported types are not considered hashable.
-        This test checks that types like dict, set, and complex numbers are not
+        This test checks that types like dict, set, and list are not
         considered valid hashable types."""
 
         bad_types: list[Any] = [
@@ -247,12 +248,31 @@ class TestGeneralizedTrie(unittest.TestCase):
         ]
         run_tests_list(self, tests)
 
+    def test_clear(self) -> None:
+        """Test the clear method of GeneralizedTrie."""
+        trie = GeneralizedTrie()
+        trie.add("a")
+        trie.add("b")
+        self.assertEqual(len(trie), 2, "[TCL001] Trie should have 2 entries after adding 'a' and 'b'")
+        self.assertTrue("a" in trie, "[TCL002] Trie should contain 'a' after addition")
+
+        trie.clear()
+
+        self.assertEqual(len(trie), 0, "[TCL003] Trie should be empty after clear()")
+        self.assertFalse(bool(trie), "[TCL004] Trie should evaluate to False after clear()")
+        self.assertFalse("a" in trie, "[TCL005] Trie should not contain 'a' after clear()")
+        # pylint: disable=protected-access
+        self.assertEqual(trie._ident_counter, 0,  # type: ignore[reportUnknownMemberType]
+                         "[TCL006] Trie ident counter should be reset after clear()")
+        self.assertEqual(list(trie.keys()), [], "[TCL007] Trie keys should be empty after clear()]")
+
     def test_add(self) -> None:
         """Test the add method of GeneralizedTrie.
 
-        This test covers adding various types of keys to the trie, including strings,
+        This test covers adding various types of keys to the trie using the add() method, including strings,
         lists, and frozensets, and checks the expected behavior of the trie after each addition.
         It also includes tests for error handling when invalid keys are added."""
+        # pylint: disable=protected-access, no-member
         trie = GeneralizedTrie()
         tests: list[TestConfig] = [
             # Initialize from a list of strings and validate we get the expected id
@@ -263,35 +283,42 @@ class TestGeneralizedTrie(unittest.TestCase):
                 kwargs={},
                 expected=1,
             ),
-            # Validate the string representation of the trie is correct after initialization
+            # Validate the dictionary representation of the trie is correct after initialization
             TestConfig(
-                name="[TA002] str(trie)",
-                action=trie.__str__,
-                expected=dedent("""\
-                {
-                  trie number = 1
-                  children = {
-                    'tree' = {
-                      parent = root node
-                      node token = 'tree'
-                      children = {
-                        'value' = {
-                          parent = 'tree'
-                          node token = 'value'
-                          children = {
-                            'ape' = {
-                              parent = 'value'
-                              node token = 'ape'
-                              trie id = 1
+                name="[TA002] _as_dict()",
+                action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
+                expected={
+                    'ident': 0,
+                    'children': {
+                        'tree': {
+                            'ident': None,
+                            'token': 'tree',
+                            'value': None,
+                            'parent': None,
+                            'children': {
+                                'value': {
+                                    'ident': None,
+                                    'token': 'value',
+                                    'value': None,
+                                    'parent': 'tree',
+                                    'children': {
+                                        'ape': {
+                                            'ident': 1,
+                                            'token': 'ape',
+                                            'value': None,
+                                            'parent': 'value',
+                                            'children': {}
+                                        }
+                                    }
+                                }
                             }
-                          }
                         }
-                      }
-                    }
-                  }
-                  trie index = dict_keys([1])
-                }"""),
+                    },
+                    'trie_index': [1],
+                    'trie_entries': {1: "TrieEntry(ident=1, key=['tree', 'value', 'ape'], value=None)"}
+                }
             ),
+
             # Add another entry ['tree', 'value'] and validate we get the expected id for it
             TestConfig(
                 name="[TA003] trie.add(['tree', 'value']",
@@ -299,35 +326,44 @@ class TestGeneralizedTrie(unittest.TestCase):
                 args=[["tree", "value"]],
                 expected=2,
             ),
-            # Validate the string representation of the trie is correct
+            # Validate the _as_dict representation of the trie is correct
             TestConfig(
-                name="[TA004] str(trie)",
-                action=trie.__str__,
-                expected=dedent("""\
-                {
-                  trie number = 2
-                  children = {
-                    'tree' = {
-                      parent = root node
-                      node token = 'tree'
-                      children = {
-                        'value' = {
-                          parent = 'tree'
-                          node token = 'value'
-                          trie id = 2
-                          children = {
-                            'ape' = {
-                              parent = 'value'
-                              node token = 'ape'
-                              trie id = 1
+                name="[TA004] _as_dict()",
+                action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
+                expected={
+                    'ident': 0,
+                    'children': {
+                        'tree': {
+                            'ident': None,
+                            'token': 'tree',
+                            'value': None,
+                            'parent': None,
+                            'children': {
+                                'value': {
+                                    'ident': 2,
+                                    'token': 'value',
+                                    'value': None,
+                                    'parent': 'tree',
+                                    'children': {
+                                        'ape': {
+                                            'ident': 1,
+                                            'token': 'ape',
+                                            'value': None,
+                                            'parent': 'value',
+                                            'children': {}
+                                        }
+                                    }
+                                }
                             }
-                          }
                         }
-                      }
+                    },
+                    'trie_index': [1, 2],
+                    'trie_entries': {
+                        1: "TrieEntry(ident=1, key=['tree', 'value', 'ape'], value=None)",
+                        2: "TrieEntry(ident=2, key=['tree', 'value'], value=None)"
                     }
-                  }
-                  trie index = dict_keys([1, 2])
-                }""")),
+                }
+            ),
             # Add a string entry 'abcdef' and validate we get the expected id for it
             TestConfig(
                 name="[TA005] trie.add('abcdef')",
@@ -365,7 +401,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 action=trie.add,
                 args=[1],
                 exception=InvalidGeneralizedKeyError,
-                exception_tag="[GTA001]",
+                exception_tag="[GTSE001]",
             ),
             # Attempt to add an empty list as a key and validate we get the expected exception
             TestConfig(
@@ -373,7 +409,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 action=trie.add,
                 args=[[]],
                 exception=InvalidGeneralizedKeyError,
-                exception_tag="[GTA001]",
+                exception_tag="[GTSE001]",
             ),
             # Attempt to add a set as a key element and validate we get the expected exception
             TestConfig(
@@ -381,7 +417,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 action=trie.add,
                 args=[[set([1]), 3, 4, 5]],
                 exception=InvalidGeneralizedKeyError,
-                exception_tag="[GTA001]",
+                exception_tag="[GTSE001]",
             ),
             # Add a key that is a list of integers and validate we get the expected id for it
             TestConfig(
@@ -393,12 +429,11 @@ class TestGeneralizedTrie(unittest.TestCase):
             # Attempt to pass add the wrong number of arguments and validate we get the expected exception
             TestConfig(name="[TA013] trie.add()", action=trie.add, exception=TypeError),
             TestConfig(
-                name="[TA014] trie.add(['a'], ['b'])",
+                name="[TA014] trie.add(['a'], ['b'], ['c'])",
                 action=trie.add,
-                args=[["a"], ["b"]],
+                args=[["a"], ["b"], ["c"]],
                 exception=TypeError,
             ),
-
             # Validate the length of the trie after all additions
             TestConfig(name="[TA015] len(trie)", action=len, args=[trie], expected=7),
             # Add duplicate entry ['tree', 'value', 'ape'] and validate we get the original id for it
@@ -411,7 +446,549 @@ class TestGeneralizedTrie(unittest.TestCase):
             ),
             # Validate the length of the trie after adding duplicate ['tree', 'value', 'ape'] is unchanged
             TestConfig(name="[TA017] len(trie)", action=len, args=[trie], expected=7),
+            # Add a trie entry with a value and validate we get the expected id for it
+            TestConfig(
+                name="[TA018] trie.add(['tree', 'value', 'cheetah'], 'feline')",
+                action=trie.add,
+                args=[["tree", "value", "cheetah"], "feline"],
+                expected=8,
+            ),
 
+        ]
+        run_tests_list(self, tests)
+
+        # New untouched trie for the next sequence of tests
+        # Not using clear() here to keep the clear() tests cleanly separated
+        # from the add() tests.
+        trie = GeneralizedTrie()
+
+        # Test cases for setting values on trie entries
+        tests = [
+            # Initialize the trie with a key with a value and validate we get the expected id
+            TestConfig(
+                name="[TA019] trie.add(['tree', 'value', 'cheetah'], 'feline')",
+                action=trie.add,
+                args=[["tree", "value", "cheetah"], "feline"],
+                expected=1,
+            ),
+            # validate that entry 1 (with the key ['tree', 'value', 'cheetah']) has the value of 'feline'
+            TestConfig(
+                name="[TA020] trie[1].value == 'feline' (_as_dict() check)",
+                action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
+                expected={
+                    'ident': 0,
+                    'children': {
+                        'tree': {
+                            'ident': None,
+                            'token': 'tree',
+                            'value': None,
+                            'parent': None,
+                            'children': {
+                                'value': {
+                                    'ident': None,
+                                    'token': 'value',
+                                    'value': None,
+                                    'parent': 'tree',
+                                    'children': {
+                                        'cheetah': {
+                                            'ident': 1,
+                                            'token': 'cheetah',
+                                            'value': 'feline',
+                                            'parent': 'value',
+                                            'children': {}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    'trie_index': [1],
+                    'trie_entries': {
+                        1: "TrieEntry(ident=1, key=['tree', 'value', 'cheetah'], value='feline')"
+                    }
+                },
+            ),
+            # Add the same key with the same value and validate we get the same id as before
+            # (this is to test that the trie does not create a new entry for the same key with the same value
+            # and that it does not throw an error)
+            TestConfig(
+                name="[TA021] trie.add(['tree', 'value', 'cheetah'], 'feline')",
+                action=trie.add,
+                args=[["tree", "value", "cheetah"], "feline"],
+                expected=1,
+            ),
+            # validate that the trie is unchanged after adding the same key with the same value
+            TestConfig(
+                name="[TA022] trie[1].value == 'feline' (_as_dict() check)",
+                action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
+                expected={
+                    'ident': 0,
+                    'children': {
+                        'tree': {
+                            'ident': None,
+                            'token': 'tree',
+                            'value': None,
+                            'parent': None,
+                            'children': {
+                                'value': {
+                                    'ident': None,
+                                    'token': 'value',
+                                    'value': None,
+                                    'parent': 'tree',
+                                    'children': {
+                                        'cheetah': {
+                                            'ident': 1,
+                                            'token': 'cheetah',
+                                            'value': 'feline',
+                                            'parent': 'value',
+                                            'children': {}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    'trie_index': [1],
+                    'trie_entries': {
+                        1: "TrieEntry(ident=1, key=['tree', 'value', 'cheetah'], value='feline')"
+                    }
+                },
+            ),
+            # Add the same key with a DIFFERENT value (default of None) and validate we get a DuplicateKeyError
+            TestConfig(
+                name="[TA022] trie.add(['tree', 'value', 'cheetah'])",
+                action=trie.add,
+                args=[["tree", "value", "cheetah"]],
+                exception=DuplicateKeyError,
+                exception_tag="[GTSE002]",
+            ),
+            # Validate that the trie is unchanged after attempting to add the same key with a different value of None
+            # (this is to test that the trie has not changed the trie despite throwing an error)
+            TestConfig(
+                name="[TA023] trie[1].value == 'feline' (_as_dict() check, no change after DuplicateKeyError)",
+                action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
+                expected={
+                    'ident': 0,
+                    'children': {
+                        'tree': {
+                            'ident': None,
+                            'token': 'tree',
+                            'value': None,
+                            'parent': None,
+                            'children': {
+                                'value': {
+                                    'ident': None,
+                                    'token': 'value',
+                                    'value': None,
+                                    'parent': 'tree',
+                                    'children': {
+                                        'cheetah': {
+                                            'ident': 1,
+                                            'token': 'cheetah',
+                                            'value': 'feline',
+                                            'parent': 'value',
+                                            'children': {}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    'trie_index': [1],
+                    'trie_entries': {
+                        1: "TrieEntry(ident=1, key=['tree', 'value', 'cheetah'], value='feline')"
+                    }
+                },
+            ),
+            # Add the same key with a DIFFERENT value (explictly specified) and validate we get a DuplicateKeyError
+            TestConfig(
+                name="[TA023] trie.add(['tree', 'value', 'cheetah'], 'canide)",
+                action=trie.add,
+                args=[["tree", "value", "cheetah"], "canide"],
+                exception=DuplicateKeyError,
+                exception_tag="[GTSE002]",
+            ),
+        ]
+        run_tests_list(self, tests)
+
+    def test_update(self) -> None:
+        """Test the update method of GeneralizedTrie.
+
+        This test covers adding various types of keys to the trie via the update() method, including strings,
+        lists, and frozensets, and checks the expected behavior of the trie after each addition.
+        It also includes tests for error handling when invalid keys are added."""
+        # pylint: disable=protected-access, no-member
+        trie = GeneralizedTrie()
+        tests: list[TestConfig] = [
+            # Initialize from a list of strings and validate we get the expected id
+            TestConfig(
+                name="[TU001] trie.update(['tree', 'value', 'ape'])",
+                action=trie.update,
+                args=[["tree", "value", "ape"]],
+                kwargs={},
+                expected=1,
+            ),
+            # Validate the dictionary representation of the trie is correct after initialization
+            TestConfig(
+                name="[TU002] _as_dict()",
+                action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
+                expected={
+                    'ident': 0,
+                    'children': {
+                        'tree': {
+                            'ident': None,
+                            'token': 'tree',
+                            'value': None,
+                            'parent': None,
+                            'children': {
+                                'value': {
+                                    'ident': None,
+                                    'token': 'value',
+                                    'value': None,
+                                    'parent': 'tree',
+                                    'children': {
+                                        'ape': {
+                                            'ident': 1,
+                                            'token': 'ape',
+                                            'value': None,
+                                            'parent': 'value',
+                                            'children': {}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    'trie_index': [1],
+                    'trie_entries': {1: "TrieEntry(ident=1, key=['tree', 'value', 'ape'], value=None)"}
+                }
+            ),
+
+            # Add another entry ['tree', 'value'] and validate we get the expected id for it
+            TestConfig(
+                name="[TU003] trie.update(['tree', 'value']",
+                action=trie.update,
+                args=[["tree", "value"]],
+                expected=2,
+            ),
+            # Validate the _as_dict representation of the trie is correct
+            TestConfig(
+                name="[TU004] _as_dict()",
+                action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
+                expected={
+                    'ident': 0,
+                    'children': {
+                        'tree': {
+                            'ident': None,
+                            'token': 'tree',
+                            'value': None,
+                            'parent': None,
+                            'children': {
+                                'value': {
+                                    'ident': 2,
+                                    'token': 'value',
+                                    'value': None,
+                                    'parent': 'tree',
+                                    'children': {
+                                        'ape': {
+                                            'ident': 1,
+                                            'token': 'ape',
+                                            'value': None,
+                                            'parent': 'value',
+                                            'children': {}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    'trie_index': [1, 2],
+                    'trie_entries': {
+                        1: "TrieEntry(ident=1, key=['tree', 'value', 'ape'], value=None)",
+                        2: "TrieEntry(ident=2, key=['tree', 'value'], value=None)"
+                    }
+                }
+            ),
+            # Add a string entry 'abcdef' and validate we get the expected id for it
+            TestConfig(
+                name="[TU005] trie.update('abcdef')",
+                action=trie.update,
+                args=["abcdef"],
+                expected=3,
+            ),
+            # Add another entry [1, 3, 4, 5] and validate we get the expected id for it
+            TestConfig(
+                name="[TU006] trie.update([1, 3, 4, 5])",
+                action=trie.update,
+                args=[[1, 3, 4, 5]],
+                kwargs={},
+                expected=4,
+            ),
+            # Add a frozenset entry and validate we get the expected id for it
+            TestConfig(
+                name="[TU007] trie.update(frozenset([1]), 3, 4, 5])",
+                action=trie.update,
+                args=[[frozenset([1]), 3, 4, 5]],
+                kwargs={},
+                expected=5,
+            ),
+            # Add another frozenset entry and validate we get a different id for it
+            # than for the previously added frozenset
+            TestConfig(
+                name="[TU008] trie.update(frozenset([1]), 3, 4, 5])",
+                action=trie.update,
+                args=[[frozenset([1]), 3, 4, 6]],
+                expected=6,
+            ),
+            # Attempt to add an integer as a key and validate we get the expected exception
+            TestConfig(
+                name="[TU009] trie.update(1)",
+                action=trie.update,
+                args=[1],
+                exception=InvalidGeneralizedKeyError,
+                exception_tag="[GTSE001]",
+            ),
+            # Attempt to add an empty list as a key and validate we get the expected exception
+            TestConfig(
+                name="[TU010] trie.update([])",
+                action=trie.update,
+                args=[[]],
+                exception=InvalidGeneralizedKeyError,
+                exception_tag="[GTSE001]",
+            ),
+            # Attempt to add a set as a key element and validate we get the expected exception
+            TestConfig(
+                name="[TU011] trie.update([set([1]), 3, 4, 5])",
+                action=trie.update,
+                args=[[set([1]), 3, 4, 5]],
+                exception=InvalidGeneralizedKeyError,
+                exception_tag="[GTSE001]",
+            ),
+            # Add a key that is a list of integers and validate we get the expected id for it
+            TestConfig(
+                name="[TU012] trie.update(key=[1, 3, 4, 7])",
+                action=trie.update,
+                kwargs={"key": [1, 3, 4, 7]},
+                expected=7,
+            ),
+            # Attempt to pass add the wrong number of arguments and validate we get the expected exception
+            TestConfig(name="[TU013] trie.update()", action=trie.update, exception=TypeError),
+            TestConfig(
+                name="[TU014] trie.update(['a'], ['b'], ['c'])",
+                action=trie.update,
+                args=[["a"], ["b"], ["c"]],
+                exception=TypeError,
+            ),
+            # Validate the length of the trie after all additions
+            TestConfig(name="[TU015] len(trie)", action=len, args=[trie], expected=7),
+            # Add duplicate entry ['tree', 'value', 'ape'] and validate we get the original id for it
+            TestConfig(
+                name="[TU016] trie.update(['tree', 'value', 'ape'])",
+                action=trie.update,
+                args=[["tree", "value", "ape"]],
+                kwargs={},
+                expected=1,
+            ),
+            # Validate the length of the trie after adding duplicate ['tree', 'value', 'ape'] is unchanged
+            TestConfig(name="[TU017] len(trie)", action=len, args=[trie], expected=7),
+            # Add a trie entry with a value and validate we get the expected id for it
+            TestConfig(
+                name="[TU018] trie.update(['tree', 'value', 'cheetah'], 'feline')",
+                action=trie.update,
+                args=[["tree", "value", "cheetah"], "feline"],
+                expected=8,
+            ),
+
+        ]
+        run_tests_list(self, tests)
+
+        # New untouched trie for the next sequence of tests
+        # Not using clear() here to keep the clear() tests cleanly separated
+        # from the update() tests.
+        trie = GeneralizedTrie()
+
+        # Test cases for setting values on trie entries
+        tests = [
+            # Initialize the trie with a key with a value and validate we get the expected id
+            TestConfig(
+                name="[TU019] trie.update(['tree', 'value', 'cheetah'], 'feline')",
+                action=trie.update,
+                args=[["tree", "value", "cheetah"], "feline"],
+                expected=1,
+            ),
+            # validate that entry 1 (with the key ['tree', 'value', 'cheetah']) has the value of 'feline'
+            TestConfig(
+                name="[TU020] trie[1].value == 'feline' (_as_dict() check)",
+                action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
+                expected={
+                    'ident': 0,
+                    'children': {
+                        'tree': {
+                            'ident': None,
+                            'token': 'tree',
+                            'value': None,
+                            'parent': None,
+                            'children': {
+                                'value': {
+                                    'ident': None,
+                                    'token': 'value',
+                                    'value': None,
+                                    'parent': 'tree',
+                                    'children': {
+                                        'cheetah': {
+                                            'ident': 1,
+                                            'token': 'cheetah',
+                                            'value': 'feline',
+                                            'parent': 'value',
+                                            'children': {}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    'trie_index': [1],
+                    'trie_entries': {
+                        1: "TrieEntry(ident=1, key=['tree', 'value', 'cheetah'], value='feline')"
+                    }
+                },
+            ),
+            # Add the same key with the same value and validate we get the same id as before
+            # (this is to test that the trie does not create a new entry for the same key with the same value
+            # and that it does not throw an error)
+            TestConfig(
+                name="[TU021] trie.update(['tree', 'value', 'cheetah'], 'feline')",
+                action=trie.update,
+                args=[["tree", "value", "cheetah"], "feline"],
+                expected=1,
+            ),
+            # validate that the trie is unchanged after adding the same key with the same value
+            TestConfig(
+                name="[TU022] trie[1].value == 'feline' (_as_dict() check)",
+                action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
+                expected={
+                    'ident': 0,
+                    'children': {
+                        'tree': {
+                            'ident': None,
+                            'token': 'tree',
+                            'value': None,
+                            'parent': None,
+                            'children': {
+                                'value': {
+                                    'ident': None,
+                                    'token': 'value',
+                                    'value': None,
+                                    'parent': 'tree',
+                                    'children': {
+                                        'cheetah': {
+                                            'ident': 1,
+                                            'token': 'cheetah',
+                                            'value': 'feline',
+                                            'parent': 'value',
+                                            'children': {}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    'trie_index': [1],
+                    'trie_entries': {
+                        1: "TrieEntry(ident=1, key=['tree', 'value', 'cheetah'], value='feline')"
+                    }
+                },
+            ),
+            # Add the same key with a DIFFERENT value (default of None) and validate it updates the value
+            # and returns the id of the existing entry.
+            # (this is to test that the trie updates the value of the existing entry).
+            TestConfig(
+                name="[TU023] trie.update(['tree', 'value', 'cheetah'])",
+                action=trie.update,
+                args=[["tree", "value", "cheetah"]],
+                expected=1,
+            ),
+            # Validate that the trie was correctly updated after adding the same key with a different value of None
+            TestConfig(
+                name="[TU024] trie[1].value == None (_as_dict() check)",
+                action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
+                expected={
+                    'ident': 0,
+                    'children': {
+                        'tree': {
+                            'ident': None,
+                            'token': 'tree',
+                            'value': None,
+                            'parent': None,
+                            'children': {
+                                'value': {
+                                    'ident': None,
+                                    'token': 'value',
+                                    'value': None,
+                                    'parent': 'tree',
+                                    'children': {
+                                        'cheetah': {
+                                            'ident': 1,
+                                            'token': 'cheetah',
+                                            'value': None,
+                                            'parent': 'value',
+                                            'children': {}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    'trie_index': [1],
+                    'trie_entries': {
+                        1: "TrieEntry(ident=1, key=['tree', 'value', 'cheetah'], value=None)"
+                    }
+                },
+            ),
+            # Add the same key with a DIFFERENT value (explictly specified) and validate we get the same id as before
+            TestConfig(
+                name="[TU025] trie.update(['tree', 'value', 'cheetah'], 'canide)",
+                action=trie.update,
+                args=[["tree", "value", "cheetah"], "canide"],
+                expected=1,
+            ),
+            # Validate that the trie was correctly updated after adding the same key with a different value of 'canide'
+            TestConfig(
+                name="[TU026] trie[1].value == 'canide' (_as_dict() check)",
+                action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
+                expected={
+                    'ident': 0,
+                    'children': {
+                        'tree': {
+                            'ident': None,
+                            'token': 'tree',
+                            'value': None,
+                            'parent': None,
+                            'children': {
+                                'value': {
+                                    'ident': None,
+                                    'token': 'value',
+                                    'value': None,
+                                    'parent': 'tree',
+                                    'children': {
+                                        'cheetah': {
+                                            'ident': 1,
+                                            'token': 'cheetah',
+                                            'value': 'canide',
+                                            'parent': 'value',
+                                            'children': {}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    'trie_index': [1],
+                    'trie_entries': {
+                        1: "TrieEntry(ident=1, key=['tree', 'value', 'cheetah'], value='canide')"
+                    }
+                },
+            ),
         ]
         run_tests_list(self, tests)
 
@@ -671,7 +1248,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 action=trie.remove,
                 args=[9],
                 exception=KeyError,
-                exception_tag="[GTR003]",
+                exception_tag="[GTR002]",
             ),
             TestConfig(name="[TR013] len(trie)", action=len, args=[trie], expected=8),
             TestConfig(
@@ -689,11 +1266,11 @@ class TestGeneralizedTrie(unittest.TestCase):
             ),
             TestConfig(name="[TR017] len(trie)", action=len, args=[trie], expected=6),
             TestConfig(
-                name="[TR018] trie.remove('abc')",
+                name="[TR018] trie.remove('defghi')",
                 action=trie.remove,
-                args=["abc"],
-                exception=TypeError,
-                exception_tag="[GTR001]",
+                args=["defghi"],
+                exception=KeyError,
+                exception_tag="[GTR002]",
             ),
             TestConfig(
                 name="[TR019] trie.remove(0)",
@@ -896,7 +1473,7 @@ class TestGeneralizedTrie(unittest.TestCase):
             self.assertEqual(found_id_list, expect_id_list)
 
         with self.assertRaises(TypeError, msg="[TK006] trie.remove('abc')"):
-            trie.remove("abc")  # type: ignore[reportGeneralTypeIssues]
+            trie.remove(set('abc'))  # type: ignore[reportGeneralTypeIssues]
 
         with self.subTest(msg="[TK007] trie.remove(1)"):
             trie.remove(1)
