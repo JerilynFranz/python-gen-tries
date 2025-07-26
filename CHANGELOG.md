@@ -16,3 +16,4 @@
 * 0.4.2 - Performance improvements to \_\_contains\_\_() and suffixes()
 * 0.4.3 - Added support for setting values associated with keys in the trie. Added update() method and tests. Made tests less brittle by changing text based state checking with dictionary based state checking. Added warnings about only using immutable objects as trie keys. Added tests for clear() method.
 * 0.5.0 - Added support for using GeneralKeys directly in the remove() method; updated the \_\_getitem\_\_() method to support the use of GeneralKeys; added \_\_setitem\_\_() and \_\_delitem\_\_() methods
+* 0.5.1 - Updated requirements.txt for Sphinx docs to sphinxawesome-theme==5.3.2
