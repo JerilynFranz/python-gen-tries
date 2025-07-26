@@ -13,5 +13,6 @@
 * 0.3.3 - Fix to readthedocs usage page
 * 0.4.0 - Deprecated gentrie.Hashable for gentrie.TrieKeyToken and updated documentation. Tuned tests and added more documentation.
 * 0.4.1 - Removed use of '@deprecated' decorator as it is only available from Python 3.13 and later. Added example of using dataclass for a class usable as a content-aware trie key token. Added docstrings for test classes. Tweaked clear() method for performance. Simplified prefixes() method slightly. Addressed various minor lint issues.
-* 0.4.2 - Performance improvements to __contains__() and suffixes()
+* 0.4.2 - Performance improvements to \_\_contains\_\_() and suffixes()
 * 0.4.3 - Added support for setting values associated with keys in the trie. Added update() method and tests. Made tests less brittle by changing text based state checking with dictionary based state checking. Added warnings about only using immutable objects as trie keys. Added tests for clear() method.
+* 0.5.0 - Added support for using GeneralKeys directly in the remove() method; updated the \_\_getitem\_\_() method to support the use of GeneralKeys; added \_\_setitem\_\_() and \_\_delitem\_\_() methods

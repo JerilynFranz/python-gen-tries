@@ -28,9 +28,9 @@ copyright = '2025, Jerilyn Franz'  # pylint: disable=redefined-builtin
 author = 'Jerilyn Franz'
 
 # The short X.Y version
-version = '0.4'
+version = '0.5'
 # The full version, including alpha/beta/rc tags
-release = '0.4.2'
+release = '0.5.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -100,7 +100,7 @@ exclude_patterns = [
     ]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = None
+pygments_style = "github-dark"
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -108,7 +108,7 @@ pygments_style = None
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'sphinxawesome_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

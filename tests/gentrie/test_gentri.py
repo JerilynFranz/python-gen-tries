@@ -1248,7 +1248,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 action=trie.remove,
                 args=[9],
                 exception=KeyError,
-                exception_tag="[GTR003]",
+                exception_tag="[GTR002]",
             ),
             TestConfig(name="[TR013] len(trie)", action=len, args=[trie], expected=8),
             TestConfig(
@@ -1266,11 +1266,11 @@ class TestGeneralizedTrie(unittest.TestCase):
             ),
             TestConfig(name="[TR017] len(trie)", action=len, args=[trie], expected=6),
             TestConfig(
-                name="[TR018] trie.remove('abc')",
+                name="[TR018] trie.remove('defghi')",
                 action=trie.remove,
-                args=["abc"],
-                exception=TypeError,
-                exception_tag="[GTR001]",
+                args=["defghi"],
+                exception=KeyError,
+                exception_tag="[GTR002]",
             ),
             TestConfig(
                 name="[TR019] trie.remove(0)",
@@ -1473,7 +1473,7 @@ class TestGeneralizedTrie(unittest.TestCase):
             self.assertEqual(found_id_list, expect_id_list)
 
         with self.assertRaises(TypeError, msg="[TK006] trie.remove('abc')"):
-            trie.remove("abc")  # type: ignore[reportGeneralTypeIssues]
+            trie.remove(set('abc'))  # type: ignore[reportGeneralTypeIssues]
 
         with self.subTest(msg="[TK007] trie.remove(1)"):
             trie.remove(1)
