@@ -89,26 +89,6 @@ Word Suggestions
 Trie of numeric vectors
 ------------------------
 
-.. code-block:: python
-
-    from gentrie import GeneralizedTrie, TrieEntry
-
-    trie = GeneralizedTrie()
-    entries = [
-        [128, 256, 512],
-        [128, 256],
-        [512, 1024],
-    ]
-    for item in entries:
-        trie.add(item)
-    suffixes: set[TrieEntry] = trie.suffixes([128])
-    print(f'suffixes = {suffixes}')
-
-    prefixes: set[TrieEntry] = trie.prefixes([128, 256, 512, 1024])
-    print(f'prefixes = {prefixes}')
-
-    # suffixes = {TrieEntry(ident=1, key=[128, 256, 512]),
-    #             TrieEntry(ident=2, key=[128, 256])}
-    # prefixes = {TrieEntry(ident=1, key=[128, 256, 512]),
-    #             TrieEntry(ident=2, key=[128, 256])}
-
+.. include:: ../../examples/by_numeric_vector.py
+   :code: python
+   
