@@ -436,15 +436,16 @@ class TestGeneralizedTrie(unittest.TestCase):
             ),
             # Validate the length of the trie after all additions
             TestConfig(name="[TA015] len(trie)", action=len, args=[trie], expected=7),
-            # Add duplicate entry ['tree', 'value', 'ape'] and validate we get the original id for it
+            # Add duplicate entry ['tree', 'value', 'ape'] and validate we get a DuplicateKeyError
             TestConfig(
                 name="[TA016] trie.add(['tree', 'value', 'ape'])",
                 action=trie.add,
                 args=[["tree", "value", "ape"]],
                 kwargs={},
-                expected=1,
+                exception=DuplicateKeyError,
+                exception_tag="[GTSE002]",
             ),
-            # Validate the length of the trie after adding duplicate ['tree', 'value', 'ape'] is unchanged
+            # Validate the length of the trie trying to add duplicate ['tree', 'value', 'ape'] is unchanged
             TestConfig(name="[TA017] len(trie)", action=len, args=[trie], expected=7),
             # Add a trie entry with a value and validate we get the expected id for it
             TestConfig(
@@ -515,9 +516,14 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA021] trie.add(['tree', 'value', 'cheetah'], 'feline')",
                 action=trie.add,
                 args=[["tree", "value", "cheetah"], "feline"],
-                expected=1,
+                exception=DuplicateKeyError,
+                exception_tag="[GTSE002]",
+                # This is expected to raise a DuplicateKeyError, but we are testing that the trie
+                # does not change its state after adding the same key with the same value.
+                # So we do not expect the trie to change, and we will validate that in the
+                # next test case.
             ),
-            # validate that the trie is unchanged after adding the same key with the same value
+            # validate that the trie is unchanged after exception for trying to add the same key with the same value
             TestConfig(
                 name="[TA022] trie[1].value == 'feline' (_as_dict() check)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
@@ -1036,7 +1042,8 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TAUDC008] trie.add(['red', MockContentAwareTrieKeyToken(a=(1, 2, 3), b='hello')])",
                 action=trie.add,
                 args=[d],
-                expected=3,
+                exception=DuplicateKeyError,
+                exception_tag="[GTSE002]",
             ),
         ]
         run_tests_list(self, tests)

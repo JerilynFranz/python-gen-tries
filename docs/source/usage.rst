@@ -29,6 +29,11 @@ Below are some examples of how to use the `GeneralizedTrie` class.
 Examples
 ========
 
+Assigning Values to Entries
+---------------------------
+.. include:: ../../examples/assigning_values_to_entries.py
+   :code: python
+
 By Letter
 ----------------
 

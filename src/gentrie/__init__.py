@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+# pylint: disable=too-many-lines
 """Package providing a generalized trie implementation.
 
 This package includes classes and functions to create and manipulate a generalized trie
@@ -20,6 +22,108 @@ this generalized trie can handle various types of tokens, as long as they are ha
 
 Usage
 =======
+
+You can create a trie using the `GeneralizedTrie` class:
+
+.. code-block:: python
+    :linenos:
+
+    from gentrie import GeneralizedTrie
+
+    # Create a new trie instance
+    trie = GeneralizedTrie()
+
+There are three ways to add entries:
+
+1. Using the `trie[key] = value` syntax
+
+This allows you to assign a value directly to a key and will create a
+new entry if the key does not already exist. If the key already exists,
+it will update the value associated with that key.
+
+.. code-block:: python
+    :linenos:
+    :caption: Examples of using the `trie[key] = value` syntax
+
+    # Assigns 'value' to 'key'
+    # (tokenized as characters 'k','e','y')
+    trie['key'] = 'value'
+
+    # Assigns value 'value2' to key 'another_key' (tokenized as
+    # 'a','n','o','t','h','e','r','_','k','e','y','2')
+    trie['another_key'] = 'another_value'
+
+    # Changes the value for 'key' (tokenized as 'k', 'e', 'y')
+    # to 'new_value'
+    trie['key'] = 'new_value'
+
+    # Assigns a tuple of int (tokenized as
+    # 128, 96, 160, 0) as a key with the value'value5'
+    trie[(128, 96, 160, 0)] = 'value5'
+
+    # Assigns a tuple with mixed value types (tokenized
+    # as 128, 'a') as a key with the value 'value5b'
+    trie[(128, 'a')] = 'value5b'
+
+    # Assigns a list of words (tokenized as 'hello', 'world')
+    # as a key with the value 'value6'
+    trie[['hello', 'world']] = 'value6'
+
+2. Using the `trie.add(key, value)` method
+
+    This method adds a new entry to the trie and returns the TrieId
+    for the new entry. If the key already exists, it will throw an
+    error. The value argument is optional, and if not provided
+    the entry will be created with a value of `None`.
+
+3. Using the `trie.update(key, value)` method
+
+    This method adds a new entry or updates an existing entry,
+    returning the TrieId for the entry and returns the TrieId of the entry.
+
+    This is the same as using the `trie[key] = value` syntax,
+    but it is more explicit about the intention to update or add
+    an entry and returns the TrieId of the entry.
+
+    The value argument is optional, and if not provided, the
+    entry will be created or updated with a value of `None`.
+
+You can use the `in` operator to check if a key exists in the trie,
+e.g., `if key in trie:`. This will return `True` if the key exists,
+and `False` otherwise.
+
+There are two ways to directly retrieve entries using their keys:
+
+1. Using the `trie[key | TrieId]` syntax.
+
+    This retrieves the `TrieEntry` associated with the key or TrieId. It
+    will raise a `KeyError` if the key/TrieId does not exist. It will raise
+    a `TypeError` if the key is not either a valid `TrieId` or `GeneralizedKey`.
+
+    The returned `TrieEntry` contains the key, value, and an identifier
+    (ident - of type `TrieId`) that uniquely identifies the entry in the trie.
+
+2. Using the `trie.get(key | TrieId, [default])` method
+    This retrieves the `TrieEntry` associated with the key or TrieId,
+    returning `None` if the key/TrieId does not exist. This could be
+    preferable in cases where you want to avoid exceptions
+    for missing keys although it cannot distinguish between a key
+    that does not exist and a key that exists with a `None` value
+    in the trie by default.
+
+    You *can* provide a different default value to return if the key
+    does not exist, which can be useful for handling cases where
+    you want to return a specific value instead of `None`.
+
+You can also retrieve all entries that are suffixes or prefixes of a given key:
+
+- `trie.suffixes(key)` returns a set of `TrieEntry` objects that
+  are suffixes of the given key.
+- `trie.prefixes(key)` returns a set of `TrieEntry` objects that
+  are prefixes of the given key.
+
+These methods are useful for searching and retrieving entries
+that match a specific pattern or structure in the trie.
 
 Example 1 - Basic Usage
 ------------------------
@@ -98,7 +202,6 @@ from copy import deepcopy
 from textwrap import indent
 from typing import Any, runtime_checkable, Generator, Optional, Protocol, NamedTuple, TypeAlias
 
-
 # Constants for TrieEntry fields (performance optimization)
 TRIE_IDENT: int = 0
 """Alias for field number 0 (ident) in TrieEntry. It is faster to use this than accessing the field by name."""
@@ -167,8 +270,12 @@ Usage:
     means that two different instances of the same class will not be considered equal.
 
     """
-    def __eq__(self, value: object, /) -> bool: ...
-    def __hash__(self) -> int: ...
+
+    def __eq__(self, value: object, /) -> bool:
+        ...
+
+    def __hash__(self) -> int:
+        ...
 
 
 @runtime_checkable
@@ -179,8 +286,12 @@ class Hashable(TrieKeyToken, Protocol):
 
     Use :class:`TrieKeyToken` instead.
     """
-    def __eq__(self, value: object, /) -> bool: ...
-    def __hash__(self) -> int: ...
+
+    def __eq__(self, value: object, /) -> bool:
+        ...
+
+    def __hash__(self) -> int:
+        ...
 
 
 GeneralizedKey: TypeAlias = Sequence[TrieKeyToken | str]
@@ -212,7 +323,6 @@ that when iterated returns tokens conforming to the :class:`TrieKeyToken` protoc
 
 """
 
-
 TrieId: TypeAlias = int
 """Unique identifier for a key in a trie."""
 
@@ -230,7 +340,8 @@ class TrieEntry(NamedTuple):
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, TrieEntry):
             return False
-        return self.ident == other.ident and tuple(self.key) == tuple(other.key)
+        return self.ident == other.ident and tuple(self.key) == tuple(
+            other.key)
 
     def __hash__(self) -> int:
         return hash((self.ident, tuple(self.key)))
@@ -251,7 +362,8 @@ def is_triekeytoken(token: TrieKeyToken) -> bool:
     Returns:
         :class:`bool`: ``True`` if a valid :class:`TrieKeyToken`, ``False`` otherwise.
     """
-    return isinstance(token, TrieKeyToken)  # type: ignore[reportUnnecessaryIsInstance]
+    return isinstance(
+        token, TrieKeyToken)  # type: ignore[reportUnnecessaryIsInstance]
 
 
 def is_hashable(token: TrieKeyToken) -> bool:
@@ -278,9 +390,10 @@ def is_generalizedkey(key: GeneralizedKey) -> bool:
         :class:`bool`: ``True`` if a valid :class:`GeneralizedKey`, ``False`` otherwise.
     """
     return (
-        isinstance(key, Sequence) and  # type: ignore[reportUnnecessaryIsInstance]
-        len(key) and
-        all(isinstance(t, TrieKeyToken) for t in key))  # type: ignore[reportGeneralTypeIssues]
+        isinstance(key, Sequence)  # type: ignore[reportUnnecessaryIsInstance]
+        and len(key)
+        and all(isinstance(t, TrieKeyToken) for t in key)  # type: ignore[reportUnnecessaryIsInstance]
+    )
 
 
 class _Node:  # pylint: disable=too-few-public-methods
@@ -464,17 +577,20 @@ The code emphasizes robustness and correctness.
             InvalidGeneralizedKeyError ([GTU001]):
                 If key is not a valid :class:`GeneralizedKey`.
             DuplicateKeyError ([GTU002]):
-                If the key is already in the trie but with a different value.
+                If the key is already in the trie.
 
         Returns:
-            :class:`TrieId`: Id of the inserted key. If the key was already in the trie with the same value
-            it returns the id for the already existing entry. If the key was not in the trie,
-            it returns the id of the new entry. If the key was already in the trie but with a different value,
-            it raises an :class:`DuplicateKeyError`.
+            :class:`TrieId`: Id of the inserted key. If the key was not in the trie,
+            it returns the id of the new entry. If the key was already in the trie,
+            it raises a :class:`DuplicateKeyError`.
         """
-        return self._store_entry(key=key, value=value, allow_value_update=False)
+        return self._store_entry(key=key,
+                                 value=value,
+                                 allow_value_update=False)
 
-    def update(self, key: GeneralizedKey, value: Optional[Any] = None) -> TrieId:
+    def update(self,
+               key: GeneralizedKey,
+               value: Optional[Any] = None) -> TrieId:
         """Updates the key/value pair in the trie.
 
         .. warning:: **Keys Must Be Immutable**
@@ -504,11 +620,8 @@ The code emphasizes robustness and correctness.
         """
         return self._store_entry(key=key, value=value, allow_value_update=True)
 
-    def _store_entry(self,
-                     key: GeneralizedKey,
-                     value: Any,
-                     allow_value_update: bool
-                     ) -> TrieId:
+    def _store_entry(self, key: GeneralizedKey, value: Any,
+                     allow_value_update: bool) -> TrieId:
         """Stores a key/value pair entry in the trie.
 
         Args:
@@ -527,9 +640,9 @@ The code emphasizes robustness and correctness.
         Returns:
             :class:`TrieId`: Id of the inserted key. If the key was already in the trie with the same value
             it returns the id for the already existing entry. If the key was not in the trie,
-            it returns the id of the new entry. If the key was already in the trie but with a different value
-            and allow_value_update is False, it raises a DuplicateKeyError. If allow_value_update is True,
-            it replaces the value and returns the id of the existing entry.
+            it returns the id of the new entry. If the key was already in the trie and allow_value_update
+            is False, it raises a DuplicateKeyError. If allow_value_update is True, it replaces the value
+            and returns the id of the existing entry.
         """
         if not is_generalizedkey(key):
             raise InvalidGeneralizedKeyError(
@@ -546,10 +659,6 @@ The code emphasizes robustness and correctness.
 
         # This key is already in the trie (it has a trie id)
         if current_node.ident:
-            # If the node already has the same value just return the existing id
-            if current_node.value == value:
-                return current_node.ident
-
             # If we allow updating, update the value and return the existing id
             if allow_value_update:
                 current_node.value = value
@@ -557,18 +666,19 @@ The code emphasizes robustness and correctness.
                     current_node.ident, key, value)
                 return current_node.ident
 
-            # The key is already in the trie with a different value but we are not
-            # allowing updating values - so raise an error
+            # The key is already in the trie but we are not allowing updating values - so raise an error
             raise DuplicateKeyError(
                 "[GTSE002] Attempted to store a key with a value that is already in the trie with "
-                "a different associated value - use `update()` to change the value of an existing key.")
+                " - use `update()` to change the value of an existing key.")
 
         # Assign a new trie id for the node and set the value
         self._ident_counter += 1
         current_node.ident = self._ident_counter
         current_node.value = value
-        self._trie_index[self._ident_counter] = current_node  # type: ignore[assignment]
-        self._trie_entries[self._ident_counter] = TrieEntry(self._ident_counter, key, value)
+        self._trie_index[
+            self._ident_counter] = current_node  # type: ignore[assignment]
+        self._trie_entries[self._ident_counter] = TrieEntry(
+            self._ident_counter, key, value)
         return current_node.ident
 
     def remove(self, key: TrieId | GeneralizedKey) -> None:
@@ -597,7 +707,9 @@ The code emphasizes robustness and correctness.
                     "[GTR003] failed lookup of key because of unexpected exception"
                 ) from exc
         else:
-            raise TypeError("[GTR001] key arg must be of type TrieId or a valid GeneralizedKey")
+            raise TypeError(
+                "[GTR001] key arg must be of type TrieId or a valid GeneralizedKey"
+            )
 
         if ident is None or ident not in self._trie_index:
             raise KeyError("[GTR002] key not found")
@@ -877,10 +989,16 @@ The code emphasizes robustness and correctness.
         # not a dictionary of live references to it
         return deepcopy({
             "ident": self.ident,
-            "children": {k: v._as_dict() for k, v in self.children.items()},  # type: ignore[protected-access]
+            "children": {
+                k: v._as_dict()  # type: ignore[protected-access]
+                for k, v in self.children.items()
+            },  # type: ignore[protected-access]
             "trie_index": sorted(self._trie_index.keys()),
-            "trie_entries": {k: repr(v) for k, v in self._trie_entries.items()}
-            })
+            "trie_entries": {
+                k: repr(v)
+                for k, v in self._trie_entries.items()
+            }
+        })
 
     def __iter__(self) -> Generator[TrieId, None, None]:
         """Returns an iterator for the trie.
@@ -955,7 +1073,9 @@ The code emphasizes robustness and correctness.
         """
         if isinstance(key, TrieId):
             if key not in self._trie_index:
-                raise KeyError("[GTGI001] key does not match any idents or keys in the trie")
+                raise KeyError(
+                    "[GTGI001] key does not match any idents or keys in the trie"
+                )
             # Return the TrieEntry for the TrieId
             return self._trie_entries[key]
 
@@ -964,15 +1084,83 @@ The code emphasizes robustness and correctness.
             current_node = self
             for token in key:
                 if token not in current_node.children:
-                    raise KeyError("[GTGI001] key does not match any idents or keys in the trie")
+                    raise KeyError(
+                        "[GTGI001] key does not match any idents or keys in the trie"
+                    )
                 current_node = current_node.children[token]
             if current_node.ident:
                 # Return the TrieEntry for the TrieId
                 return self._trie_entries[current_node.ident]
-            raise KeyError("[GTGI001] key does not match any idents or keys in the trie")
+            raise KeyError(
+                "[GTGI001] key does not match any idents or keys in the trie")
 
         # If we reach here, the passed key was neither a TrieId nor a GeneralizedKey
-        raise TypeError("[GTGI002] key must be either a :class:TrieId or a :class:`GeneralizedKey`")
+        raise TypeError(
+            "[GTGI002] key must be either a :class:TrieId or a :class:`GeneralizedKey`"
+        )
+
+    def get(self,
+            key: TrieId | GeneralizedKey,
+            default: Optional[Any] = None) -> Optional[TrieEntry | Any]:
+        """Returns the :class:`TrieEntry` for the ident or key with the passed identifier.
+
+        The identifier can be either the :class:`TrieId` (ident) or the :class:`GeneralizedKey` (key)
+        for the entry.
+
+        If the key is not found, it returns the default value if provided or None if not provided.
+
+        Example:
+            trie = GeneralizedTrie()
+            ident: TrieId = trie.add(['ape', 'green', 'apple'])
+
+            entry: TrieEntry = trie.get(ident)
+            print(entry)
+            # Output: TrieEntry(ident=1, key=['ape', 'green', 'apple'], value=None)
+
+            trie[['ape', 'green', 'apple']] = "A green apple"
+            entry = trie.get(['ape', 'green', 'apple'])
+            print(entry)
+            # Output: TrieEntry(ident=1, key=['ape', 'green', 'apple'], value="A green apple")
+
+            entry = trie.get(['non', 'existent', 'key'], default="Not Found")
+            print(entry)
+            # Output: "Not Found"
+
+        Args:
+            key (TrieId | GeneralizedKey): the identifier to retrieve.
+            default (Optional[TrieEntry | Any], default=None): The default value to return if the key is not found.
+
+        Returns: :class:`TrieEntry`: TrieEntry for the key with the passed identifier or the default value if not found.
+
+        Raises:
+            KeyError ([GTG001]): if the key arg does not match any keys/idents in the trie.
+            TypeError ([GTG002]): if the key arg is neither a :class:`TrieId` or a valid :class:`GeneralizedKey`.
+        """
+        if isinstance(key, TrieId):
+            if key not in self._trie_index:
+                raise KeyError(
+                    "[GTG001] key does not match any idents or keys in the trie"
+                )
+            # Return the TrieEntry for the TrieId
+            return self._trie_entries[key]
+
+        if is_generalizedkey(key):
+            # Find the TrieId for the key
+            current_node = self
+            for token in key:
+                if token not in current_node.children:
+                    return default
+                current_node = current_node.children[token]
+            if current_node.ident:
+                # Return the TrieEntry for the TrieId
+                return self._trie_entries[current_node.ident]
+            raise KeyError(
+                "[GTG001] key does not match any idents or keys in the trie")
+
+        # If we reach here, the passed key was neither a TrieId nor a GeneralizedKey
+        raise TypeError(
+            "[GTG002] key must be either a :class:TrieId or a :class:`GeneralizedKey`"
+        )
 
     def keys(self) -> Generator[TrieId, None, None]:
         """Returns an iterator for all the TrieId keys in the trie.

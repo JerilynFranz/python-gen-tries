@@ -115,6 +115,106 @@ read-only threads.</p>
 </div>
 <section id="usage">
 <h3>Usage<a class="headerlink" href="#usage" title="Link to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#usage'">¶</a></h3>
+<p>You can create a trie using the <cite>GeneralizedTrie</cite> class:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span id="line-1"><span class="linenos">1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gentrie</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeneralizedTrie</span>
+</span><span id="line-2"><span class="linenos">2</span>
+</span><span id="line-3"><span class="linenos">3</span><span class="c1"># Create a new trie instance</span>
+</span><span id="line-4"><span class="linenos">4</span><span class="n">trie</span> <span class="o">=</span> <span class="n">GeneralizedTrie</span><span class="p">()</span>
+</span></code></pre></div>
+</div>
+<p>There are three ways to add entries:</p>
+<ol class="arabic simple">
+<li><p>Using the <cite>trie[key] = value</cite> syntax</p></li>
+</ol>
+<p>This allows you to assign a value directly to a key and will create a
+new entry if the key does not already exist. If the key already exists,
+it will update the value associated with that key.</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Examples of using the <cite>trie[key] = value</cite> syntax</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span id="line-1"><span class="linenos"> 1</span><span class="c1"># Assigns 'value' to 'key'</span>
+</span><span id="line-2"><span class="linenos"> 2</span><span class="c1"># (tokenized as characters 'k','e','y')</span>
+</span><span id="line-3"><span class="linenos"> 3</span><span class="n">trie</span><span class="p">[</span><span class="s1">'key'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'value'</span>
+</span><span id="line-4"><span class="linenos"> 4</span>
+</span><span id="line-5"><span class="linenos"> 5</span><span class="c1"># Assigns value 'value2' to key 'another_key' (tokenized as</span>
+</span><span id="line-6"><span class="linenos"> 6</span><span class="c1"># 'a','n','o','t','h','e','r','_','k','e','y','2')</span>
+</span><span id="line-7"><span class="linenos"> 7</span><span class="n">trie</span><span class="p">[</span><span class="s1">'another_key'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'another_value'</span>
+</span><span id="line-8"><span class="linenos"> 8</span>
+</span><span id="line-9"><span class="linenos"> 9</span><span class="c1"># Changes the value for 'key' (tokenized as 'k', 'e', 'y')</span>
+</span><span id="line-10"><span class="linenos">10</span><span class="c1"># to 'new_value'</span>
+</span><span id="line-11"><span class="linenos">11</span><span class="n">trie</span><span class="p">[</span><span class="s1">'key'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'new_value'</span>
+</span><span id="line-12"><span class="linenos">12</span>
+</span><span id="line-13"><span class="linenos">13</span><span class="c1"># Assigns a tuple of int (tokenized as</span>
+</span><span id="line-14"><span class="linenos">14</span><span class="c1"># 128, 96, 160, 0) as a key with the value'value5'</span>
+</span><span id="line-15"><span class="linenos">15</span><span class="n">trie</span><span class="p">[(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">96</span><span class="p">,</span> <span class="mi">160</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span> <span class="o">=</span> <span class="s1">'value5'</span>
+</span><span id="line-16"><span class="linenos">16</span>
+</span><span id="line-17"><span class="linenos">17</span><span class="c1"># Assigns a tuple with mixed value types (tokenized</span>
+</span><span id="line-18"><span class="linenos">18</span><span class="c1"># as 128, 'a') as a key with the value 'value5b'</span>
+</span><span id="line-19"><span class="linenos">19</span><span class="n">trie</span><span class="p">[(</span><span class="mi">128</span><span class="p">,</span> <span class="s1">'a'</span><span class="p">)]</span> <span class="o">=</span> <span class="s1">'value5b'</span>
+</span><span id="line-20"><span class="linenos">20</span>
+</span><span id="line-21"><span class="linenos">21</span><span class="c1"># Assigns a list of words (tokenized as 'hello', 'world')</span>
+</span><span id="line-22"><span class="linenos">22</span><span class="c1"># as a key with the value 'value6'</span>
+</span><span id="line-23"><span class="linenos">23</span><span class="n">trie</span><span class="p">[[</span><span class="s1">'hello'</span><span class="p">,</span> <span class="s1">'world'</span><span class="p">]]</span> <span class="o">=</span> <span class="s1">'value6'</span>
+</span></code></pre></div>
+</div>
+</div>
+<ol class="arabic" start="2">
+<li><p>Using the <cite>trie.add(key, value)</cite> method</p>
+<blockquote>
+<div><p>This method adds a new entry to the trie and returns the TrieId
+for the new entry. If the key already exists, it will throw an
+error. The value argument is optional, and if not provided
+the entry will be created with a value of <cite>None</cite>.</p>
+</div></blockquote>
+</li>
+<li><p>Using the <cite>trie.update(key, value)</cite> method</p>
+<blockquote>
+<div><p>This method adds a new entry or updates an existing entry,
+returning the TrieId for the entry and returns the TrieId of the entry.</p>
+<p>This is the same as using the <cite>trie[key] = value</cite> syntax,
+but it is more explicit about the intention to update or add
+an entry and returns the TrieId of the entry.</p>
+<p>The value argument is optional, and if not provided, the
+entry will be created or updated with a value of <cite>None</cite>.</p>
+</div></blockquote>
+</li>
+</ol>
+<p>You can use the <cite>in</cite> operator to check if a key exists in the trie,
+e.g., <cite>if key in trie:</cite>. This will return <cite>True</cite> if the key exists,
+and <cite>False</cite> otherwise.</p>
+<p>There are two ways to directly retrieve entries using their keys:</p>
+<ol class="arabic">
+<li><p>Using the <cite>trie[key | TrieId]</cite> syntax.</p>
+<blockquote>
+<div><p>This retrieves the <cite>TrieEntry</cite> associated with the key or TrieId. It
+will raise a <cite>KeyError</cite> if the key/TrieId does not exist. It will raise
+a <cite>TypeError</cite> if the key is not either a valid <cite>TrieId</cite> or <cite>GeneralizedKey</cite>.</p>
+<p>The returned <cite>TrieEntry</cite> contains the key, value, and an identifier
+(ident - of type <cite>TrieId</cite>) that uniquely identifies the entry in the trie.</p>
+</div></blockquote>
+</li>
+<li><dl>
+<dt>Using the <cite>trie.get(key | TrieId, [default])</cite> method</dt><dd><p>This retrieves the <cite>TrieEntry</cite> associated with the key or TrieId,
+returning <cite>None</cite> if the key/TrieId does not exist. This could be
+preferable in cases where you want to avoid exceptions
+for missing keys although it cannot distinguish between a key
+that does not exist and a key that exists with a <cite>None</cite> value
+in the trie by default.</p>
+<p>You <em>can</em> provide a different default value to return if the key
+does not exist, which can be useful for handling cases where
+you want to return a specific value instead of <cite>None</cite>.</p>
+</dd>
+</dl>
+</li>
+</ol>
+<p>You can also retrieve all entries that are suffixes or prefixes of a given key:</p>
+<ul class="simple">
+<li><p><cite>trie.suffixes(key)</cite> returns a set of <cite>TrieEntry</cite> objects that
+are suffixes of the given key.</p></li>
+<li><p><cite>trie.prefixes(key)</cite> returns a set of <cite>TrieEntry</cite> objects that
+are prefixes of the given key.</p></li>
+</ul>
+<p>These methods are useful for searching and retrieving entries
+that match a specific pattern or structure in the trie.</p>
 <section id="example-1-basic-usage">
 <h4>Example 1 - Basic Usage<a class="headerlink" href="#example-1-basic-usage" title="Link to this heading">¶</a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span id="line-1"><span class="linenos">1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gentrie</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeneralizedTrie</span><span class="p">,</span> <span class="n">TrieEntry</span>
@@ -250,8 +350,8 @@ content of the object).</p>
 is to use the <code class="xref py py-class docutils literal notranslate"><span class="pre">dataclasses.dataclass</span></code> decorator using the <code class="docutils literal notranslate"><span class="pre">frozen=True</span></code> and
 <code class="docutils literal notranslate"><span class="pre">eq=True</span></code> options . This will automatically implement appropriate <code class="docutils literal notranslate"><span class="pre">__eq__()</span></code>
 and <code class="docutils literal notranslate"><span class="pre">__hash__()</span></code> methods for you.</p>
-<div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-text">Example of a content-aware user-defined class</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">Example of a content-aware user-defined class</span><a class="headerlink" href="#id2" title="Link to this code">¶</a></div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span id="line-1"><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 </span><span id="line-2"><span class="linenos"> 2</span>
 </span><span id="line-3"><span class="linenos"> 3</span><span class="kn">from</span><span class="w"> </span><span class="nn">gentrie</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrieKeyToken</span>
@@ -300,14 +400,13 @@ returns elements conforming to the <a class="reference internal" href="#gentrie.
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><a class="reference internal" href="#gentrie.InvalidGeneralizedKeyError" title="gentrie.InvalidGeneralizedKeyError"><strong>InvalidGeneralizedKeyError</strong></a><strong> (</strong><strong>[</strong><strong>GTU001</strong><strong>]</strong><strong>)</strong> – If key is not a valid <a class="reference internal" href="#gentrie.GeneralizedKey" title="gentrie.GeneralizedKey"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code></a>.</p></li>
-<li><p><a class="reference internal" href="#gentrie.DuplicateKeyError" title="gentrie.DuplicateKeyError"><strong>DuplicateKeyError</strong></a><strong> (</strong><strong>[</strong><strong>GTU002</strong><strong>]</strong><strong>)</strong> – If the key is already in the trie but with a different value.</p></li>
+<li><p><a class="reference internal" href="#gentrie.DuplicateKeyError" title="gentrie.DuplicateKeyError"><strong>DuplicateKeyError</strong></a><strong> (</strong><strong>[</strong><strong>GTU002</strong><strong>]</strong><strong>)</strong> – If the key is already in the trie.</p></li>
 </ul>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Id of the inserted key. If the key was already in the trie with the same value
-it returns the id for the already existing entry. If the key was not in the trie,
-it returns the id of the new entry. If the key was already in the trie but with a different value,
-it raises an <a class="reference internal" href="#gentrie.DuplicateKeyError" title="gentrie.DuplicateKeyError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DuplicateKeyError</span></code></a>.</p>
+<dd class="field-odd"><p>Id of the inserted key. If the key was not in the trie,
+it returns the id of the new entry. If the key was already in the trie,
+it raises a <a class="reference internal" href="#gentrie.DuplicateKeyError" title="gentrie.DuplicateKeyError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DuplicateKeyError</span></code></a>.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#gentrie.TrieId" title="gentrie.TrieId"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieId</span></code></a></p>
@@ -322,6 +421,44 @@ it raises an <a class="reference internal" href="#gentrie.DuplicateKeyError" tit
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><code><span id="line-1"><span class="n">trie_obj</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 </span></code></pre></div>
 </div>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="gentrie.GeneralizedTrie.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><span class="pre">TrieKeyToken</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><span class="pre">TrieEntry</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#gentrie.GeneralizedTrie.get" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.GeneralizedTrie.get'">¶</a></dt>
+<dd><p>Returns the <a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieEntry</span></code></a> for the ident or key with the passed identifier.</p>
+<p>The identifier can be either the <a class="reference internal" href="#gentrie.TrieId" title="gentrie.TrieId"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieId</span></code></a> (ident) or the <a class="reference internal" href="#gentrie.GeneralizedKey" title="gentrie.GeneralizedKey"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code></a> (key)
+for the entry.</p>
+<p>If the key is not found, it returns the default value if provided or None if not provided.</p>
+<p class="rubric">Example</p>
+<p>trie = GeneralizedTrie()
+ident: TrieId = trie.add([‘ape’, ‘green’, ‘apple’])</p>
+<p>entry: TrieEntry = trie.get(ident)
+print(entry)
+# Output: TrieEntry(ident=1, key=[‘ape’, ‘green’, ‘apple’], value=None)</p>
+<p>trie[[‘ape’, ‘green’, ‘apple’]] = “A green apple”
+entry = trie.get([‘ape’, ‘green’, ‘apple’])
+print(entry)
+# Output: TrieEntry(ident=1, key=[‘ape’, ‘green’, ‘apple’], value=”A green apple”)</p>
+<p>entry = trie.get([‘non’, ‘existent’, ‘key’], default=”Not Found”)
+print(entry)
+# Output: “Not Found”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<em>TrieId</em><em> | </em><em>GeneralizedKey</em>) – the identifier to retrieve.</p></li>
+<li><p><strong>default</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><em>TrieEntry</em></a><em> | </em><em>Any</em><em>]</em><em>, </em><em>default=None</em>) – The default value to return if the key is not found.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: <a class="reference internal" href="#gentrie.TrieEntry" title="gentrie.TrieEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieEntry</span></code></a>: TrieEntry for the key with the passed identifier or the default value if not found.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.13)"><strong>KeyError</strong></a><strong> (</strong><strong>[</strong><strong>GTG001</strong><strong>]</strong><strong>)</strong> – if the key arg does not match any keys/idents in the trie.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.13)"><strong>TypeError</strong></a><strong> (</strong><strong>[</strong><strong>GTG002</strong><strong>]</strong><strong>)</strong> – if the key arg is neither a <a class="reference internal" href="#gentrie.TrieId" title="gentrie.TrieId"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieId</span></code></a> or a valid <a class="reference internal" href="#gentrie.GeneralizedKey" title="gentrie.GeneralizedKey"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code></a>.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="gentrie.GeneralizedTrie.items">
@@ -675,6 +812,7 @@ iterated. It must have at least one token.</p>
 <li><a :data-current="activeSection === '#gentrie.GeneralizedTrie'" class="reference internal" href="#gentrie.GeneralizedTrie"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie</span></code></a><ul>
 <li><a :data-current="activeSection === '#gentrie.GeneralizedTrie.add'" class="reference internal" href="#gentrie.GeneralizedTrie.add"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.add()</span></code></a></li>
 <li><a :data-current="activeSection === '#gentrie.GeneralizedTrie.clear'" class="reference internal" href="#gentrie.GeneralizedTrie.clear"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.clear()</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.GeneralizedTrie.get'" class="reference internal" href="#gentrie.GeneralizedTrie.get"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.get()</span></code></a></li>
 <li><a :data-current="activeSection === '#gentrie.GeneralizedTrie.items'" class="reference internal" href="#gentrie.GeneralizedTrie.items"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.items()</span></code></a></li>
 <li><a :data-current="activeSection === '#gentrie.GeneralizedTrie.keys'" class="reference internal" href="#gentrie.GeneralizedTrie.keys"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.keys()</span></code></a></li>
 <li><a :data-current="activeSection === '#gentrie.GeneralizedTrie.prefixes'" class="reference internal" href="#gentrie.GeneralizedTrie.prefixes"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.prefixes()</span></code></a></li>
