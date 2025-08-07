@@ -34,6 +34,11 @@ Assigning Values to Entries
 .. include:: ../../examples/assigning_values_to_entries.py
    :code: python
 
+Dictionary Syntax Examples
+---------------------------
+.. include:: ../../examples/dictionary_syntax_examples.py
+   :code: python
+
 By Letter
 ----------------
 

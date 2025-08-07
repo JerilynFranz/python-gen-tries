@@ -187,6 +187,21 @@ class TestTrieKeyToken(unittest.TestCase):
                 self.assertNotIsInstance(token, TrieKeyToken)
 
 
+class TestTrieId(unittest.TestCase):
+    """Test the TrieId class and its behavior."""
+    def test_trieid_class(self) -> None:
+        """Test the creation of TrieId instances."""
+        id1 = TrieId(1)
+        with self.subTest(msg="[TTI001] Creating TrieId(1)"):
+            self.assertIsInstance(id1, TrieId, "[TTI001] id1 should be an instance of TrieId")
+        with self.subTest(msg="[TTI002] int(1) is not a TrieId"):
+            self.assertNotIsInstance(int(1), TrieId, "[TTI002] int(1) should not be an instance of TrieId")
+        with self.subTest(msg="[TTI003] TrieId(2) is not equal to TrieId(1)"):
+            self.assertNotEqual(TrieId(2), id1)
+        with self.subTest(msg="[TTI004] TrieId(1) is equal to itself"):
+            self.assertEqual(id1, TrieId(1), "[TTI004] TrieId(1) should be equal to itself")
+
+
 class TestGeneralizedKey(unittest.TestCase):
     """Test the is_generalizedkey function and its behavior with various types."""
     def test_supported_builtin_types(self) -> None:
@@ -281,7 +296,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 action=trie.add,
                 args=[["tree", "value", "ape"]],
                 kwargs={},
-                expected=1,
+                expected=TrieId(1),
             ),
             # Validate the dictionary representation of the trie is correct after initialization
             TestConfig(
@@ -324,7 +339,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA003] trie.add(['tree', 'value']",
                 action=trie.add,
                 args=[["tree", "value"]],
-                expected=2,
+                expected=TrieId(2),
             ),
             # Validate the _as_dict representation of the trie is correct
             TestConfig(
@@ -369,7 +384,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA005] trie.add('abcdef')",
                 action=trie.add,
                 args=["abcdef"],
-                expected=3,
+                expected=TrieId(3),
             ),
             # Add another entry [1, 3, 4, 5] and validate we get the expected id for it
             TestConfig(
@@ -377,7 +392,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 action=trie.add,
                 args=[[1, 3, 4, 5]],
                 kwargs={},
-                expected=4,
+                expected=TrieId(4),
             ),
             # Add a frozenset entry and validate we get the expected id for it
             TestConfig(
@@ -385,7 +400,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 action=trie.add,
                 args=[[frozenset([1]), 3, 4, 5]],
                 kwargs={},
-                expected=5,
+                expected=TrieId(5),
             ),
             # Add another frozenset entry and validate we get a different id for it
             # than for the previously added frozenset
@@ -393,7 +408,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA008] trie.add(frozenset([1]), 3, 4, 5])",
                 action=trie.add,
                 args=[[frozenset([1]), 3, 4, 6]],
-                expected=6,
+                expected=TrieId(6),
             ),
             # Attempt to add an integer as a key and validate we get the expected exception
             TestConfig(
@@ -424,7 +439,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA012] trie.add(key=[1, 3, 4, 7])",
                 action=trie.add,
                 kwargs={"key": [1, 3, 4, 7]},
-                expected=7,
+                expected=TrieId(7),
             ),
             # Attempt to pass add the wrong number of arguments and validate we get the expected exception
             TestConfig(name="[TA013] trie.add()", action=trie.add, exception=TypeError),
@@ -452,7 +467,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA018] trie.add(['tree', 'value', 'cheetah'], 'feline')",
                 action=trie.add,
                 args=[["tree", "value", "cheetah"], "feline"],
-                expected=8,
+                expected=TrieId(8),
             ),
 
         ]
@@ -470,7 +485,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA019] trie.add(['tree', 'value', 'cheetah'], 'feline')",
                 action=trie.add,
                 args=[["tree", "value", "cheetah"], "feline"],
-                expected=1,
+                expected=TrieId(1),
             ),
             # validate that entry 1 (with the key ['tree', 'value', 'cheetah']) has the value of 'feline'
             TestConfig(
@@ -632,7 +647,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 action=trie.update,
                 args=[["tree", "value", "ape"]],
                 kwargs={},
-                expected=1,
+                expected=TrieId(1),
             ),
             # Validate the dictionary representation of the trie is correct after initialization
             TestConfig(
@@ -675,7 +690,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TU003] trie.update(['tree', 'value']",
                 action=trie.update,
                 args=[["tree", "value"]],
-                expected=2,
+                expected=TrieId(2),
             ),
             # Validate the _as_dict representation of the trie is correct
             TestConfig(
@@ -720,7 +735,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TU005] trie.update('abcdef')",
                 action=trie.update,
                 args=["abcdef"],
-                expected=3,
+                expected=TrieId(3),
             ),
             # Add another entry [1, 3, 4, 5] and validate we get the expected id for it
             TestConfig(
@@ -728,7 +743,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 action=trie.update,
                 args=[[1, 3, 4, 5]],
                 kwargs={},
-                expected=4,
+                expected=TrieId(4),
             ),
             # Add a frozenset entry and validate we get the expected id for it
             TestConfig(
@@ -736,7 +751,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 action=trie.update,
                 args=[[frozenset([1]), 3, 4, 5]],
                 kwargs={},
-                expected=5,
+                expected=TrieId(5),
             ),
             # Add another frozenset entry and validate we get a different id for it
             # than for the previously added frozenset
@@ -744,7 +759,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TU008] trie.update(frozenset([1]), 3, 4, 5])",
                 action=trie.update,
                 args=[[frozenset([1]), 3, 4, 6]],
-                expected=6,
+                expected=TrieId(6),
             ),
             # Attempt to add an integer as a key and validate we get the expected exception
             TestConfig(
@@ -775,7 +790,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TU012] trie.update(key=[1, 3, 4, 7])",
                 action=trie.update,
                 kwargs={"key": [1, 3, 4, 7]},
-                expected=7,
+                expected=TrieId(7),
             ),
             # Attempt to pass add the wrong number of arguments and validate we get the expected exception
             TestConfig(name="[TU013] trie.update()", action=trie.update, exception=TypeError),
@@ -793,7 +808,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 action=trie.update,
                 args=[["tree", "value", "ape"]],
                 kwargs={},
-                expected=1,
+                expected=TrieId(1),
             ),
             # Validate the length of the trie after adding duplicate ['tree', 'value', 'ape'] is unchanged
             TestConfig(name="[TU017] len(trie)", action=len, args=[trie], expected=7),
@@ -802,7 +817,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TU018] trie.update(['tree', 'value', 'cheetah'], 'feline')",
                 action=trie.update,
                 args=[["tree", "value", "cheetah"], "feline"],
-                expected=8,
+                expected=TrieId(8),
             ),
 
         ]
@@ -820,7 +835,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TU019] trie.update(['tree', 'value', 'cheetah'], 'feline')",
                 action=trie.update,
                 args=[["tree", "value", "cheetah"], "feline"],
-                expected=1,
+                expected=TrieId(1),
             ),
             # validate that entry 1 (with the key ['tree', 'value', 'cheetah']) has the value of 'feline'
             TestConfig(
@@ -866,7 +881,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TU021] trie.update(['tree', 'value', 'cheetah'], 'feline')",
                 action=trie.update,
                 args=[["tree", "value", "cheetah"], "feline"],
-                expected=1,
+                expected=TrieId(1),
             ),
             # validate that the trie is unchanged after adding the same key with the same value
             TestConfig(
@@ -912,7 +927,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TU023] trie.update(['tree', 'value', 'cheetah'])",
                 action=trie.update,
                 args=[["tree", "value", "cheetah"]],
-                expected=1,
+                expected=TrieId(1),
             ),
             # Validate that the trie was correctly updated after adding the same key with a different value of None
             TestConfig(
@@ -956,7 +971,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TU025] trie.update(['tree', 'value', 'cheetah'], 'canide)",
                 action=trie.update,
                 args=[["tree", "value", "cheetah"], "canide"],
-                expected=1,
+                expected=TrieId(1),
             ),
             # Validate that the trie was correctly updated after adding the same key with a different value of 'canide'
             TestConfig(
@@ -1024,19 +1039,19 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TAUDC005] trie.add(['red', MockDefaultTrieKeyToken(a=(1, 2, 3), b='hello')])",
                 action=trie.add,
                 args=[a],
-                expected=1,
+                expected=TrieId(1),
             ),
             TestConfig(
                 name="[TAUDC006] trie.add(['red', MockDefaultTrieKeyToken(a=[1, 2, 3], b='hello')])",
                 action=trie.add,
                 args=[b],
-                expected=2,
+                expected=TrieId(2),
             ),
             TestConfig(
                 name="[TAUDC007] trie.add(['red', MockContentAwareTrieKeyToken(a=(1, 2, 3), b='hello')])",
                 action=trie.add,
                 args=[c],
-                expected=3,
+                expected=TrieId(3),
             ),
             TestConfig(
                 name="[TAUDC008] trie.add(['red', MockContentAwareTrieKeyToken(a=(1, 2, 3), b='hello')])",
@@ -1057,25 +1072,25 @@ class TestGeneralizedTrie(unittest.TestCase):
 
         with self.subTest(msg="[TP001] trie.add(['tree', 'value', 'ape'])"):
             entry_id: TrieId = trie.add(["tree", "value", "ape"])
-            self.assertEqual(entry_id, 1)
+            self.assertEqual(entry_id, TrieId(1))
 
         with self.subTest(msg="[TP002] trie.add(['tree', 'value'])"):
             entry_id = trie.add(["tree", "value"])
-            self.assertEqual(entry_id, 2)
+            self.assertEqual(entry_id, TrieId(2))
 
         with self.subTest(msg="[TP003] trie.add('abcdef')"):
             entry_id = trie.add("abcdef")
-            self.assertEqual(entry_id, 3)
+            self.assertEqual(entry_id, TrieId(3))
 
         with self.subTest(msg="[TP004] trie.add('abc')"):
             entry_id = trie.add("abc")
-            self.assertEqual(entry_id, 4)
+            self.assertEqual(entry_id, TrieId(4))
 
         with self.subTest(msg="[TP005] trie.prefixes(['tree', 'value', 'ape'])"):
             found: set[TrieEntry] = trie.prefixes(["tree", "value", "ape"])
             expected: set[TrieEntry] = set([
-                TrieEntry(1, ['tree', 'value', 'ape']),
-                TrieEntry(2, ['tree', 'value'])
+                TrieEntry(TrieId(1), ['tree', 'value', 'ape']),
+                TrieEntry(TrieId(2), ['tree', 'value'])
             ])
             self.assertEqual(found, expected, msg=str(trie))
 
@@ -1087,10 +1102,10 @@ class TestGeneralizedTrie(unittest.TestCase):
         trie = GeneralizedTrie()
         deep_key = ["a"] * 100
         id1 = trie.add(deep_key)
-        self.assertEqual(id1, 1)
+        self.assertEqual(id1, TrieId(1))
         self.assertTrue(deep_key in trie)
-        self.assertEqual(trie.prefixes(deep_key), set([TrieEntry(1, deep_key)]))
-        self.assertEqual(trie.suffixes(deep_key), set([TrieEntry(1, deep_key)]))
+        self.assertEqual(trie.prefixes(deep_key), set([TrieEntry(TrieId(1), deep_key)]))
+        self.assertEqual(trie.suffixes(deep_key), set([TrieEntry(TrieId(1), deep_key)]))
 
     def test_unicode_and_bytes_keys(self):
         """Test that unicode and bytes keys can coexist in the trie.
@@ -1102,8 +1117,8 @@ class TestGeneralizedTrie(unittest.TestCase):
         bytes_key = [b"\xf0\x9f\x92\xa9"]
         id1 = trie.add(unicode_key)
         id2 = trie.add(bytes_key)
-        self.assertEqual(id1, 1)
-        self.assertEqual(id2, 2)
+        self.assertEqual(id1, TrieId(1))
+        self.assertEqual(id2, TrieId(2))
         self.assertTrue(unicode_key in trie)
         self.assertTrue(bytes_key in trie)
 
@@ -1162,9 +1177,18 @@ class TestGeneralizedTrie(unittest.TestCase):
         raises a KeyError.
         """
         trie = GeneralizedTrie()
-        trie.add("abc")
-        with self.assertRaises(KeyError):
-            trie.remove(999)
+        self.assertEqual(
+            trie.add("abc"),
+            TrieId(1),
+            msg='[TRNEI001] Add an entry to ensure the trie is not empty. Should have TrieId(1)')
+        with self.assertRaises(KeyError,
+                               msg='[TRNEI002] Removing a non-existent TrieId(999999) should raise KeyError'):
+            trie.remove(TrieId(999999))  # Non-existent TrieId
+        with self.assertRaises(
+                TypeError,
+                msg=('[TRNEI003] Removing 1 should raise a TypError because it is not a '
+                     'TrieId or a valid GeneralizedKey')):
+            trie.remove(1)  # type: ignore[reportGeneralTypeIssues]
 
     def test_remove_and_readd(self):
         """Test removing an entry and then re-adding it to ensure a new ID is generated.
@@ -1196,79 +1220,76 @@ class TestGeneralizedTrie(unittest.TestCase):
         trie: GeneralizedTrie = GeneralizedTrie()
         tests: list[TestConfig] = [
             TestConfig(
-                name="[TR001] trie.add('a')", action=trie.add, args=["a"], expected=1
+                name="[TR001] trie.add('a')", action=trie.add, args=["a"], expected=TrieId(1)
             ),
             TestConfig(
-                name="[TR002] trie.add('ab')", action=trie.add, args=["ab"], expected=2
+                name="[TR002] trie.add('ab')", action=trie.add, args=["ab"], expected=TrieId(2)
             ),
             TestConfig(
-                name="[TR003] trie.add('abc')",
-                action=trie.add,
-                args=["abc"],
-                expected=3,
+                name="[TR003] trie.add('abc')", action=trie.add, args=["abc"], expected=TrieId(3),
             ),
             TestConfig(
                 name="[TR004] trie.add('abe')",
                 action=trie.add,
                 args=["abe"],
-                expected=4,
+                expected=TrieId(4),
             ),
             TestConfig(
                 name="[TR005] trie.add('abef')",
                 action=trie.add,
                 args=["abef"],
-                expected=5,
+                expected=TrieId(5),
             ),
             TestConfig(
                 name="[TR006] trie.add('abcd')",
                 action=trie.add,
                 args=["abcd"],
-                expected=6,
+                expected=TrieId(6),
             ),
             TestConfig(
                 name="[TR007] trie.add('abcde')",
                 action=trie.add,
                 args=["abcde"],
-                expected=7,
+                expected=TrieId(7),
             ),
             TestConfig(
                 name="[TR008] trie.add('abcdf')",
                 action=trie.add,
                 args=["abcdef"],
-                expected=8,
+                expected=TrieId(8),
             ),
             TestConfig(
                 name="[TR009] trie.add('abcdefg')",
                 action=trie.add,
                 args=["abcdefg"],
-                expected=9,
+                expected=TrieId(9),
             ),
             TestConfig(
-                name="[TR010] trie.remove(9)",
+                name="[TR010] trie.remove(TrieId(9))",
                 action=trie.remove,
-                args=[9],
+                args=[TrieId(9)],
                 expected=None,
             ),
             TestConfig(name="[TR011] len(trie)", action=len, args=[trie], expected=8),
             TestConfig(
-                name="[TR012] trie.remove(9)",
+                name="[TR012] trie.remove(TrieId(9))",
                 action=trie.remove,
-                args=[9],
+                args=[TrieId(9)],
                 exception=KeyError,
                 exception_tag="[GTR002]",
             ),
             TestConfig(name="[TR013] len(trie)", action=len, args=[trie], expected=8),
             TestConfig(
-                name="[TR014] trie.remove(1)",
+                name="[TR014] trie.remove(TrieId(1))",
                 action=trie.remove,
-                args=[1],
+                args=[TrieId(1)],
                 expected=None,
             ),
             TestConfig(name="[TR015] len(trie)", action=len, args=[trie], expected=7),
             TestConfig(
-                name="[TR016] trie.remove(2)",
+                name="[TR016] trie.remove(TrieId(2))",
                 action=trie.remove,
-                args=[2],
+                args=[TrieId(2)],
                 expected=None,
             ),
             TestConfig(name="[TR017] len(trie)", action=len, args=[trie], expected=6),
@@ -1280,9 +1301,9 @@ class TestGeneralizedTrie(unittest.TestCase):
                 exception_tag="[GTR002]",
             ),
             TestConfig(
-                name="[TR019] trie.remove(0)",
+                name="[TR019] trie.remove(TrieId(0))",
                 action=trie.remove,
-                args=[0],
+                args=[TrieId(0)],
                 exception=KeyError,
                 exception_tag="[GTR002]",
             ),
@@ -1290,12 +1311,12 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TR020] trie.add('qrstuv')",
                 action=trie.add,
                 args=['qrstuv'],
-                expected=10,
+                expected=TrieId(10),
             ),
             TestConfig(
-                name="[TR021] trie.remove(10)",
+                name="[TR021] trie.remove(TrieId(10))",
                 action=trie.remove,
-                args=[10],
+                args=[TrieId(10)],
                 expected=None,
             ),
             TestConfig(
@@ -1412,7 +1433,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 expected=False
             ),
             TestConfig(
-                name="[TC002] trie.add('a')", action=trie.add, args=["a"], expected=1
+                name="[TC002] trie.add('a')", action=trie.add, args=["a"], expected=TrieId(1)
             ),
             TestConfig(
                 name="[TC003] trie.__contains__('a') (true)",
@@ -1421,7 +1442,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 expected=True
             ),
             TestConfig(
-                name="[TC004] trie.remove(1)", action=trie.remove, args=[1], expected=None
+                name="[TC004] trie.remove(TrieId(1))", action=trie.remove, args=[TrieId(1)], expected=None
             ),
             TestConfig(
                 name="[TC006] trie.__contains__('a') (false after removal)",
@@ -1460,7 +1481,7 @@ class TestGeneralizedTrie(unittest.TestCase):
             self.assertEqual(found_id_list, expect_id_list)
 
         with self.subTest(msg="[TK002] trie.add('abcdef')"):
-            expect_id: TrieId = 1
+            expect_id: TrieId = TrieId(1)
             found_id: TrieId = trie.add("abcdef")
             self.assertEqual(found_id, expect_id)
 
@@ -1470,7 +1491,7 @@ class TestGeneralizedTrie(unittest.TestCase):
             self.assertEqual(found_id_list, expect_id_list)
 
         with self.subTest(msg="[TK004] trie.add('abc')"):
-            expect_id = 2
+            expect_id = TrieId(2)
             found_id = trie.add("abc")
             self.assertEqual(found_id, expect_id)
 
@@ -1482,14 +1503,14 @@ class TestGeneralizedTrie(unittest.TestCase):
         with self.assertRaises(TypeError, msg="[TK006] trie.remove('abc')"):
             trie.remove(set('abc'))  # type: ignore[reportGeneralTypeIssues]
 
-        with self.subTest(msg="[TK007] trie.remove(1)"):
-            trie.remove(1)
+        with self.subTest(msg="[TK007] trie.remove(TrieId(1))"):
+            trie.remove(TrieId(1))
             expect_id_list = [TrieId(2)]
             found_id_list = list(trie.keys())
             self.assertEqual(found_id_list, expect_id_list)
 
-        with self.subTest(msg="[TK008] trie.remove(2)"):
-            trie.remove(2)
+        with self.subTest(msg="[TK008] trie.remove(TrieId(2))"):
+            trie.remove(TrieId(2))
             expect_id_list = []
             found_id_list = list(trie.keys())
             self.assertEqual(found_id_list, expect_id_list)
@@ -1512,33 +1533,33 @@ class TestGeneralizedTrie(unittest.TestCase):
             self.assertEqual(found_entries_list, expect_entries_list)
 
         with self.subTest(msg="[TV002] trie.add('abcdef')"):
-            expect_id: TrieId = 1
+            expect_id: TrieId = TrieId(1)
             found_id: TrieId = trie.add("abcdef")
             self.assertEqual(found_id, expect_id)
 
         with self.subTest(msg="[TV003] trie.values()"):
-            expect_entries_list = [TrieEntry(1, 'abcdef')]
+            expect_entries_list = [TrieEntry(TrieId(1), 'abcdef')]
             found_entries_list = list(trie.values())
             self.assertEqual(found_entries_list, expect_entries_list)
 
         with self.subTest(msg="[TV004] trie.add('abc')"):
-            expect_id = 2
+            expect_id = TrieId(2)
             found_id = trie.add("abc")
             self.assertEqual(found_id, expect_id)
 
         with self.subTest(msg="[TV005] trie.values()"):
-            expect_entries_list = [TrieEntry(1, 'abcdef'), TrieEntry(2, 'abc')]
+            expect_entries_list = [TrieEntry(TrieId(1), 'abcdef'), TrieEntry(TrieId(2), 'abc')]
             found_entries_list = list(sorted(trie.values()))
             self.assertEqual(found_entries_list, expect_entries_list)
 
-        with self.subTest(msg="[TV006] trie.remove(1)"):
-            trie.remove(1)
-            expect_entries_list = [TrieEntry(2, 'abc')]
+        with self.subTest(msg="[TV006] trie.remove(TrieId(1))"):
+            trie.remove(TrieId(1))
+            expect_entries_list = [TrieEntry(TrieId(2), 'abc')]
             found_entries_list = list(trie.values())
             self.assertEqual(found_entries_list, expect_entries_list)
 
-        with self.subTest(msg="[TV007] trie.remove(2)"):
-            trie.remove(2)
+        with self.subTest(msg="[TV007] trie.remove(TrieId(2))"):
+            trie.remove(TrieId(2))
             expect_entries_list = []
             found_entries_list = list(trie.values())
             self.assertEqual(found_entries_list, expect_entries_list)
@@ -1561,33 +1582,35 @@ class TestGeneralizedTrie(unittest.TestCase):
             self.assertEqual(found_items_list, expect_items_list)
 
         with self.subTest(msg="[TI002] trie.add('abcdef')"):
-            expect_id: TrieId = 1
+            expect_id: TrieId = TrieId(1)
             found_id: TrieId = trie.add("abcdef")
             self.assertEqual(found_id, expect_id)
 
         with self.subTest(msg="[TI003] trie.items()"):
-            expect_items_list = [(TrieId(1), TrieEntry(1, 'abcdef'))]
+            expect_items_list = [(TrieId(1), TrieEntry(TrieId(1), 'abcdef'))]
             found_items_list = list(sorted(trie.items()))
             self.assertEqual(found_items_list, expect_items_list)
 
         with self.subTest(msg="[TI004] trie.add('abc')"):
-            expect_id = 2
+            expect_id = TrieId(2)
             found_id = trie.add("abc")
             self.assertEqual(found_id, expect_id)
 
         with self.subTest(msg="[TI005] trie.items()"):
-            expect_items_list = [(TrieId(1), TrieEntry(1, 'abcdef')), (TrieId(2), TrieEntry(2, 'abc'))]
+            expect_items_list = [
+                (TrieId(1), TrieEntry(TrieId(1), 'abcdef')),
+                (TrieId(2), TrieEntry(TrieId(2), 'abc'))]
             found_items_list = list(sorted(trie.items()))
             self.assertEqual(found_items_list, expect_items_list)
 
-        with self.subTest(msg="[TI006] trie.remove(1)"):
-            trie.remove(1)
-            expect_items_list = [(TrieId(2), TrieEntry(2, 'abc'))]
+        with self.subTest(msg="[TI006] trie.remove(TrieId(1))"):
+            trie.remove(TrieId(1))
+            expect_items_list = [(TrieId(2), TrieEntry(TrieId(2), 'abc'))]
             found_items_list = list(sorted(trie.items()))
             self.assertEqual(found_items_list, expect_items_list)
 
-        with self.subTest(msg="[TI007] trie.remove(2)"):
-            trie.remove(2)
+        with self.subTest(msg="[TI007] trie.remove(TrieId(2))"):
+            trie.remove(TrieId(2))
             expect_items_list = []
             found_items_list = list(sorted(trie.items()))
             self.assertEqual(found_items_list, expect_items_list)
@@ -1604,31 +1627,31 @@ class TestGeneralizedTrie(unittest.TestCase):
         accessed, ensuring that the trie maintains its integrity."""
         trie: GeneralizedTrie = GeneralizedTrie()
 
-        with self.assertRaises(KeyError, msg="[TGID001] trie[1]"):
-            a: TrieEntry = trie[1]  # noqa: F841  # type: ignore  # pylint: disable=unused-variable
+        with self.assertRaises(KeyError, msg="[TGID001] trie[TrieId(1)]"):
+            _ = trie[TrieId(1)]
 
         with self.subTest(msg="[TGID002] trie.add('abcdef')"):
-            expect_id: TrieId = 1
+            expect_id: TrieId = TrieId(1)
             found_id: TrieId = trie.add("abcdef")
             self.assertEqual(found_id, expect_id)
 
-        with self.subTest(msg="[TGID003] trie[1]"):
-            expect_entry: TrieEntry = TrieEntry(1, 'abcdef')
-            found_entry: TrieEntry = trie[1]
+        with self.subTest(msg="[TGID003] trie[TrieId(1)]"):
+            expect_entry: TrieEntry = TrieEntry(TrieId(1), 'abcdef')
+            found_entry: TrieEntry = trie[TrieId(1)]
             self.assertEqual(found_entry, expect_entry)
 
         with self.subTest(msg="[TGID004] trie.add('abc')"):
-            expect_id = 2
+            expect_id = TrieId(2)
             found_id = trie.add("abc")
             self.assertEqual(found_id, expect_id)
 
-        with self.subTest(msg="[TGID005] trie[2]"):
-            expect_entry = TrieEntry(2, 'abc')
-            found_entry = trie[2]
+        with self.subTest(msg="[TGID005] trie[TrieId(2)]"):
+            expect_entry = TrieEntry(TrieId(2), 'abc')
+            found_entry = trie[TrieId(2)]
             self.assertEqual(found_entry, expect_entry)
 
-        with self.assertRaises(KeyError, msg="[TGID006] trie[3]"):
-            a: TrieEntry = trie[3]  # noqa: F841  # type: ignore  # pylint: disable=unused-variable
+        with self.assertRaises(KeyError, msg="[TGID006] trie[TrieId(3)]"):
+            _ = trie[TrieId(3)]
 
     def test_iter(self) -> None:
         """Test the iteration over GeneralizedTrie."""
@@ -1642,19 +1665,19 @@ class TestGeneralizedTrie(unittest.TestCase):
             self.assertEqual(found_ids_list, expect_ids_list)
 
         with self.subTest(msg="[TITER002] trie.add('abcdef')"):
-            expect_id: TrieId = 1
+            expect_id: TrieId = TrieId(1)
             found_id: TrieId = trie.add("abcdef")
             self.assertEqual(found_id, expect_id)
 
         with self.subTest(msg="[TITER003] for ident in trie:"):
-            expect_ids_list = [1]
+            expect_ids_list = [TrieId(1)]
             found_ids_list = []
             for ident in trie:
                 found_ids_list.append(ident)
             self.assertEqual(sorted(found_ids_list), expect_ids_list)
 
         with self.subTest(msg="[TITER004] trie.add('abc')"):
-            expect_id = 2
+            expect_id = TrieId(2)
             found_id = trie.add("abc")
             self.assertEqual(found_id, expect_id)
 
@@ -1680,13 +1703,13 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TB001] bool(trie)", action=bool, args=[trie], expected=False
             ),
             TestConfig(
-                name="[TB002] trie.add('a')", action=trie.add, args=["a"], expected=1
+                name="[TB002] trie.add('a')", action=trie.add, args=["a"], expected=TrieId(1)
             ),
             TestConfig(
                 name="[TB003] bool(trie)", action=bool, args=[trie], expected=True
             ),
             TestConfig(
-                name="[TB004] trie.remove(1)", action=trie.remove, args=[1], expected=None
+                name="[TB004] trie.remove(TrieId(1))", action=trie.remove, args=[TrieId(1)], expected=None
             ),
             TestConfig(
                 name="[TB005] bool(trie)", action=bool, args=[trie], expected=False

@@ -323,8 +323,13 @@ that when iterated returns tokens conforming to the :class:`TrieKeyToken` protoc
 
 """
 
-TrieId: TypeAlias = int
-"""Unique identifier for a key in a trie."""
+
+class TrieId(int):
+    """Unique identifier for a key in a trie."""
+    __slots__ = ()
+
+    def __new__(cls, value: int):
+        return int.__new__(cls, value)
 
 
 class TrieEntry(NamedTuple):
@@ -546,9 +551,9 @@ The code emphasizes robustness and correctness.
         self.value: Optional[Any] = None
         self.parent: Optional[GeneralizedTrie | _Node] = None
         self.children: dict[TrieKeyToken, _Node] = {}
-        self.ident: TrieId = 0
+        self.ident: TrieId = TrieId(0)
         # Counter for the next unique identifier to assign to a key in the trie.
-        self._ident_counter: TrieId = 0
+        self._ident_counter: int = 0
         # Mapping of unique identifiers to their corresponding trie nodes.
         self._trie_index: dict[TrieId, _Node] = {}
         # Mapping of unique identifiers to their corresponding TrieEntry instances.
@@ -673,13 +678,12 @@ The code emphasizes robustness and correctness.
 
         # Assign a new trie id for the node and set the value
         self._ident_counter += 1
-        current_node.ident = self._ident_counter
+        new_ident = TrieId(self._ident_counter)
+        current_node.ident = new_ident
         current_node.value = value
-        self._trie_index[
-            self._ident_counter] = current_node  # type: ignore[assignment]
-        self._trie_entries[self._ident_counter] = TrieEntry(
-            self._ident_counter, key, value)
-        return current_node.ident
+        self._trie_index[new_ident] = current_node  # type: ignore[assignment]
+        self._trie_entries[new_ident] = TrieEntry(new_ident, key, value)
+        return new_ident
 
     def remove(self, key: TrieId | GeneralizedKey) -> None:
         """Remove the specified key from the trie.
@@ -721,7 +725,7 @@ The code emphasizes robustness and correctness.
         del self._trie_entries[ident]
 
         # Remove the id from the node
-        node.ident = 0
+        node.ident = TrieId(0)
 
         # If the node still has other trie ids or children, we're done: return
         if node.children:
@@ -889,7 +893,7 @@ The code emphasizes robustness and correctness.
             trie_obj.clear()
 
         """
-        self.ident = 0
+        self.ident = TrieId(0)
         self.token = None
         self.value = None
         self.parent = None
@@ -897,39 +901,52 @@ The code emphasizes robustness and correctness.
         self._trie_index.clear()
         self._trie_entries.clear()
         # Reset the ident counter
-        self._ident_counter = 0
+        self._ident_counter = TrieId(0)
 
-    def __contains__(self, key: GeneralizedKey) -> bool:
-        """Returns True if the trie contains a GeneralizedKey matching the passed key.
+    def __contains__(self, key_or_ident: GeneralizedKey | TrieId) -> bool:
+        """Returns True if the trie contains a GeneralizedKey or TrieId matching the passed key.
+
+        This method checks if the trie contains a key that matches the provided key_or_ident.
+        The key can be specified either as a :class:`GeneralizedKey` or as a :class:`TrieId`.
+
+        A lookup by :class:`TrieId` is a fast operation (*O(1)* time) while a lookup by :class:`GeneralizedKey`
+        involves traversing the trie structure to find a matching key (*O(n)* time in the worst case,
+        where n is the key length).
 
         Args:
-            key (GeneralizedKey): Key for matching.
-                key for matching.
+            key_or_ident (GeneralizedKey | TrieId): Key or TrieId for matching.
 
         Returns:
-            :class:`bool`: True if there is a matching GeneralizedKey in the trie. False otherwise.
+            :class:`bool`: True if there is a matching GeneralizedKey/TrieId in the trie. False otherwise.
 
         Raises:
             :class:`TypeError`:
-                If key arg is not a GeneralizedKey.
+                If key arg is not a GeneralizedKey or TrieId.
 
         Usage::
 
             trie = GeneralizedTrie()
             keys: list[str] = ['abcdef', 'abc', 'a', 'abcd', 'qrs']
+            idents: list[TrieId] = []
             for entry in keys:
-                trie.add(entry)
+                idents.append(trie.add(entry))
 
             if 'abc' in trie:
                 print('"abc" is in the trie')
 
+            if idents[0] in trie:
+                print(f'Ident {idents[0]} is in the trie')
         """
-        if not is_generalizedkey(key):
+        if isinstance(key_or_ident, TrieId):
+            # If it's a TrieId, check if it exists in the trie index
+            return key_or_ident in self._trie_index
+
+        if not is_generalizedkey(key_or_ident):
             raise InvalidGeneralizedKeyError(
-                "[GTC001] key is not a valid `GeneralizedKey`")
+                "[GTC001] key_or_ident is not a valid `GeneralizedKey` or `TrieId`")
 
         current_node = self
-        for token in key:
+        for token in key_or_ident:
             if token not in current_node.children:
                 return False
             current_node = current_node.children[token]
