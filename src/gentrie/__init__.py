@@ -331,6 +331,14 @@ class TrieId(int):
     def __new__(cls, value: int):
         return int.__new__(cls, value)
 
+    def __str__(self) -> str:
+        """Returns a string representation of the TrieId."""
+        return f'TrieId({int(self)})'
+
+    def __repr__(self) -> str:
+        """Returns a string representation of the TrieId for debugging."""
+        return f'TrieId({int(self)})'
+
 
 class TrieEntry(NamedTuple):
     """A :class:`TrieEntry` is a :class:`NamedTuple` containing the unique identifer and key for an entry in the trie.

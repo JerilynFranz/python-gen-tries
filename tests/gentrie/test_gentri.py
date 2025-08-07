@@ -303,7 +303,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA002] _as_dict()",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': 0,
+                    'ident': TrieId(0),
                     'children': {
                         'tree': {
                             'ident': None,
@@ -318,7 +318,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                                     'parent': 'tree',
                                     'children': {
                                         'ape': {
-                                            'ident': 1,
+                                            'ident': TrieId(1),
                                             'token': 'ape',
                                             'value': None,
                                             'parent': 'value',
@@ -329,8 +329,8 @@ class TestGeneralizedTrie(unittest.TestCase):
                             }
                         }
                     },
-                    'trie_index': [1],
-                    'trie_entries': {1: "TrieEntry(ident=1, key=['tree', 'value', 'ape'], value=None)"}
+                    'trie_index': [TrieId(1)],
+                    'trie_entries': {TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'ape'], value=None)"}
                 }
             ),
 
@@ -346,7 +346,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA004] _as_dict()",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': 0,
+                    'ident': TrieId(0),
                     'children': {
                         'tree': {
                             'ident': None,
@@ -355,13 +355,13 @@ class TestGeneralizedTrie(unittest.TestCase):
                             'parent': None,
                             'children': {
                                 'value': {
-                                    'ident': 2,
+                                    'ident': TrieId(2),
                                     'token': 'value',
                                     'value': None,
                                     'parent': 'tree',
                                     'children': {
                                         'ape': {
-                                            'ident': 1,
+                                            'ident': TrieId(1),
                                             'token': 'ape',
                                             'value': None,
                                             'parent': 'value',
@@ -372,10 +372,10 @@ class TestGeneralizedTrie(unittest.TestCase):
                             }
                         }
                     },
-                    'trie_index': [1, 2],
+                    'trie_index': [TrieId(1), TrieId(2)],
                     'trie_entries': {
-                        1: "TrieEntry(ident=1, key=['tree', 'value', 'ape'], value=None)",
-                        2: "TrieEntry(ident=2, key=['tree', 'value'], value=None)"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'ape'], value=None)",
+                        TrieId(2): "TrieEntry(ident=TrieId(2), key=['tree', 'value'], value=None)"
                     }
                 }
             ),
@@ -492,7 +492,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA020] trie[1].value == 'feline' (_as_dict() check)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': 0,
+                    'ident': TrieId(0),
                     'children': {
                         'tree': {
                             'ident': None,
@@ -507,7 +507,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                                     'parent': 'tree',
                                     'children': {
                                         'cheetah': {
-                                            'ident': 1,
+                                            'ident': TrieId(1),
                                             'token': 'cheetah',
                                             'value': 'feline',
                                             'parent': 'value',
@@ -518,9 +518,9 @@ class TestGeneralizedTrie(unittest.TestCase):
                             }
                         }
                     },
-                    'trie_index': [1],
+                    'trie_index': [TrieId(1)],
                     'trie_entries': {
-                        1: "TrieEntry(ident=1, key=['tree', 'value', 'cheetah'], value='feline')"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'cheetah'], value='feline')"
                     }
                 },
             ),
@@ -543,7 +543,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA022] trie[1].value == 'feline' (_as_dict() check)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': 0,
+                    'ident': TrieId(0),
                     'children': {
                         'tree': {
                             'ident': None,
@@ -558,7 +558,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                                     'parent': 'tree',
                                     'children': {
                                         'cheetah': {
-                                            'ident': 1,
+                                            'ident': TrieId(1),
                                             'token': 'cheetah',
                                             'value': 'feline',
                                             'parent': 'value',
@@ -569,9 +569,9 @@ class TestGeneralizedTrie(unittest.TestCase):
                             }
                         }
                     },
-                    'trie_index': [1],
+                    'trie_index': [TrieId(1)],
                     'trie_entries': {
-                        1: "TrieEntry(ident=1, key=['tree', 'value', 'cheetah'], value='feline')"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'cheetah'], value='feline')"
                     }
                 },
             ),
@@ -585,11 +585,13 @@ class TestGeneralizedTrie(unittest.TestCase):
             ),
             # Validate that the trie is unchanged after attempting to add the same key with a different value of None
             # (this is to test that the trie has not changed the trie despite throwing an error)
+            # Validate that the trie is unchanged after attempting to add the same key with a different value of None
+            # (this is to test that the trie has not changed the trie despite throwing an error)
             TestConfig(
                 name="[TA023] trie[1].value == 'feline' (_as_dict() check, no change after DuplicateKeyError)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': 0,
+                    'ident': TrieId(0),
                     'children': {
                         'tree': {
                             'ident': None,
@@ -604,7 +606,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                                     'parent': 'tree',
                                     'children': {
                                         'cheetah': {
-                                            'ident': 1,
+                                            'ident': TrieId(1),
                                             'token': 'cheetah',
                                             'value': 'feline',
                                             'parent': 'value',
@@ -615,15 +617,15 @@ class TestGeneralizedTrie(unittest.TestCase):
                             }
                         }
                     },
-                    'trie_index': [1],
+                    'trie_index': [TrieId(1)],
                     'trie_entries': {
-                        1: "TrieEntry(ident=1, key=['tree', 'value', 'cheetah'], value='feline')"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'cheetah'], value='feline')"
                     }
                 },
             ),
             # Add the same key with a DIFFERENT value (explictly specified) and validate we get a DuplicateKeyError
             TestConfig(
-                name="[TA023] trie.add(['tree', 'value', 'cheetah'], 'canide)",
+                name="[TA024] trie.add(['tree', 'value', 'cheetah'], 'canide)",
                 action=trie.add,
                 args=[["tree", "value", "cheetah"], "canide"],
                 exception=DuplicateKeyError,
@@ -654,7 +656,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TU002] _as_dict()",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': 0,
+                    'ident': TrieId(0),
                     'children': {
                         'tree': {
                             'ident': None,
@@ -669,7 +671,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                                     'parent': 'tree',
                                     'children': {
                                         'ape': {
-                                            'ident': 1,
+                                            'ident': TrieId(1),
                                             'token': 'ape',
                                             'value': None,
                                             'parent': 'value',
@@ -680,8 +682,8 @@ class TestGeneralizedTrie(unittest.TestCase):
                             }
                         }
                     },
-                    'trie_index': [1],
-                    'trie_entries': {1: "TrieEntry(ident=1, key=['tree', 'value', 'ape'], value=None)"}
+                    'trie_index': [TrieId(1)],
+                    'trie_entries': {TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'ape'], value=None)"}
                 }
             ),
 
@@ -697,7 +699,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TU004] _as_dict()",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': 0,
+                    'ident': TrieId(0),
                     'children': {
                         'tree': {
                             'ident': None,
@@ -706,13 +708,13 @@ class TestGeneralizedTrie(unittest.TestCase):
                             'parent': None,
                             'children': {
                                 'value': {
-                                    'ident': 2,
+                                    'ident': TrieId(2),
                                     'token': 'value',
                                     'value': None,
                                     'parent': 'tree',
                                     'children': {
                                         'ape': {
-                                            'ident': 1,
+                                            'ident': TrieId(1),
                                             'token': 'ape',
                                             'value': None,
                                             'parent': 'value',
@@ -723,10 +725,10 @@ class TestGeneralizedTrie(unittest.TestCase):
                             }
                         }
                     },
-                    'trie_index': [1, 2],
+                    'trie_index': [TrieId(1), TrieId(2)],
                     'trie_entries': {
-                        1: "TrieEntry(ident=1, key=['tree', 'value', 'ape'], value=None)",
-                        2: "TrieEntry(ident=2, key=['tree', 'value'], value=None)"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'ape'], value=None)",
+                        TrieId(2): "TrieEntry(ident=TrieId(2), key=['tree', 'value'], value=None)"
                     }
                 }
             ),
@@ -842,7 +844,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TU020] trie[1].value == 'feline' (_as_dict() check)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': 0,
+                    'ident': TrieId(0),
                     'children': {
                         'tree': {
                             'ident': None,
@@ -857,7 +859,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                                     'parent': 'tree',
                                     'children': {
                                         'cheetah': {
-                                            'ident': 1,
+                                            'ident': TrieId(1),
                                             'token': 'cheetah',
                                             'value': 'feline',
                                             'parent': 'value',
@@ -868,9 +870,9 @@ class TestGeneralizedTrie(unittest.TestCase):
                             }
                         }
                     },
-                    'trie_index': [1],
+                    'trie_index': [TrieId(1)],
                     'trie_entries': {
-                        1: "TrieEntry(ident=1, key=['tree', 'value', 'cheetah'], value='feline')"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'cheetah'], value='feline')"
                     }
                 },
             ),
@@ -888,7 +890,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TU022] trie[1].value == 'feline' (_as_dict() check)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': 0,
+                    'ident': TrieId(0),
                     'children': {
                         'tree': {
                             'ident': None,
@@ -903,7 +905,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                                     'parent': 'tree',
                                     'children': {
                                         'cheetah': {
-                                            'ident': 1,
+                                            'ident': TrieId(1),
                                             'token': 'cheetah',
                                             'value': 'feline',
                                             'parent': 'value',
@@ -914,9 +916,9 @@ class TestGeneralizedTrie(unittest.TestCase):
                             }
                         }
                     },
-                    'trie_index': [1],
+                    'trie_index': [TrieId(1)],
                     'trie_entries': {
-                        1: "TrieEntry(ident=1, key=['tree', 'value', 'cheetah'], value='feline')"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'cheetah'], value='feline')"
                     }
                 },
             ),
@@ -934,7 +936,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TU024] trie[1].value == None (_as_dict() check)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': 0,
+                    'ident': TrieId(0),
                     'children': {
                         'tree': {
                             'ident': None,
@@ -949,7 +951,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                                     'parent': 'tree',
                                     'children': {
                                         'cheetah': {
-                                            'ident': 1,
+                                            'ident': TrieId(1),
                                             'token': 'cheetah',
                                             'value': None,
                                             'parent': 'value',
@@ -960,9 +962,9 @@ class TestGeneralizedTrie(unittest.TestCase):
                             }
                         }
                     },
-                    'trie_index': [1],
+                    'trie_index': [TrieId(1)],
                     'trie_entries': {
-                        1: "TrieEntry(ident=1, key=['tree', 'value', 'cheetah'], value=None)"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'cheetah'], value=None)"
                     }
                 },
             ),
@@ -978,7 +980,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TU026] trie[1].value == 'canide' (_as_dict() check)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': 0,
+                    'ident': TrieId(0),
                     'children': {
                         'tree': {
                             'ident': None,
@@ -993,7 +995,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                                     'parent': 'tree',
                                     'children': {
                                         'cheetah': {
-                                            'ident': 1,
+                                            'ident': TrieId(1),
                                             'token': 'cheetah',
                                             'value': 'canide',
                                             'parent': 'value',
@@ -1004,9 +1006,9 @@ class TestGeneralizedTrie(unittest.TestCase):
                             }
                         }
                     },
-                    'trie_index': [1],
+                    'trie_index': [TrieId(1)],
                     'trie_entries': {
-                        1: "TrieEntry(ident=1, key=['tree', 'value', 'cheetah'], value='canide')"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'cheetah'], value='canide')"
                     }
                 },
             ),
@@ -1352,10 +1354,10 @@ class TestGeneralizedTrie(unittest.TestCase):
             'a' = {
               parent = root node
               node token = 'a'
-              trie id = 1
+              trie id = TrieId(1)
             }
           }
-          trie index = dict_keys([1])
+          trie index = dict_keys([TrieId(1)])
         }""")
         self.assertEqual(found, expected, msg='[TSTR001] str(trie)')
 
@@ -1374,12 +1376,12 @@ class TestGeneralizedTrie(unittest.TestCase):
                 'b' = {
                   parent = 'a'
                   node token = 'b'
-                  trie id = 1
+                  trie id = TrieId(1)
                 }
               }
             }
           }
-          trie index = dict_keys([1])
+          trie index = dict_keys([TrieId(1)])
         }""")
         self.assertEqual(found, expected, msg='[TSTR002] str(trie))')
 
@@ -1402,14 +1404,14 @@ class TestGeneralizedTrie(unittest.TestCase):
                     'c' = {
                       parent = 'b'
                       node token = 'c'
-                      trie id = 1
+                      trie id = TrieId(1)
                     }
                   }
                 }
               }
             }
           }
-          trie index = dict_keys([1])
+          trie index = dict_keys([TrieId(1)])
         }""")
         self.assertEqual(found, expected, msg='[TSTR003] str(trie))')
 
