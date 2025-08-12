@@ -18,10 +18,10 @@ entries: list[str] = [
 for item in entries:
     trie.add(item)
 
-suggestions: set[TrieEntry] = trie.suffixes('do', depth=2)
+suggestions: set[TrieEntry] = trie.prefixed_by('do', depth=2)
 print(f'+2 letter suggestions for "do" = {suggestions}')
 
-suggestions = trie.suffixes('do', depth=3)
+suggestions = trie.prefixed_by('do', depth=3)
 print(f'+3 letter suggestions for "do" = {suggestions}')
 
 # +2 letter suggestions for "do" = {
