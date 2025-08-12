@@ -17,6 +17,7 @@
 			"PYTHONPATH": "${workspaceFolder}/src:${workspaceFolder}/src"
 		},
 		"pythonTestExplorer.testFramework": "unittest",
-		"makefile.configureOnOpen": false
+		"makefile.configureOnOpen": false,
+		"editor.fontSize": 18
 	}
 }
