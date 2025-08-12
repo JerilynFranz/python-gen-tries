@@ -1169,34 +1169,20 @@ The code emphasizes robustness and correctness.
         Returns: :class:`TrieEntry`: TrieEntry for the key with the passed identifier or the default value if not found.
 
         Raises:
-            KeyError ([GTG001]): if the key arg does not match any keys/idents in the trie.
             TypeError ([GTG002]): if the key arg is neither a :class:`TrieId` or a valid :class:`GeneralizedKey`.
         """
-        if isinstance(key, TrieId):
-            if key not in self._trie_index:
-                raise KeyError(
-                    "[GTG001] key does not match any idents or keys in the trie"
-                )
-            # Return the TrieEntry for the TrieId
-            return self._trie_entries[key]
-
-        if is_generalizedkey(key):
-            # Find the TrieId for the key
-            current_node = self
-            for token in key:
-                if token not in current_node.children:
-                    return default
-                current_node = current_node.children[token]
-            if current_node.ident:
-                # Return the TrieEntry for the TrieId
-                return self._trie_entries[current_node.ident]
-            raise KeyError(
-                "[GTG001] key does not match any idents or keys in the trie")
-
-        # If we reach here, the passed key was neither a TrieId nor a GeneralizedKey
-        raise TypeError(
-            "[GTG002] key must be either a :class:TrieId or a :class:`GeneralizedKey`"
-        )
+        try:
+            return self[key]
+        except KeyError:
+            return default
+        except TypeError as exc:
+            # Re-raise the TypeError if the key type is invalid, as this is a usage error, not a "not found" case.
+            if "[GTGI002]" in str(exc):
+                raise TypeError(
+                    "[GTG002] key must be either a :class:TrieId or a :class:`GeneralizedKey`"
+                ) from exc
+            # For other TypeErrors that might arise from key validation, treat as not found.
+            return default
 
     def keys(self) -> Generator[TrieId, None, None]:
         """Returns an iterator for all the TrieIds in the trie.
