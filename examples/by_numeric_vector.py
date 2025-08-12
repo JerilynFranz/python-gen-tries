@@ -12,10 +12,10 @@ entries = [
 ]
 for item in entries:
     trie.add(item)
-prefixed_by: set[TrieEntry] = trie.prefixed_by([128])
+prefixed_by: set[TrieEntry] = set(trie.prefixed_by([128]))
 print(f'prefixed_by = {prefixed_by}')
 
-prefixes: set[TrieEntry] = trie.prefixes([128, 256, 512, 1024])
+prefixes: set[TrieEntry] = set(trie.prefixes([128, 256, 512, 1024]))
 print(f'prefixes = {prefixes}')
 
 # prefixed_by = {

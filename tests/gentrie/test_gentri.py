@@ -1089,7 +1089,7 @@ class TestGeneralizedTrie(unittest.TestCase):
             self.assertEqual(entry_id, TrieId(4))
 
         with self.subTest(msg="[TP005] trie.prefixes(['tree', 'value', 'ape'])"):
-            found: set[TrieEntry] = trie.prefixes(["tree", "value", "ape"])
+            found: set[TrieEntry] = set(trie.prefixes(["tree", "value", "ape"]))
             expected: set[TrieEntry] = set([
                 TrieEntry(TrieId(1), ['tree', 'value', 'ape']),
                 TrieEntry(TrieId(2), ['tree', 'value'])
@@ -1106,8 +1106,8 @@ class TestGeneralizedTrie(unittest.TestCase):
         id1 = trie.add(deep_key)
         self.assertEqual(id1, TrieId(1))
         self.assertTrue(deep_key in trie)
-        self.assertEqual(trie.prefixes(deep_key), set([TrieEntry(TrieId(1), deep_key)]))
-        self.assertEqual(trie.prefixed_by(deep_key), set([TrieEntry(TrieId(1), deep_key)]))
+        self.assertEqual(set(trie.prefixes(deep_key)), set([TrieEntry(TrieId(1), deep_key)]))
+        self.assertEqual(set(trie.prefixed_by(deep_key)), set([TrieEntry(TrieId(1), deep_key)]))
 
     def test_unicode_and_bytes_keys(self):
         """Test that unicode and bytes keys can coexist in the trie.
@@ -1141,10 +1141,24 @@ class TestGeneralizedTrie(unittest.TestCase):
     def test_invalid_argument_types(self):
         """Test that invalid argument types raise TypeError."""
         trie = GeneralizedTrie()
-        with self.assertRaises(TypeError):
-            trie.prefixes(12345)  # type: ignore[reportGeneralTypeIssues]  # int is not a valid key intentionally
-        with self.assertRaises(TypeError):
-            trie.prefixed_by(3.14)   # type: ignore[reportGeneralTypeIssues]  # float is not a valid key intentionally
+        with self.assertRaises(
+              InvalidGeneralizedKeyError,
+              msg='[TIAT001] Failed to raise InvalidGeneralizedKeyError for trie.prefixes(12345)'):
+            # Attempt to get prefixes for an invalid key type. Because a Generator is
+            # returned, it will not raise the error until the generator is consumed.
+            _ = set(trie.prefixes(12345))  # type: ignore[reportGeneralTypeIssues]  # int is not a valid key
+        with self.assertRaises(
+              InvalidGeneralizedKeyError,
+              msg='[TIAT002] Failed to raise InvalidGeneralizedKeyError for trie.prefixed_by(12345)'):
+            _ = set(trie.prefixed_by(12345))  # type: ignore[reportGeneralTypeIssues]  # int is not a valid key
+        with self.assertRaises(
+              InvalidGeneralizedKeyError,
+              msg='[TIAT003] Failed to raise InvalidGeneralizedKeyError for trie.prefixes(3.14)'):
+            _ = set(trie.prefixes(3.14))   # type: ignore[reportGeneralTypeIssues]  # float is not a valid key
+        with self.assertRaises(
+              InvalidGeneralizedKeyError,
+              msg='[TIAT004] Failed to raise InvalidGeneralizedKeyError for trie.prefixed_by(3.14)'):
+            _ = set(trie.prefixed_by(3.14))   # type: ignore[reportGeneralTypeIssues]  # float is not a valid key
 
     def test_large_trie_performance(self):
         """Test performance of adding a large number of entries to the trie."""

@@ -117,9 +117,9 @@ There are two ways to directly retrieve entries using their keys:
 
 You can also retrieve all entries that are prefixed by or prefixes for a given key:
 
-- `trie.prefixed_by(key)` returns a set of `TrieEntry` objects that
+- `trie.prefixed_by(key)` returns a Generator of `TrieEntry` objects that
   are prefixed_by of the given key.
-- `trie.prefixes(key)` returns a set of `TrieEntry` objects that
+- `trie.prefixes(key)` returns a Generator of `TrieEntry` objects that
   are prefixes of the given key.
 
 These methods are useful for searching and retrieving entries
@@ -136,7 +136,7 @@ Example 1 - Basic Usage
     trie = GeneralizedTrie()
     trie.add(['ape', 'green', 'apple'])
     trie.add(['ape', 'green'])
-    matches: set[TrieEntry] = trie.prefixes(['ape', 'green'])
+    matches: set[TrieEntry] = set(trie.prefixes(['ape', 'green']))
     print(matches)
 
 Value of 'matches'::
@@ -160,7 +160,7 @@ Example 2 - Trie of URLs
     url_trie.add(["ftp", "net", "example", "ftp", "/", "data", "images"], value="FTP Data Images")
 
     # Find all https URLs with "example.com" domain
-    prefixed_by: set[TrieEntry] = url_trie.prefixed_by(["https", "com", "example"])
+    prefixed_by: set[TrieEntry] = set(url_trie.prefixed_by(["https", "com", "example"]))
     print(prefixed_by)
 
 Value of 'prefixed_by'::
@@ -173,7 +173,7 @@ Value of 'prefixed_by'::
     }
 
 Example 3 - Entries prefixed by a key
------------------------------
+-------------------------------------
 
 .. code-block:: python
     :linenos:
@@ -184,7 +184,7 @@ Example 3 - Entries prefixed by a key
     trie.add('abcdef')
     trie.add('abc')
     trie.add('qrf')
-    matches: set[TrieEntry] = trie.prefixed_by('ab')
+    matches: set[TrieEntry] = set(trie.prefixed_by('ab'))
     print(matches)
 
 Value of 'matches'::
@@ -263,6 +263,7 @@ class TrieKeyToken(Protocol):
             print("does not support the TrieKeyToken protocol")
 
     .. warning:: **Using User Defined Classes As Tokens In Keys**
+
         User-defined classes are hashable by default, but you should implement the
         ``__eq__()`` and ``__hash__()`` dunder methods in a content-aware way (the hash and eq values
         must depend on the content of the object) if you want to use them as tokens in a key. The default
@@ -275,6 +276,7 @@ class TrieKeyToken(Protocol):
 
     def __hash__(self) -> int:
         ...
+
 
 @runtime_checkable
 class Hashable(TrieKeyToken, Protocol):
@@ -338,7 +340,8 @@ class TrieId(int):
 
 
 class TrieEntry(NamedTuple):
-    """A :class:`TrieEntry` is a :class:`NamedTuple` containing the unique identifer and key for an entry in the trie."""
+    """A :class:`TrieEntry` is a :class:`NamedTuple` containing the unique identifer and key for an entry in the trie.
+    """
 
     ident: TrieId
     """:class:`TrieId` Unique identifier for a key in the trie. Alias for field number 0."""
@@ -745,11 +748,11 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             parent = node.parent
         return
 
-    def prefixes(self, key: GeneralizedKey) -> set[TrieEntry]:
-        """Returns a set of TrieEntry instances for all keys in the trie that are a prefix of the passed key.
+    def prefixes(self, key: GeneralizedKey) -> Generator[TrieEntry, None, None]:
+        """Yields TrieEntry instances for all keys in the trie that are a prefix of the passed key.
 
         Searches the trie for all keys that are prefix matches
-        for the key and returns their TrieEntry instances as a set.
+        for the key and yields their TrieEntry instances.
 
         .. note::
 
@@ -757,12 +760,17 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             key.  For example, `trie.prefixes('apple')` will find entries for
             keys like 'a', 'apple' and 'app'.
 
+        .. warning:: **GOTCHA: Generators**
+
+            Because generators are not executed until the first iteration,
+            they may not behave as expected if not consumed properly. For example,
+            exceptions will not be raised until the generator is iterated over.
+
         Args:
             key (GeneralizedKey): Key for matching.
 
-        Returns:
-            :class:`set[TrieEntry]`: :class:`set` containing TrieEntry instances for keys that are prefixes of the key.
-            This will be an empty set if there are no matches.
+        Yields:
+            :class:`TrieEntry`: The next matching :class:`TrieEntry` instance.
 
         Raises:
             InvalidGeneralizedKeyError ([GTM001]):
@@ -777,8 +785,8 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             keys: list[str] = ['abcdef', 'abc', 'a', 'abcd', 'qrs']
             for entry in keys:
                 trie.add(entry)
-            matches: set[TrieEntry] = trie.prefixes('abcd')
-            for trie_entry in sorted(list(matches)):
+            matches_generator: Generator[TrieEntry, None, None] = trie.prefixes('abcd')
+            for trie_entry in sorted(list(matches_generator)):
                 print(f'{trie_entry.ident}: {trie_entry.key}')
 
             # 2: abc
@@ -789,37 +797,40 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
         if not is_generalizedkey(key):
             raise InvalidGeneralizedKeyError("[GTM001] key is not a valid `GeneralizedKey`")
 
-        matched: set[TrieEntry] = set()
         current_node = self
 
         for token in key:
             if current_node.ident:
-                matched.add(self._trie_entries[current_node.ident])
+                yield self._trie_entries[current_node.ident]
             if token not in current_node.children:
-                return matched  # no match in children, so return what we have found
+                return  # no match in children, so the generator is done
             current_node = current_node.children[token]
 
         # If we reached here, we have a match for the full key
-        # Add the current node's entry if it has an ident
+        # Yield the current node's entry if it has an ident
         # This is the case where the key is an exact match for a key in the trie
         # and not just a prefix match.
         # If the key is a prefix of a key in the trie, it will not have
-        # an ident, so we do not add it.
+        # an ident, so we do not yield it.
         if current_node.ident:
-            matched.add(self._trie_entries[current_node.ident])
+            yield self._trie_entries[current_node.ident]
 
-        return matched
+    def prefixed_by(self, key: GeneralizedKey, depth: int = -1) -> Generator[TrieEntry, None, None]:
+        """Yields all entries in the trie that are prefixed by the given key, up to a specified depth.
 
-    def prefixed_by(self, key: GeneralizedKey, depth: int = -1) -> set[TrieEntry]:
-        """Returns the ids of all prefixed_by of the trie_key up to depth.
-
-        Searches the trie for all keys that are suffix matches for the key up
-        to the specified depth below the key match and returns their ids as a set.
+        Searches the trie for all keys that start with the provided key and yields their
+        :class:`TrieEntry` instances.
 
         .. note::
             The `prefixed_by` method finds all keys that start with the given
             prefix. For example, `trie.prefixed_by('app')` will find entries for
             keys like 'apple' and 'application'.
+
+        .. warning:: **GOTCHA: Generators**
+
+            Because generators are not executed until the first iteration,
+            they may not behave as expected if not consumed properly. For example,
+            exceptions will not be raised until the generator is iterated over.
 
         Args:
             key (GeneralizedKey): Key for matching.
@@ -830,9 +841,8 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
                 * A depth of 1 includes entries for the exact match and the next layer down.
                 * A depth of 2 includes entries for the exact match and the next two layers down.
 
-        Returns:
-            :class:`set[TrieId]`: Set of TrieEntry instances for keys that are suffix matches for the key.
-            This will be an empty set if there are no matches.
+        Yields:
+            :class:`TrieEntry`: The next matching :class:`TrieEntry` instance.
 
         Raises:
             InvalidGeneralizedKeyError ([GTS001]):
@@ -852,9 +862,9 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             keys: list[str] = ['abcdef', 'abc', 'a', 'abcd', 'qrs']
             for entry in keys:
                 trie.add(entry)
-            matches: set[TrieEntry] = trie.prefixed_by('abcd')
+            matches_generator = trie.prefixed_by('abcd')
 
-            for trie_entry in sorted(list(matches)):
+            for trie_entry in sorted(list(matches_generator)):
                 print(f'{trie_entry.ident}: {trie_entry.key}')
 
             # 1: abcdef
@@ -870,24 +880,22 @@ class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
             raise ValueError("[GTS003] depth cannot be less than -1")
 
         current_node = self
-        for token in key:
-            if token not in current_node.children:
-                return set()  # no match
-            current_node = current_node.children[token]
+        try:
+            for token in key:
+                current_node = current_node.children[token]
+        except KeyError:
+            return  # No match, so the generator is empty
 
         # Perform a breadth-first search to collect prefixed keys up to the specified depth
         queue = deque([(current_node, depth)])
-        matches: set[TrieEntry] = set()
 
         while queue:
             node, current_depth = queue.popleft()
             if node.ident:
-                matches.add(self._trie_entries[node.ident])
+                yield self._trie_entries[node.ident]
             if current_depth != 0:
                 for child in node.children.values():
                     queue.append((child, current_depth - 1))
-
-        return matches
 
     def clear(self) -> None:
         """Clears all keys from the trie.

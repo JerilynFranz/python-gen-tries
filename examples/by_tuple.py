@@ -10,9 +10,9 @@ entries = [
 ]
 for item in entries:
     trie.add(item)
-prefixed_by: set[TrieEntry] = trie.prefixed_by([(1, 2)])
+prefixed_by: set[TrieEntry] = set(trie.prefixed_by([(1, 2)]))
 print(f'prefixed_by = {prefixed_by}')
-prefixes: set[TrieEntry] = trie.prefixes([(1, 2), (3, 4), (5, 6), (7, 8)])
+prefixes: set[TrieEntry] = set(trie.prefixes([(1, 2), (3, 4), (5, 6), (7, 8)]))
 print(f'prefixes = {prefixes}')
 
 # prefixed_by = {

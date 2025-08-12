@@ -92,10 +92,10 @@ entries: list[tuple[str, str | list[str]]] = [
 for key, value in entries:
     trie[key] = value
 
-prefixed_by: set[TrieEntry] = trie.prefixed_by('xy')
+prefixed_by: set[TrieEntry] = set(trie.prefixed_by('xy'))
 print(f'prefixed_by = {prefixed_by}')
 
-prefixes: set[TrieEntry] = trie.prefixes('abcdefg')
+prefixes: set[TrieEntry] = set(trie.prefixes('abcdefg'))
 print(f'prefixes = {prefixes}')
 
 # prefixed_by = {
@@ -123,10 +123,10 @@ for key, value in more_entries:
     except DuplicateKeyError:
         print(f'DuplicateKeyError - entry already exists: {key}')
 
-prefixed_by: set[TrieEntry] = trie.prefixed_by([128])
+prefixed_by: set[TrieEntry] = set(trie.prefixed_by([128]))
 print(f'prefixed_by = {prefixed_by}')
 
-prefixes: set[TrieEntry] = trie.prefixes([128, 90])
+prefixes: set[TrieEntry] = set(trie.prefixes([128, 90]))
 print(f'prefixes = {prefixes}')
 
 # prefixed_by = {
@@ -149,10 +149,10 @@ even_more_entries: list[tuple[str, str]] = [
 for key, value in even_more_entries:
     trie.update(key, value)
 
-prefixed_by = trie.prefixed_by('abcd')
+prefixed_by = set(trie.prefixed_by('abcd'))
 print(f'prefixed_by = {prefixed_by}')
 
-prefixes = trie.prefixes('abcdefg')
+prefixes = set(trie.prefixes('abcdefg'))
 print(f'prefixes = {prefixes}')
 
 # prefixed_by = {

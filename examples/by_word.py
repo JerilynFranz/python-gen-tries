@@ -11,9 +11,9 @@ entries: list[list[str]] = [
 ]
 for item in entries:
     trie.add(item)
-prefixes: set[TrieEntry] = trie.prefixes(['ape', 'green', 'apple'])
+prefixes: set[TrieEntry] = set(trie.prefixes(['ape', 'green', 'apple']))
 print(f'prefixes = {prefixes}')
-prefixed_by: set[TrieEntry] = trie.prefixed_by(['ape', 'green'])
+prefixed_by: set[TrieEntry] = set(trie.prefixed_by(['ape', 'green']))
 print(f'prefixed_by = {prefixed_by}')
 
 # prefixes = {

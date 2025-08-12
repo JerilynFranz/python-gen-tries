@@ -18,3 +18,4 @@
 * 0.5.0 - Added support for using GeneralKeys directly in the remove() method; updated the \_\_getitem\_\_() method to support the use of GeneralKeys; added \_\_setitem\_\_() and \_\_delitem\_\_() methods
 * 0.5.1 - Updated requirements.txt for Sphinx docs to sphinxawesome-theme==5.3.2
 * 0.6.0 - Updated docs, made TrieId a stronger type guarantee and updated tests to match
+* 0.7.0 - Changed prefixes() and prefixed_by() methods to return Generators instead of sets
