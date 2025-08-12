@@ -184,11 +184,11 @@ storing and searching sequences of items, such as strings, lists, or tuples.</p>
 </span><span id="line-65"><span class="sd">    does not exist, which can be useful for handling cases where</span>
 </span><span id="line-66"><span class="sd">    you want to return a specific value instead of `None`.</span>
 </span><span id="line-67">
-</span><span id="line-68"><span class="sd">You can also retrieve all entries that are suffixes or prefixes</span>
-</span><span id="line-69"><span class="sd">of a given key:</span>
+</span><span id="line-68"><span class="sd">You can also retrieve all entries that are prefixes for or prefixed by</span>
+</span><span id="line-69"><span class="sd">a given key:</span>
 </span><span id="line-70">
-</span><span id="line-71"><span class="sd">- `trie.suffixes(key)` returns a set of `TrieEntry` objects that</span>
-</span><span id="line-72"><span class="sd">  are suffixes of the given key.</span>
+</span><span id="line-71"><span class="sd">- `trie.prefixed_by(key)` returns a set of `TrieEntry` objects that</span>
+</span><span id="line-72"><span class="sd">  are prefixed_by of the given key.</span>
 </span><span id="line-73"><span class="sd">- `trie.prefixes(key)` returns a set of `TrieEntry` objects that</span>
 </span><span id="line-74"><span class="sd">  are prefixes of the given key.</span>
 </span><span id="line-75">
@@ -211,13 +211,13 @@ storing and searching sequences of items, such as strings, lists, or tuples.</p>
 </span><span id="line-92"><span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
 </span><span id="line-93">    <span class="n">trie</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 </span><span id="line-94">
-</span><span id="line-95"><span class="n">suffixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">suffixes</span><span class="p">(</span><span class="s1">'xy'</span><span class="p">)</span>
-</span><span id="line-96"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'suffixes = </span><span class="si">{</span><span class="n">suffixes</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+</span><span id="line-95"><span class="n">prefixed_by</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixed_by</span><span class="p">(</span><span class="s1">'xy'</span><span class="p">)</span>
+</span><span id="line-96"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'prefixed_by = </span><span class="si">{</span><span class="n">prefixed_by</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </span><span id="line-97">
 </span><span id="line-98"><span class="n">prefixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">(</span><span class="s1">'abcdefg'</span><span class="p">)</span>
 </span><span id="line-99"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'prefixes = </span><span class="si">{</span><span class="n">prefixes</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </span><span id="line-100">
-</span><span id="line-101"><span class="c1"># suffixes = {</span>
+</span><span id="line-101"><span class="c1"># prefixed_by = {</span>
 </span><span id="line-102"><span class="c1">#     TrieEntry(ident=6, key='xy', value='value6'),</span>
 </span><span id="line-103"><span class="c1">#     TrieEntry(ident=5, key='xyz', value=['lists','are', 'also', 'supported'])</span>
 </span><span id="line-104"><span class="c1"># }</span>
@@ -242,13 +242,13 @@ storing and searching sequences of items, such as strings, lists, or tuples.</p>
 </span><span id="line-123">    <span class="k">except</span> <span class="n">DuplicateKeyError</span><span class="p">:</span>
 </span><span id="line-124">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'DuplicateKeyError - entry already exists: </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </span><span id="line-125">
-</span><span id="line-126"><span class="n">suffixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">suffixes</span><span class="p">([</span><span class="mi">128</span><span class="p">])</span>
-</span><span id="line-127"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'suffixes = </span><span class="si">{</span><span class="n">suffixes</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+</span><span id="line-126"><span class="n">prefixed_by</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixed_by</span><span class="p">([</span><span class="mi">128</span><span class="p">])</span>
+</span><span id="line-127"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'prefixed_by = </span><span class="si">{</span><span class="n">prefixed_by</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </span><span id="line-128">
 </span><span id="line-129"><span class="n">prefixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">([</span><span class="mi">128</span><span class="p">,</span> <span class="mi">90</span><span class="p">])</span>
 </span><span id="line-130"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'prefixes = </span><span class="si">{</span><span class="n">prefixes</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </span><span id="line-131">
-</span><span id="line-132"><span class="c1"># suffixes = {</span>
+</span><span id="line-132"><span class="c1"># prefixed_by = {</span>
 </span><span id="line-133"><span class="c1">#     TrieEntry(ident=8, key=(128, 90), value='value5b'),</span>
 </span><span id="line-134"><span class="c1">#     TrieEntry(ident=7, key=(128, 96, 160, 0), value='value5')</span>
 </span><span id="line-135"><span class="c1"># }</span>
@@ -268,13 +268,13 @@ storing and searching sequences of items, such as strings, lists, or tuples.</p>
 </span><span id="line-149"><span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">even_more_entries</span><span class="p">:</span>
 </span><span id="line-150">    <span class="n">trie</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 </span><span id="line-151">
-</span><span id="line-152"><span class="n">suffixes</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">suffixes</span><span class="p">(</span><span class="s1">'abcd'</span><span class="p">)</span>
-</span><span id="line-153"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'suffixes = </span><span class="si">{</span><span class="n">suffixes</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+</span><span id="line-152"><span class="n">prefixed_by</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixed_by</span><span class="p">(</span><span class="s1">'abcd'</span><span class="p">)</span>
+</span><span id="line-153"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'prefixed_by = </span><span class="si">{</span><span class="n">prefixed_by</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </span><span id="line-154">
 </span><span id="line-155"><span class="n">prefixes</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">(</span><span class="s1">'abcdefg'</span><span class="p">)</span>
 </span><span id="line-156"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'prefixes = </span><span class="si">{</span><span class="n">prefixes</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </span><span id="line-157">
-</span><span id="line-158"><span class="c1"># suffixes = {</span>
+</span><span id="line-158"><span class="c1"># prefixed_by = {</span>
 </span><span id="line-159"><span class="c1">#     TrieEntry(ident=3, key='abcd', value='value8'),</span>
 </span><span id="line-160"><span class="c1">#     TrieEntry(ident=9, key='abcdefghi', value='value7'),</span>
 </span><span id="line-161"><span class="c1">#     TrieEntry(ident=1, key='abcdef', value='value1')</span>
@@ -518,13 +518,13 @@ storing and searching sequences of items, such as strings, lists, or tuples.</p>
 </span><span id="line-14"><span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
 </span><span id="line-15">    <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 </span><span id="line-16">
-</span><span id="line-17"><span class="n">suffixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">suffixes</span><span class="p">(</span><span class="s1">'abcd'</span><span class="p">)</span>
-</span><span id="line-18"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'suffixes = </span><span class="si">{</span><span class="n">suffixes</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+</span><span id="line-17"><span class="n">prefixed_by</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixed_by</span><span class="p">(</span><span class="s1">'abcd'</span><span class="p">)</span>
+</span><span id="line-18"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'prefixed_by = </span><span class="si">{</span><span class="n">prefixed_by</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </span><span id="line-19">
 </span><span id="line-20"><span class="n">prefixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">(</span><span class="s1">'abcdefg'</span><span class="p">)</span>
 </span><span id="line-21"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'prefixes = </span><span class="si">{</span><span class="n">prefixes</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </span><span id="line-22">
-</span><span id="line-23"><span class="c1"># suffixes = {</span>
+</span><span id="line-23"><span class="c1"># prefixed_by = {</span>
 </span><span id="line-24"><span class="c1">#   TrieEntry(ident=TrieId(1), key='abcdef', value=None),</span>
 </span><span id="line-25"><span class="c1">#   TrieEntry(ident=TrieId(3), key='abcd', value=None)}</span>
 </span><span id="line-26"><span class="c1"># prefixes = {</span>
@@ -533,9 +533,6 @@ storing and searching sequences of items, such as strings, lists, or tuples.</p>
 </span><span id="line-29"><span class="c1">#   TrieEntry(ident=TrieId(1), key='abcdef', value=None)}</span>
 </span></code></pre></div>
 </div>
-</section>
-<section id="by-number">
-<h4>By Number<a class="headerlink" href="#by-number" title="Link to this heading">¶</a></h4>
 </section>
 <section id="by-tuple">
 <h4>By Tuple<a class="headerlink" href="#by-tuple" title="Link to this heading">¶</a></h4>
@@ -551,12 +548,12 @@ storing and searching sequences of items, such as strings, lists, or tuples.</p>
 </span><span id="line-10"><span class="p">]</span>
 </span><span id="line-11"><span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
 </span><span id="line-12">    <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-</span><span id="line-13"><span class="n">suffixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">suffixes</span><span class="p">([(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>
-</span><span id="line-14"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'suffixes = </span><span class="si">{</span><span class="n">suffixes</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+</span><span id="line-13"><span class="n">prefixed_by</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixed_by</span><span class="p">([(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>
+</span><span id="line-14"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'prefixed_by = </span><span class="si">{</span><span class="n">prefixed_by</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </span><span id="line-15"><span class="n">prefixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">([(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">)])</span>
 </span><span id="line-16"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'prefixes = </span><span class="si">{</span><span class="n">prefixes</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </span><span id="line-17">
-</span><span id="line-18"><span class="c1"># suffixes = {</span>
+</span><span id="line-18"><span class="c1"># prefixed_by = {</span>
 </span><span id="line-19"><span class="c1">#    TrieEntry(ident=TrieId(1), key=[(1, 2), (3, 4), (5, 6)], value=None),</span>
 </span><span id="line-20"><span class="c1">#    TrieEntry(ident=TrieId(2), key=[(1, 2), (3, 4)], value=None)</span>
 </span><span id="line-21"><span class="c1"># }</span>
@@ -584,14 +581,14 @@ storing and searching sequences of items, such as strings, lists, or tuples.</p>
 </span><span id="line-13">    <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 </span><span id="line-14"><span class="n">prefixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">([</span><span class="s1">'ape'</span><span class="p">,</span> <span class="s1">'green'</span><span class="p">,</span> <span class="s1">'apple'</span><span class="p">])</span>
 </span><span id="line-15"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'prefixes = </span><span class="si">{</span><span class="n">prefixes</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
-</span><span id="line-16"><span class="n">suffixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">suffixes</span><span class="p">([</span><span class="s1">'ape'</span><span class="p">,</span> <span class="s1">'green'</span><span class="p">])</span>
-</span><span id="line-17"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'suffixes = </span><span class="si">{</span><span class="n">suffixes</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+</span><span id="line-16"><span class="n">prefixed_by</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixed_by</span><span class="p">([</span><span class="s1">'ape'</span><span class="p">,</span> <span class="s1">'green'</span><span class="p">])</span>
+</span><span id="line-17"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'prefixed_by = </span><span class="si">{</span><span class="n">prefixed_by</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </span><span id="line-18">
 </span><span id="line-19"><span class="c1"># prefixes = {</span>
 </span><span id="line-20"><span class="c1">#   TrieEntry(ident=TrieId(1), key=['ape', 'green', 'apple'], value=None),</span>
 </span><span id="line-21"><span class="c1">#   TrieEntry(ident=TrieId(2), key=['ape', 'green'], value=None)</span>
 </span><span id="line-22"><span class="c1"># }</span>
-</span><span id="line-23"><span class="c1"># suffixes = {</span>
+</span><span id="line-23"><span class="c1"># prefixed_by = {</span>
 </span><span id="line-24"><span class="c1">#   TrieEntry(ident=TrieId(1), key=['ape', 'green', 'apple'], value=None),</span>
 </span><span id="line-25"><span class="c1">#   TrieEntry(ident=TrieId(2), key=['ape', 'green'], value=None),</span>
 </span><span id="line-26"><span class="c1">#   TrieEntry(ident=TrieId(3), key=['ape', 'green', 'pineapple'], value=None)</span>
@@ -678,8 +675,8 @@ storing and searching sequences of items, such as strings, lists, or tuples.</p>
 </span></code></pre></div>
 </div>
 </section>
-<section id="suffixes">
-<h4>Suffixes<a class="headerlink" href="#suffixes" title="Link to this heading">¶</a></h4>
+<section id="prefixed-by">
+<h4>Prefixed By<a class="headerlink" href="#prefixed-by" title="Link to this heading">¶</a></h4>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><code><span id="line-1"><span class="ch">#!/usr/bin/env python3</span>
 </span><span id="line-2">
 </span><span id="line-3"><span class="kn">from</span><span class="w"> </span><span class="nn">gentrie</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeneralizedTrie</span><span class="p">,</span> <span class="n">TrieEntry</span>
@@ -688,7 +685,7 @@ storing and searching sequences of items, such as strings, lists, or tuples.</p>
 </span><span id="line-6"><span class="n">keys</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'abcdef'</span><span class="p">,</span> <span class="s1">'abc'</span><span class="p">,</span> <span class="s1">'a'</span><span class="p">,</span> <span class="s1">'abcd'</span><span class="p">,</span> <span class="s1">'qrs'</span><span class="p">]</span>
 </span><span id="line-7"><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
 </span><span id="line-8">    <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
-</span><span id="line-9"><span class="n">matches</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">suffixes</span><span class="p">(</span><span class="s1">'abcd'</span><span class="p">)</span>
+</span><span id="line-9"><span class="n">matches</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixed_by</span><span class="p">(</span><span class="s1">'abcd'</span><span class="p">)</span>
 </span><span id="line-10">
 </span><span id="line-11"><span class="k">for</span> <span class="n">trie_entry</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">matches</span><span class="p">)):</span>
 </span><span id="line-12">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">trie_entry</span><span class="o">.</span><span class="n">ident</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">trie_entry</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
@@ -711,20 +708,20 @@ storing and searching sequences of items, such as strings, lists, or tuples.</p>
 </span><span id="line-9"><span class="n">url_trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s2">"https"</span><span class="p">,</span> <span class="s2">":"</span><span class="p">,</span> <span class="s2">"//"</span><span class="p">,</span> <span class="s2">"com"</span><span class="p">,</span> <span class="s2">"example"</span><span class="p">,</span> <span class="s2">"www"</span><span class="p">,</span> <span class="s2">"/"</span><span class="p">,</span> <span class="s2">"products"</span><span class="p">,</span> <span class="s2">"clothing"</span><span class="p">],</span>
 </span><span id="line-10">             <span class="s2">"https://www.example.com/products/clothing"</span><span class="p">)</span>
 </span><span id="line-11"><span class="n">url_trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s2">"http"</span><span class="p">,</span> <span class="s2">":"</span><span class="p">,</span> <span class="s2">"//"</span><span class="p">,</span> <span class="s2">"org"</span><span class="p">,</span> <span class="s2">"/"</span><span class="p">,</span> <span class="s2">"example"</span><span class="p">,</span> <span class="s2">"blog"</span><span class="p">,</span> <span class="s2">"/"</span><span class="p">,</span> <span class="s2">"2023"</span><span class="p">,</span> <span class="s2">"10"</span><span class="p">,</span> <span class="s2">"best-laptops"</span><span class="p">],</span>
-</span><span id="line-12">             <span class="s2">"http://example.org/blog/2023/10/best-laptops"</span><span class="p">)</span>
+</span><span id="line-12">             <span class="s2">"http://example.org/blog/2023/10/best-laptops"</span><span class="p">)</span>  <span class="c1"># DevSkim: ignore DS137138</span>
 </span><span id="line-13"><span class="n">url_trie</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="s2">"ftp"</span><span class="p">,</span> <span class="s2">":"</span><span class="p">,</span> <span class="s2">"//"</span><span class="p">,</span> <span class="s2">"net"</span><span class="p">,</span> <span class="s2">"example"</span><span class="p">,</span> <span class="s2">"/"</span><span class="p">,</span> <span class="s2">"ftp"</span><span class="p">,</span> <span class="s2">"/"</span><span class="p">,</span> <span class="s2">"data"</span><span class="p">,</span> <span class="s2">"images"</span><span class="p">],</span>
 </span><span id="line-14">             <span class="s2">"ftp://example.net/ftp/data/images"</span><span class="p">)</span>
 </span><span id="line-15">
 </span><span id="line-16"><span class="c1"># Find https URLs with "example.com" domain or sub-domain</span>
 </span><span id="line-17"><span class="nb">print</span><span class="p">(</span><span class="s2">"HTTPS URLs for domains or sub-domains of 'example.com'"</span><span class="p">)</span>
-</span><span id="line-18"><span class="n">suffixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">url_trie</span><span class="o">.</span><span class="n">suffixes</span><span class="p">([</span><span class="s2">"https"</span><span class="p">,</span> <span class="s2">":"</span><span class="p">,</span> <span class="s2">"//"</span><span class="p">,</span> <span class="s2">"com"</span><span class="p">,</span> <span class="s2">"example"</span><span class="p">])</span>
-</span><span id="line-19"><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">suffixes</span><span class="p">:</span>
+</span><span id="line-18"><span class="n">prefixed_by</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">url_trie</span><span class="o">.</span><span class="n">prefixed_by</span><span class="p">([</span><span class="s2">"https"</span><span class="p">,</span> <span class="s2">":"</span><span class="p">,</span> <span class="s2">"//"</span><span class="p">,</span> <span class="s2">"com"</span><span class="p">,</span> <span class="s2">"example"</span><span class="p">])</span>
+</span><span id="line-19"><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">prefixed_by</span><span class="p">:</span>
 </span><span id="line-20">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found URL: </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span id="line-21">
 </span><span id="line-22"><span class="c1"># Find ftp protocol URLs</span>
 </span><span id="line-23"><span class="nb">print</span><span class="p">(</span><span class="s2">"FTP URLs"</span><span class="p">)</span>
-</span><span id="line-24"><span class="n">suffixes</span> <span class="o">=</span> <span class="n">url_trie</span><span class="o">.</span><span class="n">suffixes</span><span class="p">([</span><span class="s2">"ftp"</span><span class="p">])</span>
-</span><span id="line-25"><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">suffixes</span><span class="p">:</span>
+</span><span id="line-24"><span class="n">prefixed_by</span> <span class="o">=</span> <span class="n">url_trie</span><span class="o">.</span><span class="n">prefixed_by</span><span class="p">([</span><span class="s2">"ftp"</span><span class="p">])</span>
+</span><span id="line-25"><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">prefixed_by</span><span class="p">:</span>
 </span><span id="line-26">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found URL: </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span id="line-27">
 </span><span id="line-28"><span class="c1"># HTTPS URLs for domains or sub-domains of 'example.com'</span>
@@ -792,13 +789,13 @@ storing and searching sequences of items, such as strings, lists, or tuples.</p>
 </span><span id="line-12"><span class="p">]</span>
 </span><span id="line-13"><span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
 </span><span id="line-14">    <span class="n">trie</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-</span><span id="line-15"><span class="n">suffixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">suffixes</span><span class="p">([</span><span class="mi">128</span><span class="p">])</span>
-</span><span id="line-16"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'suffixes = </span><span class="si">{</span><span class="n">suffixes</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+</span><span id="line-15"><span class="n">prefixed_by</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixed_by</span><span class="p">([</span><span class="mi">128</span><span class="p">])</span>
+</span><span id="line-16"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'prefixed_by = </span><span class="si">{</span><span class="n">prefixed_by</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </span><span id="line-17">
 </span><span id="line-18"><span class="n">prefixes</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">TrieEntry</span><span class="p">]</span> <span class="o">=</span> <span class="n">trie</span><span class="o">.</span><span class="n">prefixes</span><span class="p">([</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">])</span>
 </span><span id="line-19"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'prefixes = </span><span class="si">{</span><span class="n">prefixes</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </span><span id="line-20">
-</span><span id="line-21"><span class="c1"># suffixes = {</span>
+</span><span id="line-21"><span class="c1"># prefixed_by = {</span>
 </span><span id="line-22"><span class="c1">#   TrieEntry(ident=TrieId(1), key=[128, 256, 512], value=None),</span>
 </span><span id="line-23"><span class="c1">#   TrieEntry(ident=TrieId(2), key=[128, 256], value=None)</span>
 </span><span id="line-24"><span class="c1"># }</span>
@@ -821,12 +818,11 @@ storing and searching sequences of items, such as strings, lists, or tuples.</p>
 <li><a :data-current="activeSection === '#assigning-values-to-entries'" class="reference internal" href="#assigning-values-to-entries">Assigning Values to Entries</a></li>
 <li><a :data-current="activeSection === '#dictionary-syntax-examples'" class="reference internal" href="#dictionary-syntax-examples">Dictionary Syntax Examples</a></li>
 <li><a :data-current="activeSection === '#by-letter'" class="reference internal" href="#by-letter">By Letter</a></li>
-<li><a :data-current="activeSection === '#by-number'" class="reference internal" href="#by-number">By Number</a></li>
 <li><a :data-current="activeSection === '#by-tuple'" class="reference internal" href="#by-tuple">By Tuple</a></li>
 <li><a :data-current="activeSection === '#by-word'" class="reference internal" href="#by-word">By Word</a></li>
 <li><a :data-current="activeSection === '#key-in-trie'" class="reference internal" href="#key-in-trie">Key In Trie</a></li>
 <li><a :data-current="activeSection === '#prefixes'" class="reference internal" href="#prefixes">Prefixes</a></li>
-<li><a :data-current="activeSection === '#suffixes'" class="reference internal" href="#suffixes">Suffixes</a></li>
+<li><a :data-current="activeSection === '#prefixed-by'" class="reference internal" href="#prefixed-by">Prefixed By</a></li>
 <li><a :data-current="activeSection === '#url-suffixes'" class="reference internal" href="#url-suffixes">URL Suffixes</a></li>
 <li><a :data-current="activeSection === '#word-suggestions'" class="reference internal" href="#word-suggestions">Word Suggestions</a></li>
 <li><a :data-current="activeSection === '#trie-of-numeric-vectors'" class="reference internal" href="#trie-of-numeric-vectors">Trie of numeric vectors</a></li>

@@ -115,10 +115,10 @@ There are two ways to directly retrieve entries using their keys:
     does not exist, which can be useful for handling cases where
     you want to return a specific value instead of `None`.
 
-You can also retrieve all entries that are suffixes or prefixes of a given key:
+You can also retrieve all entries that are prefixed by or prefixes for a given key:
 
-- `trie.suffixes(key)` returns a set of `TrieEntry` objects that
-  are suffixes of the given key.
+- `trie.prefixed_by(key)` returns a set of `TrieEntry` objects that
+  are prefixed_by of the given key.
 - `trie.prefixes(key)` returns a set of `TrieEntry` objects that
   are prefixes of the given key.
 
@@ -160,10 +160,10 @@ Example 2 - Trie of URLs
     url_trie.add(["ftp", "net", "example", "ftp", "/", "data", "images"], value="FTP Data Images")
 
     # Find all https URLs with "example.com" domain
-    suffixes: set[TrieEntry] = url_trie.suffixes(["https", "com", "example"])
-    print(suffixes)
+    prefixed_by: set[TrieEntry] = url_trie.prefixed_by(["https", "com", "example"])
+    print(prefixed_by)
 
-Value of 'suffixes'::
+Value of 'prefixed_by'::
 
     {
         TrieEntry(
@@ -172,7 +172,7 @@ Value of 'suffixes'::
             value='Clothing Store')
     }
 
-Example 3 - Suffixes of a Key
+Example 3 - Entries prefixed by a key
 -----------------------------
 
 .. code-block:: python
@@ -184,7 +184,7 @@ Example 3 - Suffixes of a Key
     trie.add('abcdef')
     trie.add('abc')
     trie.add('qrf')
-    matches: set[TrieEntry] = trie.suffixes('ab')
+    matches: set[TrieEntry] = trie.prefixed_by('ab')
     print(matches)
 
 Value of 'matches'::
@@ -823,21 +823,21 @@ The code emphasizes robustness and correctness.
 
         return matched
 
-    def suffixes(self, key: GeneralizedKey, depth: int = -1) -> set[TrieEntry]:
-        """Returns the ids of all suffixes of the trie_key up to depth.
+    def prefixed_by(self, key: GeneralizedKey, depth: int = -1) -> set[TrieEntry]:
+        """Returns the ids of all prefixed_by of the trie_key up to depth.
 
         Searches the trie for all keys that are suffix matches for the key up
         to the specified depth below the key match and returns their ids as a set.
 
         .. note::
-            The `suffixes` method finds all keys that start with the given
-            prefix. For example, `trie.suffixes('app')` will find entries for
+            The `prefixed_by` method finds all keys that start with the given
+            prefix. For example, `trie.prefixed_by('app')` will find entries for
             keys like 'apple' and 'application'.
 
         Args:
             key (GeneralizedKey): Key for matching.
             depth (`int`, default=-1): Depth starting from the matched key to include.
-                The depth determines how many 'layers' deeper into the trie to look for suffixes.:
+                The depth determines how many 'layers' deeper into the trie to look for prefixed_by.:
                 * A depth of -1 (the default) includes ALL entries for the exact match and all children nodes.
                 * A depth of 0 only includes the entries for the *exact* match for the key.
                 * A depth of 1 includes entries for the exact match and the next layer down.
@@ -865,7 +865,7 @@ The code emphasizes robustness and correctness.
             keys: list[str] = ['abcdef', 'abc', 'a', 'abcd', 'qrs']
             for entry in keys:
                 trie.add(entry)
-            matches: set[TrieEntry] = trie.suffixes('abcd')
+            matches: set[TrieEntry] = trie.prefixed_by('abcd')
 
             for trie_entry in sorted(list(matches)):
                 print(f'{trie_entry.ident}: {trie_entry.key}')
@@ -890,7 +890,7 @@ The code emphasizes robustness and correctness.
                 return set()  # no match
             current_node = current_node.children[token]
 
-        # Perform a breadth-first search to collect suffixes up to the specified depth
+        # Perform a breadth-first search to collect prefixed keys up to the specified depth
         queue = deque([(current_node, depth)])
         matches: set[TrieEntry] = set()
 

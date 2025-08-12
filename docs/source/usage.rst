@@ -45,12 +45,6 @@ By Letter
 .. include:: ../../examples/by_letter.py
    :code: python
 
-By Number
-----------------
-
-.. include:: ../../examples/by_number.py
-   :code: python
-
 By Tuple
 ----------------
 
@@ -77,10 +71,10 @@ Prefixes
 .. include:: ../../examples/prefixes_example.py
    :code: python
 
-Suffixes
+Prefixed By
 ----------------
 
-.. include:: ../../examples/suffixes_example.py
+.. include:: ../../examples/prefixed_by_example.py
    :code: python
 
 URL Suffixes

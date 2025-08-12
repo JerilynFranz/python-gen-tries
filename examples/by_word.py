@@ -13,14 +13,14 @@ for item in entries:
     trie.add(item)
 prefixes: set[TrieEntry] = trie.prefixes(['ape', 'green', 'apple'])
 print(f'prefixes = {prefixes}')
-suffixes: set[TrieEntry] = trie.suffixes(['ape', 'green'])
-print(f'suffixes = {suffixes}')
+prefixed_by: set[TrieEntry] = trie.prefixed_by(['ape', 'green'])
+print(f'prefixed_by = {prefixed_by}')
 
 # prefixes = {
 #   TrieEntry(ident=TrieId(1), key=['ape', 'green', 'apple'], value=None),
 #   TrieEntry(ident=TrieId(2), key=['ape', 'green'], value=None)
 # }
-# suffixes = {
+# prefixed_by = {
 #   TrieEntry(ident=TrieId(1), key=['ape', 'green', 'apple'], value=None),
 #   TrieEntry(ident=TrieId(2), key=['ape', 'green'], value=None),
 #   TrieEntry(ident=TrieId(3), key=['ape', 'green', 'pineapple'], value=None)

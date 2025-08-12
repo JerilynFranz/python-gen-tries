@@ -34,7 +34,7 @@ long as they all conform to the `TrieKeyToken` protocol.
 
 ## Installation
 
-### Via PyPI**
+### Via PyPI
 
 ```shell
 pip3 install gen-tries
@@ -65,14 +65,14 @@ for item in entries:
     trie.add(item)
 prefixes: set[TrieEntry] = trie.prefixes(['ape', 'green', 'apple'])
 print(f'prefixes = {prefixes}')
-suffixes: set[TrieEntry] = trie.suffixes(['ape', 'green'])
-print(f'suffixes = {suffixes}')
+prefixed_by: set[TrieEntry] = trie.prefixed_by(['ape', 'green'])
+print(f'prefixed_by = {prefixed_by}')
 
-# prefixes = {TrieEntry(ident=1, key=['ape', 'green', 'apple']),
-#             TrieEntry(ident=2, key=['ape', 'green'])}
-# suffixes = {TrieEntry(ident=1, key=['ape', 'green', 'apple']),
-#             TrieEntry(ident=3, key=['ape', 'green', 'pineapple']),
-#             TrieEntry(ident=2, key=['ape', 'green'])}
+# prefixes = {TrieEntry(ident=TrieId(1), key=['ape', 'green', 'apple']),
+#             TrieEntry(ident=TrieId(2), key=['ape', 'green'])}
+# prefixed_by = {TrieEntry(ident=TrieId(1), key=['ape', 'green', 'apple']),
+#             TrieEntry(ident=TrieId(3), key=['ape', 'green', 'pineapple']),
+#             TrieEntry(ident=TrieId(2), key=['ape', 'green'])}
 ```
 
 ### Example 2 - trie of tokens from URLs
@@ -84,16 +84,29 @@ from gentrie import GeneralizedTrie, TrieEntry
 url_trie = GeneralizedTrie()
 
 # Add some URLs with different components (protocol, domain, path)
-url_trie.add(["https", "com", "example", "www", "/", "products", "clothing"])
-url_trie.add(["http", "org", "example", "blog", "/", "2023", "10", "best-laptops"])
-url_trie.add(["ftp", "net", "example", "ftp", "/", "data", "images"])
+url_trie.add(["https", ":", "//", "com", "example", "www", "/", "products", "clothing"],
+             "https://www.example.com/products/clothing")
+url_trie.add(["http", ":", "//", "org", "/", "example", "blog", "/", "2023", "10", "best-laptops"],
+             "http://example.org/blog/2023/10/best-laptops")
+url_trie.add(["ftp", ":", "//", "net", "example", "/", "ftp", "/", "data", "images"],
+             "ftp://example.net/ftp/data/images")
 
-# Find all https URLs with "example.com" domain
-suffixes: set[TrieEntry] = url_trie.suffixes(["https", "com", "example"])
-print(suffixes)
+# Find https URLs with "example.com" domain or sub-domain
+print("HTTPS URLs for domains or sub-domains of 'example.com'")
+prefixed_by: set[TrieEntry] = url_trie.prefixed_by(["https", ":", "//", "com", "example"])
+for entry in prefixed_by:
+    print(f"Found URL: {entry.value}")
 
-# suffixes = {TrieEntry(ident=1, key=['https', 'com', 'example', 'www', '/',
-#                                     'products', 'clothing'])}
+# Find ftp protocol URLs
+print("FTP URLs")
+prefixed_by = url_trie.prefixed_by(["ftp"])
+for entry in prefixed_by:
+    print(f"Found URL: {entry.value}")
+
+# HTTPS URLs for domains or sub-domains of 'example.com'
+# Found URL: https://www.example.com/products/clothing
+# FTP URLs
+# Found URL: ftp://example.net/ftp/data/images
 ```
 
 ### Example 3 - trie of characters from strings
@@ -102,26 +115,16 @@ print(suffixes)
 from gentrie import GeneralizedTrie, TrieEntry
 
 trie = GeneralizedTrie()
-entries: list[str] = [
-    'abcdef',
-    'abc',
-    'abcd',
-    'qrf',
-]
-for item in entries:
-    trie.add(item)
+keys: list[str] = ['abcdef', 'abc', 'a', 'abcd', 'qrs']
+for entry in keys:
+    trie.add(entry)
+matches: set[TrieEntry] = trie.prefixed_by('abcd')
 
-suffixes: set[TrieEntry] = trie.suffixes('abcd')
-print(f'suffixes = {suffixes}')
+for trie_entry in sorted(list(matches)):
+    print(f'{trie_entry.ident}: {trie_entry.key}')
 
-prefixes: set[TrieEntry] = trie.prefixes('abcdefg')
-print(f'prefixes = {prefixes}')
-
-# suffixes = {TrieEntry(ident=1, key='abcdef'),
-#             TrieEntry(ident=3, key='abcd')}
-# prefixes = {TrieEntry(ident=1, key='abcdef'),
-#             TrieEntry(ident=3, key='abcd'),
-#             TrieEntry(ident=2, key='abc')}
+# 1: abcdef
+# 4: abcd
 ```
 
 ### Example 4 - trie of numeric vectors
@@ -137,16 +140,20 @@ entries = [
 ]
 for item in entries:
     trie.add(item)
-suffixes: set[TrieEntry] = trie.suffixes([128])
-print(f'suffixes = {suffixes}')
+prefixed_by: set[TrieEntry] = trie.prefixed_by([128])
+print(f'prefixed_by = {prefixed_by}')
 
 prefixes: set[TrieEntry] = trie.prefixes([128, 256, 512, 1024])
 print(f'prefixes = {prefixes}')
 
-# suffixes = {TrieEntry(ident=1, key=[128, 256, 512]),
-#             TrieEntry(ident=2, key=[128, 256])}
-# prefixes = {TrieEntry(ident=1, key=[128, 256, 512]),
-#             TrieEntry(ident=2, key=[128, 256])}
+# prefixed_by = {
+#   TrieEntry(ident=TrieId(1), key=[128, 256, 512], value=None),
+#   TrieEntry(ident=TrieId(2), key=[128, 256], value=None)
+# }
+# prefixes = {
+#   TrieEntry(ident=TrieId(1), key=[128, 256, 512], value=None),
+#   TrieEntry(ident=TrieId(2), key=[128, 256], value=None)
+# }
 ```
 
 ### Example 5 - trie of tuples
@@ -162,22 +169,24 @@ entries = [
 ]
 for item in entries:
     trie.add(item)
-suffixes: set[TrieEntry] = trie.suffixes([(1, 2)])
-print(f'suffixes = {suffixes}')
+prefixed_by: set[TrieEntry] = trie.prefixed_by([(1, 2)])
+print(f'prefixed_by = {prefixed_by}')
 prefixes: set[TrieEntry] = trie.prefixes([(1, 2), (3, 4), (5, 6), (7, 8)])
 print(f'prefixes = {prefixes}')
 
-# suffixes = {TrieEntry(ident=1, key=[(1, 2), (3, 4), (5, 6)]),
-#             TrieEntry(ident=2, key=[(1, 2), (3, 4)])}
-# prefixes = {TrieEntry(ident=1, key=[(1, 2), (3, 4), (5, 6)]),
-#             TrieEntry(ident=2, key=[(1, 2), (3, 4)])}
+# prefixed_by = {
+#    TrieEntry(ident=TrieId(1), key=[(1, 2), (3, 4), (5, 6)], value=None),
+#    TrieEntry(ident=TrieId(2), key=[(1, 2), (3, 4)], value=None)
+# }
+# prefixes = {
+#    TrieEntry(ident=TrieId(1), key=[(1, 2), (3, 4), (5, 6)], value=None),
+#    TrieEntry(ident=TrieId(2), key=[(1, 2), (3, 4)], value=None)
+# }
 ```
 
 ### Example 6 - Word suggestions
 
 ```python
-#!/usr/bin/env python3
-
 from gentrie import GeneralizedTrie, TrieEntry
 
 trie = GeneralizedTrie()
@@ -185,7 +194,6 @@ entries: list[str] = [
     'hell',
     'hello',
     'help',
-    'do',
     'dog',
     'doll',
     'dolly',
@@ -195,22 +203,23 @@ entries: list[str] = [
 for item in entries:
     trie.add(item)
 
-suggestions: set[TrieEntry] = trie.suffixes('do', depth=2)
+suggestions: set[TrieEntry] = trie.prefixed_by('do', depth=2)
 print(f'+2 letter suggestions for "do" = {suggestions}')
 
-suggestions = trie.suffixes('do', depth=3)
+suggestions = trie.prefixed_by('do', depth=3)
 print(f'+3 letter suggestions for "do" = {suggestions}')
 
 # +2 letter suggestions for "do" = {
-#     TrieEntry(ident=6, key='doll'),
-#     TrieEntry(ident=5, key='dog'),
-#     TrieEntry(ident=4, key='do')}
-#
+#   TrieEntry(ident=TrieId(5), key='doll', value=None),
+#   TrieEntry(ident=TrieId(4), key='dog', value=None),
+#   TrieEntry(ident=TrieId(8), key='do', value=None)
+# }
 # +3 letter suggestions for "do" = {
-#     TrieEntry(ident=6, key='doll'),
-#     TrieEntry(ident=5, key='dog'),
-#     TrieEntry(ident=4, key='do'),
-#     TrieEntry(ident=7, key='dolly')}
+#   TrieEntry(ident=TrieId(5), key='doll', value=None),
+#   TrieEntry(ident=TrieId(6), key='dolly', value=None),
+#   TrieEntry(ident=TrieId(4), key='dog', value=None),
+#   TrieEntry(ident=TrieId(8), key='do', value=None)
+# }
 ```
 
 ### Example 7 - checking if key is in the trie

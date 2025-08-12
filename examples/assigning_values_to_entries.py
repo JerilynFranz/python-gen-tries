@@ -65,11 +65,11 @@ There are two ways to directly retrieve entries using their keys:
     does not exist, which can be useful for handling cases where
     you want to return a specific value instead of `None`.
 
-You can also retrieve all entries that are suffixes or prefixes
-of a given key:
+You can also retrieve all entries that are prefixes for or prefixed by
+a given key:
 
-- `trie.suffixes(key)` returns a set of `TrieEntry` objects that
-  are suffixes of the given key.
+- `trie.prefixed_by(key)` returns a set of `TrieEntry` objects that
+  are prefixed_by of the given key.
 - `trie.prefixes(key)` returns a set of `TrieEntry` objects that
   are prefixes of the given key.
 
@@ -92,13 +92,13 @@ entries: list[tuple[str, str | list[str]]] = [
 for key, value in entries:
     trie[key] = value
 
-suffixes: set[TrieEntry] = trie.suffixes('xy')
-print(f'suffixes = {suffixes}')
+prefixed_by: set[TrieEntry] = trie.prefixed_by('xy')
+print(f'prefixed_by = {prefixed_by}')
 
 prefixes: set[TrieEntry] = trie.prefixes('abcdefg')
 print(f'prefixes = {prefixes}')
 
-# suffixes = {
+# prefixed_by = {
 #     TrieEntry(ident=6, key='xy', value='value6'),
 #     TrieEntry(ident=5, key='xyz', value=['lists','are', 'also', 'supported'])
 # }
@@ -123,13 +123,13 @@ for key, value in more_entries:
     except DuplicateKeyError:
         print(f'DuplicateKeyError - entry already exists: {key}')
 
-suffixes: set[TrieEntry] = trie.suffixes([128])
-print(f'suffixes = {suffixes}')
+prefixed_by: set[TrieEntry] = trie.prefixed_by([128])
+print(f'prefixed_by = {prefixed_by}')
 
 prefixes: set[TrieEntry] = trie.prefixes([128, 90])
 print(f'prefixes = {prefixes}')
 
-# suffixes = {
+# prefixed_by = {
 #     TrieEntry(ident=8, key=(128, 90), value='value5b'),
 #     TrieEntry(ident=7, key=(128, 96, 160, 0), value='value5')
 # }
@@ -149,13 +149,13 @@ even_more_entries: list[tuple[str, str]] = [
 for key, value in even_more_entries:
     trie.update(key, value)
 
-suffixes = trie.suffixes('abcd')
-print(f'suffixes = {suffixes}')
+prefixed_by = trie.prefixed_by('abcd')
+print(f'prefixed_by = {prefixed_by}')
 
 prefixes = trie.prefixes('abcdefg')
 print(f'prefixes = {prefixes}')
 
-# suffixes = {
+# prefixed_by = {
 #     TrieEntry(ident=3, key='abcd', value='value8'),
 #     TrieEntry(ident=9, key='abcdefghi', value='value7'),
 #     TrieEntry(ident=1, key='abcdef', value='value1')

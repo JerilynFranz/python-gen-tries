@@ -1107,7 +1107,7 @@ class TestGeneralizedTrie(unittest.TestCase):
         self.assertEqual(id1, TrieId(1))
         self.assertTrue(deep_key in trie)
         self.assertEqual(trie.prefixes(deep_key), set([TrieEntry(TrieId(1), deep_key)]))
-        self.assertEqual(trie.suffixes(deep_key), set([TrieEntry(TrieId(1), deep_key)]))
+        self.assertEqual(trie.prefixed_by(deep_key), set([TrieEntry(TrieId(1), deep_key)]))
 
     def test_unicode_and_bytes_keys(self):
         """Test that unicode and bytes keys can coexist in the trie.
@@ -1144,7 +1144,7 @@ class TestGeneralizedTrie(unittest.TestCase):
         with self.assertRaises(TypeError):
             trie.prefixes(12345)  # type: ignore[reportGeneralTypeIssues]  # int is not a valid key intentionally
         with self.assertRaises(TypeError):
-            trie.suffixes(3.14)   # type: ignore[reportGeneralTypeIssues]  # float is not a valid key intentionally
+            trie.prefixed_by(3.14)   # type: ignore[reportGeneralTypeIssues]  # float is not a valid key intentionally
 
     def test_large_trie_performance(self):
         """Test performance of adding a large number of entries to the trie."""
