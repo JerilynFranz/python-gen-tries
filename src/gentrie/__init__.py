@@ -233,50 +233,48 @@ class DuplicateKeyError(KeyError):
 class TrieKeyToken(Protocol):
     """:class:`TrieKeyToken` is a protocol that defines key tokens that are usable with a :class:`GeneralizedTrie`.
 
-The protocol requires that a token object be *hashable*. This means that it
-implements both an ``__eq__()`` method and a ``__hash__()`` method.
+    The protocol requires that a token object be *hashable*. This means that it
+    implements both an ``__eq__()`` method and a ``__hash__()`` method.
 
-Some examples of built-in types that are suitable for use as tokens in a key:
+    Some examples of built-in types that are suitable for use as tokens in a key:
 
-* :class:`str`
-* :class:`bytes`
-* :class:`int`
-* :class:`float`
-* :class:`complex`
-* :class:`frozenset`
-* :class:`tuple`
-* :class:`None`
+    * :class:`str`
+    * :class:`bytes`
+    * :class:`int`
+    * :class:`float`
+    * :class:`complex`
+    * :class:`frozenset`
+    * :class:`tuple`
+    * :class:`None`
 
-Note: frozensets and tuples are only hashable *if their contents are hashable*.
+    Note: frozensets and tuples are only hashable *if their contents are hashable*.
 
-Usage:
+    Usage:
 
-.. code-block:: python
-    :linenos:
+    .. code-block:: python
+        :linenos:
 
-    from gentrie import TrieKeyToken
+        from gentrie import TrieKeyToken
 
-    token = SomeTokenClass()
-    if isinstance(token, TrieKeyToken):
-        print("supports the TrieKeyToken protocol")
-    else:
-        print("does not support the TrieKeyToken protocol")
+        token = SomeTokenClass()
+        if isinstance(token, TrieKeyToken):
+            print("supports the TrieKeyToken protocol")
+        else:
+            print("does not support the TrieKeyToken protocol")
 
-.. warning:: **Using User Defined Classes As Tokens In Keys**
-    User-defined classes are hashable by default, but you should implement the
-    ``__eq__()`` and ``__hash__()`` dunder methods in a content-aware way (the hash and eq values
-    must depend on the content of the object) if you want to use them as tokens in a key. The default
-    implementation of ``__eq__()`` and ``__hash__()`` uses the memory address of the object, which
-    means that two different instances of the same class will not be considered equal.
+    .. warning:: **Using User Defined Classes As Tokens In Keys**
+        User-defined classes are hashable by default, but you should implement the
+        ``__eq__()`` and ``__hash__()`` dunder methods in a content-aware way (the hash and eq values
+        must depend on the content of the object) if you want to use them as tokens in a key. The default
+        implementation of ``__eq__()`` and ``__hash__()`` uses the memory address of the object, which
+        means that two different instances of the same class will not be considered equal.
 
     """
-
     def __eq__(self, value: object, /) -> bool:
         ...
 
     def __hash__(self) -> int:
         ...
-
 
 @runtime_checkable
 class Hashable(TrieKeyToken, Protocol):
@@ -286,7 +284,6 @@ class Hashable(TrieKeyToken, Protocol):
 
     Use :class:`TrieKeyToken` instead.
     """
-
     def __eq__(self, value: object, /) -> bool:
         ...
 
@@ -341,8 +338,8 @@ class TrieId(int):
 
 
 class TrieEntry(NamedTuple):
-    """A :class:`TrieEntry` is a :class:`NamedTuple` containing the unique identifer and key for an entry in the trie.
-    """
+    """A :class:`TrieEntry` is a :class:`NamedTuple` containing the unique identifer and key for an entry in the trie."""
+
     ident: TrieId
     """:class:`TrieId` Unique identifier for a key in the trie. Alias for field number 0."""
     key: GeneralizedKey
@@ -422,10 +419,7 @@ class _Node:  # pylint: disable=too-few-public-methods
         children (dict[TrieKeyToken, _Node]): Dictionary of child nodes.
     """
 
-    def __init__(self,
-                 token: TrieKeyToken,
-                 parent: 'GeneralizedTrie | _Node',
-                 value: Optional[Any] = None) -> None:
+    def __init__(self, token: TrieKeyToken, parent: "GeneralizedTrie | _Node", value: Optional[Any] = None) -> None:
         self.ident: Optional[TrieId] = None
         self.token: TrieKeyToken = token
         self.value: Optional[Any] = value
@@ -449,8 +443,7 @@ class _Node:  # pylint: disable=too-few-public-methods
         if self.children:
             output.append("  children = {")
             for child_key, child_value in self.children.items():
-                output.append(f"    {repr(child_key)} = " +
-                              indent(str(child_value), "    ").lstrip())
+                output.append(f"    {repr(child_key)} = " + indent(str(child_value), "    ").lstrip())
             output.append("  }")
         output.append("}")
         return "\n".join(output)
@@ -477,80 +470,79 @@ class _Node:  # pylint: disable=too-few-public-methods
         # pylint: disable=protected-access
         # Using deepcopy to ensure that the dictionary is a copy of the data in the trie,
         # not a dictionary of live references to it
-        return deepcopy({
-            "ident": self.ident,
-            "token": self.token,
-            "value": self.value,
-            "parent": self.parent.token if self.parent else None,
-            "children": {
-                str(k): v._as_dict()
-                for k, v in self.children.items()
+        return deepcopy(
+            {
+                "ident": self.ident,
+                "token": self.token,
+                "value": self.value,
+                "parent": self.parent.token if self.parent else None,
+                "children": {str(k): v._as_dict() for k, v in self.children.items()},
             }
-        })
+        )
 
 
 class GeneralizedTrie:  # pylint: disable=too-many-instance-attributes
     """A general purpose trie.
 
-Unlike many trie implementations which only support strings as keys
-and token match only at the character level, it is agnostic as to the
-types of tokens used to key it and thus far more general purpose.
+    Unlike many trie implementations which only support strings as keys
+    and token match only at the character level, it is agnostic as to the
+    types of tokens used to key it and thus far more general purpose.
 
-It requires only that the indexed tokens be hashable. This is verified
-at runtime using the :class:`gentrie.TrieKeyToken` protocol.
+    It requires only that the indexed tokens be hashable. This is verified
+    at runtime using the :class:`gentrie.TrieKeyToken` protocol.
 
-Tokens in a key do NOT have to all be the same type as long as they
-can be compared for equality.
+    Tokens in a key do NOT have to all be the same type as long as they
+    can be compared for equality.
 
-It can handle a :class:`Sequence` of :class:`TrieKeyToken` conforming objects as keys
-for the trie out of the box.
+    It can handle a :class:`Sequence` of :class:`TrieKeyToken` conforming objects as keys
+    for the trie out of the box.
 
-You can 'mix and match' types of objects used as token in a key as
-long as they all conform to the :class:`TrieKeyToken` protocol.
+    You can 'mix and match' types of objects used as token in a key as
+    long as they all conform to the :class:`TrieKeyToken` protocol.
 
-The code emphasizes robustness and correctness.
+    The code emphasizes robustness and correctness.
 
-.. warning:: **GOTCHA: Using User Defined Classes As Tokens In Keys**
+    .. warning:: **GOTCHA: Using User Defined Classes As Tokens In Keys**
 
-    Objects of user-defined classes are conformant with the :class:`TrieKeyToken` protocol
-    by default, but **this will not work as naively expected.** The hash value of an object
-    is based on its memory address by default. This results in the hash value of an object changing
-    every time the object is created and means that the object will not be found in
-    the trie unless you have a reference to the original object.
+        Objects of user-defined classes are conformant with the :class:`TrieKeyToken` protocol
+        by default, but **this will not work as naively expected.** The hash value of an object
+        is based on its memory address by default. This results in the hash value of an object changing
+        every time the object is created and means that the object will not be found in
+        the trie unless you have a reference to the original object.
 
-    If you want to use a user-defined class as a token in a key to look up by value
-    instead of the instance, you must implement the ``__eq__()`` and ``__hash__()``
-    dunder methods in a content aware way (the hash and eq values must depend on the
-    content of the object).
+        If you want to use a user-defined class as a token in a key to look up by value
+        instead of the instance, you must implement the ``__eq__()`` and ``__hash__()``
+        dunder methods in a content aware way (the hash and eq values must depend on the
+        content of the object).
 
-    .. tip:: **Using `dataclasses.dataclass` For Content-Aware User Defined Classes**
+        .. tip:: **Using `dataclasses.dataclass` For Content-Aware User Defined Classes**
 
-        A simple way to implement a user-defined class that is content aware hashable
-        is to use the :class:`dataclasses.dataclass` decorator using the ``frozen=True`` and
-        ``eq=True`` options . This will automatically implement appropriate ``__eq__()``
-        and ``__hash__()`` methods for you.
+            A simple way to implement a user-defined class that is content aware hashable
+            is to use the :class:`dataclasses.dataclass` decorator using the ``frozen=True`` and
+            ``eq=True`` options . This will automatically implement appropriate ``__eq__()``
+            and ``__hash__()`` methods for you.
 
-        .. code-block:: python
-            :linenos:
-            :caption: Example of a content-aware user-defined class
+            .. code-block:: python
+                :linenos:
+                :caption: Example of a content-aware user-defined class
 
-            from dataclasses import dataclass
+                from dataclasses import dataclass
 
-            from gentrie import TrieKeyToken
+                from gentrie import TrieKeyToken
 
-            @dataclass(frozen=True, eq=True)
-            class MyTokenClass:
-                name: str
-                value: int
+                @dataclass(frozen=True, eq=True)
+                class MyTokenClass:
+                    name: str
+                    value: int
 
-            # Create an instance of the token class
-            token = MyTokenClass(name="example", value=42)
+                # Create an instance of the token class
+                token = MyTokenClass(name="example", value=42)
 
-            # Check if the token is hashable
-            if isinstance(token, TrieKeyToken):
-                print("token is usable as a TrieKeyToken")
-            else:
-                print("token is not usable as a TrieKeyToken")
+                # Check if the token is hashable
+                if isinstance(token, TrieKeyToken):
+                    print("token is usable as a TrieKeyToken")
+                else:
+                    print("token is not usable as a TrieKeyToken")
 
     """
 
@@ -658,8 +650,7 @@ The code emphasizes robustness and correctness.
             and returns the id of the existing entry.
         """
         if not is_generalizedkey(key):
-            raise InvalidGeneralizedKeyError(
-                "[GTSE001] key is not a valid `GeneralizedKey`")
+            raise InvalidGeneralizedKeyError("[GTSE001] key is not a valid `GeneralizedKey`")
 
         # Traverse the trie to find the insertion point for the key,
         # creating nodes as necessary.
@@ -675,8 +666,7 @@ The code emphasizes robustness and correctness.
             # If we allow updating, update the value and return the existing id
             if allow_value_update:
                 current_node.value = value
-                self._trie_entries[current_node.ident] = TrieEntry(
-                    current_node.ident, key, value)
+                self._trie_entries[current_node.ident] = TrieEntry(current_node.ident, key, value)
                 return current_node.ident
 
             # The key is already in the trie but we are not allowing updating values - so raise an error
@@ -715,9 +705,7 @@ The code emphasizes robustness and correctness.
             except KeyError:
                 ident = None
             except TypeError as exc:
-                raise RuntimeError(
-                    "[GTR003] failed lookup of key because of unexpected exception"
-                ) from exc
+                raise RuntimeError("[GTR003] failed lookup of key because of unexpected exception") from exc
         else:
             raise TypeError(
                 "[GTR001] key arg must be of type TrieId or a valid GeneralizedKey"
@@ -799,8 +787,7 @@ The code emphasizes robustness and correctness.
 
         """
         if not is_generalizedkey(key):
-            raise InvalidGeneralizedKeyError(
-                "[GTM001] key is not a valid `GeneralizedKey`")
+            raise InvalidGeneralizedKeyError("[GTM001] key is not a valid `GeneralizedKey`")
 
         matched: set[TrieEntry] = set()
         current_node = self
@@ -875,11 +862,9 @@ The code emphasizes robustness and correctness.
 
         """
         if not is_generalizedkey(key):
-            raise InvalidGeneralizedKeyError(
-                "[GTS001] key arg is not a valid GeneralizedKey")
+            raise InvalidGeneralizedKeyError("[GTS001] key arg is not a valid GeneralizedKey")
 
-        if not isinstance(depth,
-                          int):  # type: ignore[reportUnnecessaryIsInstance]
+        if not isinstance(depth, int):  # type: ignore[reportUnnecessaryIsInstance]
             raise TypeError("[GTS002] depth must be an int")
         if depth < -1:
             raise ValueError("[GTS003] depth cannot be less than -1")
@@ -994,8 +979,7 @@ The code emphasizes robustness and correctness.
         if self.children:
             output.append("  children = {")
             for child_key, child_value in self.children.items():
-                output.append(f"    {repr(child_key)} = " +
-                              indent(str(child_value), "    ").lstrip())
+                output.append(f"    {repr(child_key)} = " + indent(str(child_value), "    ").lstrip())
             output.append("  }")
         output.append(f"  trie index = {self._trie_index.keys()}")
         output.append("}")
