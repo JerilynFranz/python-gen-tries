@@ -28,9 +28,9 @@ copyright = '2025, Jerilyn Franz'  # pylint: disable=redefined-builtin
 author = 'Jerilyn Franz'
 
 # The short X.Y version
-version = '0.5'
+version = '0.6'
 # The full version, including alpha/beta/rc tags
-release = '0.5.1'
+release = '0.6.0dev'
 
 
 # -- General configuration ---------------------------------------------------
