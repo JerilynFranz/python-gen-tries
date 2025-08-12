@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-
+"""Example of using a GeneralizedTrie for indexing sequences of words
+"""
 from gentrie import GeneralizedTrie, TrieEntry
 
 trie = GeneralizedTrie()
@@ -15,8 +16,12 @@ print(f'prefixes = {prefixes}')
 suffixes: set[TrieEntry] = trie.suffixes(['ape', 'green'])
 print(f'suffixes = {suffixes}')
 
-# prefixes = {TrieEntry(ident=1, key=['ape', 'green', 'apple'], value=None),
-#             TrieEntry(ident=2, key=['ape', 'green'])}
-# suffixes = {TrieEntry(ident=1, key=['ape', 'green', 'apple'], value=None),
-#             TrieEntry(ident=3, key=['ape', 'green', 'pineapple'], value=None),
-#             TrieEntry(ident=2, key=['ape', 'green'], value=None)}
+# prefixes = {
+#   TrieEntry(ident=TrieId(1), key=['ape', 'green', 'apple'], value=None),
+#   TrieEntry(ident=TrieId(2), key=['ape', 'green'], value=None)
+# }
+# suffixes = {
+#   TrieEntry(ident=TrieId(1), key=['ape', 'green', 'apple'], value=None),
+#   TrieEntry(ident=TrieId(2), key=['ape', 'green'], value=None),
+#   TrieEntry(ident=TrieId(3), key=['ape', 'green', 'pineapple'], value=None)
+# }

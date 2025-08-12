@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+"""Example of using a GeneralizedTrie for indexing sequences of tuples"""
 from gentrie import GeneralizedTrie, TrieEntry
 
 trie = GeneralizedTrie()
@@ -15,7 +15,11 @@ print(f'suffixes = {suffixes}')
 prefixes: set[TrieEntry] = trie.prefixes([(1, 2), (3, 4), (5, 6), (7, 8)])
 print(f'prefixes = {prefixes}')
 
-# suffixes = {TrieEntry(ident=1, key=[(1, 2), (3, 4), (5, 6)], value=None),
-#             TrieEntry(ident=2, key=[(1, 2), (3, 4)], value=None)}
-# prefixes = {TrieEntry(ident=1, key=[(1, 2), (3, 4), (5, 6)], value=None),
-#             TrieEntry(ident=2, key=[(1, 2), (3, 4)], value=None)}
+# suffixes = {
+#    TrieEntry(ident=TrieId(1), key=[(1, 2), (3, 4), (5, 6)], value=None),
+#    TrieEntry(ident=TrieId(2), key=[(1, 2), (3, 4)], value=None)
+# }
+# prefixes = {
+#    TrieEntry(ident=TrieId(1), key=[(1, 2), (3, 4), (5, 6)], value=None),
+#    TrieEntry(ident=TrieId(2), key=[(1, 2), (3, 4)], value=None)
+# }

@@ -7,7 +7,7 @@ gen-tries
 ## Description
 
 A generalized trie implementation for python 3.10 or later that provides classes and
-functions to create and manipulate a generalized trie data structure. 
+functions to create and manipulate a generalized trie data structure.
 
 Unlike many Trie implementations which only support strings as keys
 and token match only at the character level, it is agnostic as to the
@@ -34,13 +34,13 @@ long as they all conform to the `TrieKeyToken` protocol.
 
 ## Installation
 
-**Via PyPI**
+### Via PyPI**
 
 ```shell
 pip3 install gen-tries
 ```
 
-**From source**
+### From source
 
 ```shell
 git clone https://github.com/JerilynFranz/python-gen-tries
@@ -50,7 +50,7 @@ pip3 install .
 
 ## Usage
 
-### Example 1 - trie of words:
+### Example 1 - trie of words
 
 ```python
 from gentrie import GeneralizedTrie, TrieEntry
@@ -75,7 +75,7 @@ print(f'suffixes = {suffixes}')
 #             TrieEntry(ident=2, key=['ape', 'green'])}
 ```
 
-### Example 2 - trie of tokens from URLs:
+### Example 2 - trie of tokens from URLs
 
 ```python
 from gentrie import GeneralizedTrie, TrieEntry
@@ -96,7 +96,8 @@ print(suffixes)
 #                                     'products', 'clothing'])}
 ```
 
-### Example 3 - trie of characters from strings:
+### Example 3 - trie of characters from strings
+
 ```python
 from gentrie import GeneralizedTrie, TrieEntry
 
@@ -123,7 +124,7 @@ print(f'prefixes = {prefixes}')
 #             TrieEntry(ident=2, key='abc')}
 ```
 
-### Example 4 - trie of numeric vectors:
+### Example 4 - trie of numeric vectors
 
 ```python
 from gentrie import GeneralizedTrie, TrieEntry
@@ -148,7 +149,7 @@ print(f'prefixes = {prefixes}')
 #             TrieEntry(ident=2, key=[128, 256])}
 ```
 
-### Example 5 - trie of tuples:
+### Example 5 - trie of tuples
 
 ```python
 from gentrie import GeneralizedTrie, TrieEntry
@@ -171,6 +172,7 @@ print(f'prefixes = {prefixes}')
 # prefixes = {TrieEntry(ident=1, key=[(1, 2), (3, 4), (5, 6)]),
 #             TrieEntry(ident=2, key=[(1, 2), (3, 4)])}
 ```
+
 ### Example 6 - Word suggestions
 
 ```python
@@ -251,6 +253,7 @@ else:
 # qrf is in trie
 # abcdef is in trie
 ```
+
 ## Authors and acknowledgment
 
 - Jerilyn Franz

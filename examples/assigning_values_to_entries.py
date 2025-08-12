@@ -2,8 +2,8 @@
 """Assigning Values to Entries in a Generalized Trie.
 
 This script demonstrates how to create a Generalized Trie, add
-or update entries with values, and retrieve entries, suffixes, and
-prefixes with their associated values.
+or update entries with values, and retrieve entries, suffixes,
+and prefixes with their associated values.
 
 There are three ways to add entries:
 
@@ -25,47 +25,48 @@ There are three ways to add entries:
 
     This method adds a new entry or updates an existing entry.
     This is the same as using the `trie[key] = value` syntax,
-    but it is more explicit about the intention to update or add
-    an entry.
+    but it is more explicit about the intention to update or
+    add an entry.
 
     The value argument is optional, and if not provided, the
     entry will be created or updated with a `None` value.
 
 
-You can use the `in` operator to check if a key exists in the trie,
-e.g., `if key in trie:`. This will return `True` if the key exists,
-and `False` otherwise.
+You can use the `in` operator to check if a key exists in the
+trie, e.g., `if key in trie:`. This will return `True` if the
+key exists, and `False` otherwise.
 
 There are two ways to directly retrieve entries using their keys:
 
 1. Using the `trie[key | TrieId]` syntax.
 
-    This retrieves the `TrieEntry` associated with the key or TrieId. It
-    will raise a `KeyError` if the key/TrieId does not exist. It will raise
-    a `TypeError` if the key is not a valid `TrieId` or `GeneralizedKey`.
+    This retrieves the `TrieEntry` associated with the key or
+    TrieId. It will raise a `KeyError` if the key/TrieId does
+    not exist. It will raise a `TypeError` if the key is not a
+    valid `TrieId` or `GeneralizedKey`.
 
     The `TrieEntry` contains the key, value, and an identifier
-    (ident - of type `TrieId`) that uniquely identifies the entry in the trie.
+    (ident - of type `TrieId`) that uniquely identifies the
+    entry in the trie.
 
-    You can also use the `trie.get(key | TrieId)` method to retrieve
-    the `TrieEntry` associated with the key or TrieId, which is similar to
-    the `trie[key]` syntax but allows for a default value to be
-    specified if the key/TrieId does not exist rather than raising an
-    exception.
+    You can also use the `trie.get(key | TrieId)` method to
+    retrieve the `TrieEntry` associated with the key or TrieId,
+    which is similar to the `trie[key]` syntax but allows for a
+    default value to be specified if the key/TrieId does not exist
+    rather than raising an exception.
 
 2. Using the `trie.get(key | TrieId, [default])` method
-    This retrieves the `TrieEntry` associated with the key or TrieId,
-    returning `None` if the key/TrieId does not exist. This could be
-    preferable in cases where you want to avoid exceptions
-    for missing keys although it cannot distinguish between a key
-    that does not exist and a key that exists with a `None` value
-    in the trie by default.
+    This retrieves the `TrieEntry` associated with the key or
+    TrieId, returning `None` if the key/TrieId does not exist.
+    This could be preferable in cases where you want to avoid
+    exceptions.
 
     You *can* provide a default value to return if the key
     does not exist, which can be useful for handling cases where
     you want to return a specific value instead of `None`.
 
-You can also retrieve all entries that are suffixes or prefixes of a given key:
+You can also retrieve all entries that are suffixes or prefixes
+of a given key:
 
 - `trie.suffixes(key)` returns a set of `TrieEntry` objects that
   are suffixes of the given key.
@@ -75,7 +76,7 @@ You can also retrieve all entries that are suffixes or prefixes of a given key:
 These methods are useful for searching and retrieving entries
 that match a specific pattern or structure in the trie.
 """
-from gentrie import GeneralizedTrie, TrieEntry
+from gentrie import DuplicateKeyError, GeneralizedTrie, TrieEntry
 
 trie = GeneralizedTrie()
 
@@ -116,7 +117,11 @@ more_entries: list[tuple[str | tuple[int, ...], str]] = [
     ('xy', 'value6'),
 ]
 for key, value in more_entries:
-    trie.add(key, value)
+    try:
+        trie.add(key, value)
+        print(f'Added entry: {key} -> {value}')
+    except DuplicateKeyError:
+        print(f'DuplicateKeyError - entry already exists: {key}')
 
 suffixes: set[TrieEntry] = trie.suffixes([128])
 print(f'suffixes = {suffixes}')

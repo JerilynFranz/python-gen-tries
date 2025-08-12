@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-
+"""Example of using a GeneralizedTrie for 'by number' indexing
+of numeric sequences/vectors.
+"""
 from gentrie import GeneralizedTrie, TrieEntry
 
 trie = GeneralizedTrie()
@@ -16,7 +18,11 @@ print(f'suffixes = {suffixes}')
 prefixes: set[TrieEntry] = trie.prefixes([128, 256, 512, 1024])
 print(f'prefixes = {prefixes}')
 
-# suffixes = {TrieEntry(ident=1, key=[128, 256, 512], value=None),
-#             TrieEntry(ident=2, key=[128, 256], value=None)}
-# prefixes = {TrieEntry(ident=1, key=[128, 256, 512], value=None),
-#             TrieEntry(ident=2, key=[128, 256], value=None)}
+# suffixes = {
+#   TrieEntry(ident=TrieId(1), key=[128, 256, 512], value=None),
+#   TrieEntry(ident=TrieId(2), key=[128, 256], value=None)
+# }
+# prefixes = {
+#   TrieEntry(ident=TrieId(1), key=[128, 256, 512], value=None),
+#   TrieEntry(ident=TrieId(2), key=[128, 256], value=None)
+# }

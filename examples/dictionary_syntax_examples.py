@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """This example demonstrates how to use the GeneralizedTrie
-to store and retrieve entries using a dictionary syntax.
+to store and retrieve entries using a dictionary-like syntax.
 
 It includes adding, updating, retrieving, and deleting entries,
-as well as checking for existence of keys."""
+as well as checking for existence of keys or identifiers."""
 
 from typing import Optional
 
@@ -50,7 +50,8 @@ print(f'Key {key1} exists: {exists_key1}')
 # are the actual keys used to access the entries.
 # Either can be used to access the entries in the trie,
 # and both can be used to check for existence of entries,
-# but they are not interchangeable.
+# but they are not interchangeable. Ids are faster (*O(1)*) than
+# keys (*O(n)* to the length of the keys) for accessing entries.
 exists_id1 = id1 in trie
 print(f'Ident {id1} exists: {exists_id1}')
 

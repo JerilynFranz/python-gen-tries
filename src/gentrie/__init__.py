@@ -38,7 +38,7 @@ There are three ways to add entries:
 1. Using the `trie[key] = value` syntax
 
 This allows you to assign a value directly to a key and will create a
-new entry if the key does not already exist. If the key already exists,
+new TrieEntry if the key does not already exist. If the key already exists,
 it will update the value associated with that key.
 
 .. code-block:: python
@@ -763,6 +763,12 @@ The code emphasizes robustness and correctness.
         Searches the trie for all keys that are prefix matches
         for the key and returns their TrieEntry instances as a set.
 
+        .. note::
+
+            The `prefixes` method finds all keys that are prefixes of the passed
+            key.  For example, `trie.prefixes('apple')` will find entries for
+            keys like 'a', 'apple' and 'app'.
+
         Args:
             key (GeneralizedKey): Key for matching.
 
@@ -822,6 +828,11 @@ The code emphasizes robustness and correctness.
 
         Searches the trie for all keys that are suffix matches for the key up
         to the specified depth below the key match and returns their ids as a set.
+
+        .. note::
+            The `suffixes` method finds all keys that start with the given
+            prefix. For example, `trie.suffixes('app')` will find entries for
+            keys like 'apple' and 'application'.
 
         Args:
             key (GeneralizedKey): Key for matching.
@@ -1188,9 +1199,24 @@ The code emphasizes robustness and correctness.
         )
 
     def keys(self) -> Generator[TrieId, None, None]:
-        """Returns an iterator for all the TrieId keys in the trie.
+        """Returns an iterator for all the TrieIds in the trie.
 
         The generator yields the :class:`TrieId` for each key in the trie.
+
+        It returns TrieIds instead of GeneralizedKeys because TrieIds are
+
+        1. Faster: Lookups using TrieIds are *O(1)* for time regardless
+           of the length of the GeneralizedKey they are associated with vs *O(n)*
+           to the length of keys for operations using GeneralizedKeys to look
+           up entries.
+
+        2. More efficient memory usage: TrieIds are typically smaller in size
+           compared to GeneralizedKeys, leading to reduced memory overhead
+           when storing and processing keys in the trie.
+
+        3. Guaranteed stable even with key modifications: TrieIds remain
+           consistent even if the underlying GeneralizedKey changes, making
+           them more reliable for long-term storage and retrieval.
 
         Returns:
             :class:`Generator[TrieId, None, None]`: Generator for the trie.
@@ -1209,6 +1235,8 @@ The code emphasizes robustness and correctness.
 
     def items(self) -> Generator[tuple[TrieId, TrieEntry], None, None]:
         """Returns an iterator for the trie.
+
+        The keys are the TrieIds and the values are the TrieEntry instances.
 
         The generator yields the :class:`TrieId` and :class:`TrieEntry` for each key in the trie.
 
