@@ -15,7 +15,7 @@ class TrieTraversalMixin:
     """Mixin providing traversal operations (prefixes, prefixed_by)."""
 
     # Type hints for expected attributes (will be provided by mixing class)
-    _trie_entries: dict[int, TrieEntry]
+    _trie_entries: dict[TrieId, TrieEntry]
     ident: Optional[TrieId]
     children: dict[Any, Node]
 

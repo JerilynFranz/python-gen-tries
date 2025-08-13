@@ -4,7 +4,8 @@
 from typing import Any, Optional
 
 from ..exceptions import InvalidGeneralizedKeyError
-from ..protocols import GeneralizedKey
+from ..nodes import Node
+from ..protocols import GeneralizedKey, TrieKeyToken
 from ..types import TrieEntry, TrieId
 from ..validation import is_generalizedkey
 
@@ -15,14 +16,14 @@ class TrieAccessMixin:
     This mixin expects the class it's mixed with to provide:
     - _trie_index: Dict[TrieId, Any]
     - _trie_entries: Dict[TrieId, TrieEntry]
-    - children: Dict[Any, TrieNode]
+    - children: Dict[TrieKeyToken, TrieNode]
     - ident: Optional[TrieId]
     """
 
     # Type hints for expected attributes (will be provided by mixing class)
     _trie_index: dict[TrieId, Any]
     _trie_entries: dict[TrieId, TrieEntry]
-    children: dict[Any, 'TrieAccessMixin']
+    children: dict[TrieKeyToken, Node]
     ident: Optional[TrieId]
 
     def __contains__(self, key_or_ident: GeneralizedKey | TrieId) -> bool:
