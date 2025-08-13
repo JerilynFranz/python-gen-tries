@@ -1,19 +1,17 @@
 # -*- coding: utf-8 -*-
 """Collection operations for GeneralizedTrie."""
 
-from typing import Any, Generator
+from typing import Generator
 
 from ..types import TrieEntry, TrieId
+
+from .trie_mixins import TrieMixinsInterface
 
 
 class TrieCollectionMixin:
     """Mixin providing collection operations (__len__, __iter__, keys, values, items)."""
 
-    # Type hints for expected attributes (will be provided by mixing class)
-    _trie_index: dict[TrieId, Any]
-    _trie_entries: dict[TrieId, TrieEntry]
-
-    def __len__(self) -> int:
+    def __len__(self: TrieMixinsInterface) -> int:
         """Returns the number of keys in the trie.
 
         Returns:
@@ -24,9 +22,9 @@ class TrieCollectionMixin:
             n_keys: int = len(trie)
 
         """
-        return len(self._trie_index)
+        return len(self._trie_index)  # pyright: ignore[reportPrivateUsage]
 
-    def __iter__(self) -> Generator[TrieId, None, None]:
+    def __iter__(self: TrieMixinsInterface) -> Generator[TrieId, None, None]:
         """Returns an iterator for the trie.
 
         The generator yields the :class:`TrieId`for each key in the trie.
@@ -34,9 +32,12 @@ class TrieCollectionMixin:
         Returns:
             :class:`Generator[TrieId, None, None]`: Generator for the trie.
         """
-        return (entry for entry in self._trie_entries.keys())  # pylint: disable=consider-iterating-dictionary
+        # pylint: disable=consider-iterating-dictionary
+        return (
+            entry for entry in self._trie_entries.keys()  # pyright: ignore[reportPrivateUsage]
+            )
 
-    def keys(self) -> Generator[TrieId, None, None]:
+    def keys(self: TrieMixinsInterface) -> Generator[TrieId, None, None]:
         """Returns an iterator for all the TrieIds in the trie.
 
         The generator yields the :class:`TrieId` for each key in the trie.
@@ -59,9 +60,10 @@ class TrieCollectionMixin:
         Returns:
             :class:`Generator[TrieId, None, None]`: Generator for the trie.
         """
-        return (entry for entry in self._trie_entries.keys())  # pylint: disable=consider-iterating-dictionary
+        # pylint: disable=consider-iterating-dictionary
+        return (entry for entry in self._trie_entries.keys())  # pyright: ignore[reportPrivateUsage]
 
-    def values(self) -> Generator[TrieEntry, None, None]:
+    def values(self: TrieMixinsInterface) -> Generator[TrieEntry, None, None]:
         """Returns an iterator for all the TrieEntry entries in the trie.
 
         The generator yields the :class:`TrieEntry` for each key in the trie.
@@ -69,9 +71,9 @@ class TrieCollectionMixin:
         Returns:
             :class:`Generator[TrieEntry, None, None]`: Generator for the trie.
         """
-        return (entry for entry in self._trie_entries.values())
+        return (entry for entry in self._trie_entries.values())  # pyright: ignore[reportPrivateUsage]
 
-    def items(self) -> Generator[tuple[TrieId, TrieEntry], None, None]:
+    def items(self: TrieMixinsInterface) -> Generator[tuple[TrieId, TrieEntry], None, None]:
         """Returns an iterator for the trie.
 
         The keys are the TrieIds and the values are the TrieEntry instances.
@@ -81,4 +83,4 @@ class TrieCollectionMixin:
         Returns:
             :class:`Generator[tuple[TrieId, TrieEntry], None, None]`: Generator for the trie.
         """
-        return ((key, value) for key, value in self._trie_entries.items())
+        return ((key, value) for key, value in self._trie_entries.items())   # pyright: ignore[reportPrivateUsage]

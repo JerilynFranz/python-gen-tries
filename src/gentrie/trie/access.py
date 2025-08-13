@@ -16,13 +16,6 @@ class TrieAccessMixin:
     Note: This mixin accesses private attributes of the mixing class.
     This is intentional and necessary for the mixin pattern.
     """
-
-    # Type hints for expected attributes (will be provided by mixing class)
-    # _trie_index: dict[TrieId, Any]
-    # _trie_entries: dict[TrieId, TrieEntry]
-    # children: dict[TrieKeyToken, Node]
-    # ident: Optional[TrieId]
-
     def __contains__(self: TrieMixinsInterface, key_or_ident: GeneralizedKey | TrieId) -> bool:
         """Returns True if the trie contains a GeneralizedKey or TrieId matching the passed key.
 
