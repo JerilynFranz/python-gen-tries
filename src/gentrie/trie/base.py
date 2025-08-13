@@ -18,7 +18,7 @@ class TrieBase:
         self.value: Optional[Any] = None
         self.parent: Optional["TrieBase | Node"] = None
         self.children: dict[TrieKeyToken, Node] = {}
-        self.ident: Optional[TrieId] = TrieId(0)
+        self.ident: Optional[TrieId] = None
         # Counter for the next unique identifier to assign to a key in the trie.
         self._ident_counter: int = 0
         # Mapping of unique identifiers to their corresponding trie nodes.
@@ -28,7 +28,7 @@ class TrieBase:
 
     def clear(self) -> None:
         """Clears all keys from the trie."""
-        self.ident = TrieId(0)
+        self.ident = None
         self.token = None
         self.value = None
         self.parent = None
@@ -36,7 +36,7 @@ class TrieBase:
         self._trie_index.clear()
         self._trie_entries.clear()
         # Reset the ident counter
-        self._ident_counter = TrieId(0)
+        self._ident_counter = 0
 
     def __len__(self) -> int:
         """Returns the number of keys in the trie."""

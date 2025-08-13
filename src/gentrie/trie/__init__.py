@@ -3,7 +3,7 @@
 
 from .access import TrieAccessMixin
 from .base import TrieBase
-from .iteration import TrieIterationMixin
+from .collection import TrieCollectionMixin
 from .mutation import TrieMutationMixin
 from .removal import TrieRemovalMixin
 from .storage import TrieStorageMixin
@@ -17,7 +17,7 @@ class GeneralizedTrie(
     TrieRemovalMixin,
     TrieTraversalMixin,
     TrieMutationMixin,
-    TrieIterationMixin,
+    TrieCollectionMixin
 ):
     """A general purpose trie.
 

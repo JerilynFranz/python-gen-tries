@@ -57,7 +57,7 @@ class TrieRemovalMixin(ABC):
         del self._trie_entries[ident]
 
         # Remove the id from the node
-        node.ident = TrieId(0)
+        node.ident = None
 
         # If the node still has other trie ids or children, we're done: return
         if node.children:

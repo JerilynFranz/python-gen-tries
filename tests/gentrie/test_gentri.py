@@ -303,7 +303,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA002] _as_dict()",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': TrieId(0),
+                    'ident': None,
                     'children': {
                         'tree': {
                             'ident': None,
@@ -346,7 +346,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA004] _as_dict()",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': TrieId(0),
+                    'ident': None,
                     'children': {
                         'tree': {
                             'ident': None,
@@ -492,7 +492,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA020] trie[1].value == 'feline' (_as_dict() check)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': TrieId(0),
+                    'ident': None,
                     'children': {
                         'tree': {
                             'ident': None,
@@ -543,7 +543,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA022] trie[1].value == 'feline' (_as_dict() check)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': TrieId(0),
+                    'ident': None,
                     'children': {
                         'tree': {
                             'ident': None,
@@ -591,7 +591,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TA023] trie[1].value == 'feline' (_as_dict() check, no change after DuplicateKeyError)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': TrieId(0),
+                    'ident': None,
                     'children': {
                         'tree': {
                             'ident': None,
@@ -656,7 +656,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TU002] _as_dict()",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': TrieId(0),
+                    'ident': None,
                     'children': {
                         'tree': {
                             'ident': None,
@@ -699,7 +699,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TU004] _as_dict()",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': TrieId(0),
+                    'ident': None,
                     'children': {
                         'tree': {
                             'ident': None,
@@ -844,7 +844,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TU020] trie[1].value == 'feline' (_as_dict() check)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': TrieId(0),
+                    'ident': None,
                     'children': {
                         'tree': {
                             'ident': None,
@@ -890,7 +890,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TU022] trie[1].value == 'feline' (_as_dict() check)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': TrieId(0),
+                    'ident': None,
                     'children': {
                         'tree': {
                             'ident': None,
@@ -936,7 +936,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TU024] trie[1].value == None (_as_dict() check)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': TrieId(0),
+                    'ident': None,
                     'children': {
                         'tree': {
                             'ident': None,
@@ -980,7 +980,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TU026] trie[1].value == 'canide' (_as_dict() check)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
-                    'ident': TrieId(0),
+                    'ident': None,
                     'children': {
                         'tree': {
                             'ident': None,
