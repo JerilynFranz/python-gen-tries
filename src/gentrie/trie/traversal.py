@@ -2,24 +2,20 @@
 """Traversal operations for GeneralizedTrie."""
 
 from collections import deque
-from typing import Any, Generator, Optional
+from typing import Generator
 
 from ..exceptions import InvalidGeneralizedKeyError
-from ..nodes import Node
 from ..protocols import GeneralizedKey
-from ..types import TrieEntry, TrieId
+from ..types import TrieEntry
 from ..validation import is_generalizedkey
+
+from .trie_mixins import TrieMixinsInterface
 
 
 class TrieTraversalMixin:
     """Mixin providing traversal operations (prefixes, prefixed_by)."""
 
-    # Type hints for expected attributes (will be provided by mixing class)
-    _trie_entries: dict[TrieId, TrieEntry]
-    ident: Optional[TrieId]
-    children: dict[Any, Node]
-
-    def prefixes(self, key: GeneralizedKey) -> Generator[TrieEntry, None, None]:
+    def prefixes(self: TrieMixinsInterface, key: GeneralizedKey) -> Generator[TrieEntry, None, None]:
         """Yields TrieEntry instances for all keys in the trie that are a prefix of the passed key.
 
         Searches the trie for all keys that are prefix matches
@@ -71,16 +67,17 @@ class TrieTraversalMixin:
 
         for token in key:
             if current_node.ident:
-                yield self._trie_entries[current_node.ident]
+                yield self._trie_entries[current_node.ident]  # pyright: ignore[reportPrivateUsage]
             if token not in current_node.children:
                 return  # no match in children, so the generator is done
             current_node = current_node.children[token]
 
         # If we reached here, we have a match for the full key
         if current_node.ident:
-            yield self._trie_entries[current_node.ident]
+            yield self._trie_entries[current_node.ident]  # pyright: ignore[reportPrivateUsage]
 
-    def prefixed_by(self, key: GeneralizedKey, depth: int = -1) -> Generator[TrieEntry, None, None]:
+    def prefixed_by(self: TrieMixinsInterface, key: GeneralizedKey, depth: int = -1
+                    ) -> Generator[TrieEntry, None, None]:
         """Yields all entries in the trie that are prefixed by the given key, up to a specified depth.
 
         Searches the trie for all keys that start with the provided key and yields their
@@ -156,7 +153,7 @@ class TrieTraversalMixin:
         while queue:
             node, current_depth = queue.popleft()
             if node.ident:
-                yield self._trie_entries[node.ident]
+                yield self._trie_entries[node.ident]  # pyright: ignore[reportPrivateUsage]
             if current_depth != 0:
                 for child in node.children.values():
                     queue.append((child, current_depth - 1))

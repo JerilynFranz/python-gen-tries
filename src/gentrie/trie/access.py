@@ -4,29 +4,26 @@
 from typing import Any, Optional
 
 from ..exceptions import InvalidGeneralizedKeyError
-from ..nodes import Node
-from ..protocols import GeneralizedKey, TrieKeyToken
-from ..types import TrieEntry, TrieId
+from ..types import TrieEntry, TrieId, GeneralizedKey
 from ..validation import is_generalizedkey
+
+from .trie_mixins import TrieMixinsInterface
 
 
 class TrieAccessMixin:
     """Mixin providing data access operations.
 
-    This mixin expects the class it's mixed with to provide:
-    - _trie_index: Dict[TrieId, Any]
-    - _trie_entries: Dict[TrieId, TrieEntry]
-    - children: Dict[TrieKeyToken, TrieNode]
-    - ident: Optional[TrieId]
+    Note: This mixin accesses private attributes of the mixing class.
+    This is intentional and necessary for the mixin pattern.
     """
 
     # Type hints for expected attributes (will be provided by mixing class)
-    _trie_index: dict[TrieId, Any]
-    _trie_entries: dict[TrieId, TrieEntry]
-    children: dict[TrieKeyToken, Node]
-    ident: Optional[TrieId]
+    # _trie_index: dict[TrieId, Any]
+    # _trie_entries: dict[TrieId, TrieEntry]
+    # children: dict[TrieKeyToken, Node]
+    # ident: Optional[TrieId]
 
-    def __contains__(self, key_or_ident: GeneralizedKey | TrieId) -> bool:
+    def __contains__(self: TrieMixinsInterface, key_or_ident: GeneralizedKey | TrieId) -> bool:
         """Returns True if the trie contains a GeneralizedKey or TrieId matching the passed key.
 
         This method checks if the trie contains a key that matches the provided key_or_ident.
@@ -48,7 +45,7 @@ class TrieAccessMixin:
         """
         if isinstance(key_or_ident, TrieId):
             # If it's a TrieId, check if it exists in the trie index
-            return key_or_ident in self._trie_index
+            return key_or_ident in self._trie_index  # pyright: ignore[reportPrivateUsage]
 
         if not is_generalizedkey(key_or_ident):
             raise InvalidGeneralizedKeyError(
@@ -62,7 +59,7 @@ class TrieAccessMixin:
 
         return current_node.ident is not None
 
-    def __getitem__(self, key: TrieId | GeneralizedKey) -> TrieEntry:
+    def __getitem__(self: TrieMixinsInterface, key: TrieId | GeneralizedKey) -> TrieEntry:
         """Returns the :class:`TrieEntry` for the ident or key with the passed identifier.
 
         The identifier can be either the :class:`TrieId` (ident) or the :class:`GeneralizedKey` (key)
@@ -78,12 +75,12 @@ class TrieAccessMixin:
             TypeError ([GTGI002]): if the key arg is neither a :class:`TrieId` or a valid :class:`GeneralizedKey`.
         """
         if isinstance(key, TrieId):
-            if key not in self._trie_index:
+            if key not in self._trie_index:  # pyright: ignore[reportPrivateUsage]
                 raise KeyError(
                     "[GTGI001] key does not match any idents or keys in the trie"
                 )
             # Return the TrieEntry for the TrieId
-            return self._trie_entries[key]
+            return self._trie_entries[key]  # pyright: ignore[reportPrivateUsage]
 
         if is_generalizedkey(key):
             # Find the TrieId for the key
@@ -96,7 +93,7 @@ class TrieAccessMixin:
                 current_node = current_node.children[token]
             if current_node.ident:
                 # Return the TrieEntry for the TrieId
-                return self._trie_entries[current_node.ident]
+                return self._trie_entries[current_node.ident]  # pyright: ignore[reportPrivateUsage]
             raise KeyError(
                 "[GTGI001] key does not match any idents or keys in the trie")
 
@@ -105,7 +102,9 @@ class TrieAccessMixin:
             "[GTGI002] key must be either a :class:TrieId or a :class:`GeneralizedKey`"
         )
 
-    def get(self, key: TrieId | GeneralizedKey, default: Optional[Any] = None) -> Optional[TrieEntry | Any]:
+    def get(self: TrieMixinsInterface,
+            key: TrieId | GeneralizedKey,
+            default: Optional[Any] = None) -> Optional[TrieEntry | Any]:
         """Returns the :class:`TrieEntry` for the ident or key with the passed identifier.
 
         The identifier can be either the :class:`TrieId` (ident) or the :class:`GeneralizedKey` (key)

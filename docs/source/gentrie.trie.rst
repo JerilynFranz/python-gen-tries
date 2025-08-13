@@ -28,14 +28,6 @@ gentrie.trie.collection module
    :undoc-members:
    :show-inheritance:
 
-gentrie.trie.iteration module
------------------------------
-
-.. automodule:: gentrie.trie.iteration
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 gentrie.trie.mutation module
 ----------------------------
 
@@ -64,6 +56,14 @@ gentrie.trie.traversal module
 -----------------------------
 
 .. automodule:: gentrie.trie.traversal
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+gentrie.trie.trie\_mixins module
+--------------------------------
+
+.. automodule:: gentrie.trie.trie_mixins
    :members:
    :undoc-members:
    :show-inheritance:

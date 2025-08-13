@@ -1,25 +1,22 @@
 # -*- coding: utf-8 -*-
 """Entry removal operations for the trie."""
-from abc import ABC, abstractmethod
-from typing import Any, Optional
+from typing import Optional
 
 from ..protocols import GeneralizedKey, TrieKeyToken
-from ..types import TrieEntry, TrieId
+from ..types import TrieId
 from ..validation import is_generalizedkey
 
+from .trie_mixins import TrieMixinsInterface
 
-class TrieRemovalMixin(ABC):
-    """Mixin providing entry removal operations."""
 
-    # Type hints for expected attributes (will be provided by mixing class)
-    _trie_index: dict[TrieId, Any]
-    _trie_entries: dict[TrieId, TrieEntry]
+class TrieRemovalMixin:
+    """Mixin providing entry removal operations.
 
-    @abstractmethod
-    def __getitem__(self, key: TrieId | GeneralizedKey) -> TrieEntry:
-        """__getitem__ method must be implemented by the mixing class."""
+    Note: This mixin accesses private attributes of the mixing class.
+    This is intentional and necessary for the mixin pattern
+    """
 
-    def remove(self, key: TrieId | GeneralizedKey) -> None:
+    def remove(self: TrieMixinsInterface, key: TrieId | GeneralizedKey) -> None:
         """Remove the specified key from the trie.
 
         Removes the key from the trie. If the key is not found, it raises a KeyError.
@@ -47,14 +44,14 @@ class TrieRemovalMixin(ABC):
                 "[GTR001] key arg must be of type TrieId or a valid GeneralizedKey"
             )
 
-        if ident is None or ident not in self._trie_index:
+        if ident is None or ident not in self._trie_index:  # pyright: ignore[reportPrivateUsage]
             raise KeyError("[GTR002] key not found")
 
         # Get the node and delete its id from the trie index and entries
         # and remove the node from the trie.
-        node = self._trie_index[ident]
-        del self._trie_index[ident]
-        del self._trie_entries[ident]
+        node = self._trie_index[ident]  # pyright: ignore[reportPrivateUsage]
+        del self._trie_index[ident]  # pyright: ignore[reportPrivateUsage]
+        del self._trie_entries[ident]  # pyright: ignore[reportPrivateUsage]
 
         # Remove the id from the node
         node.ident = None

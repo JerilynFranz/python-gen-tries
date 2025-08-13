@@ -40,7 +40,7 @@ class Node:  # pylint: disable=too-few-public-methods
         if self.parent is None:
             output.append("  parent = None")
         else:
-            from .trie import GeneralizedTrie
+            from .trie import GeneralizedTrie  # pylint: disable=import-outside-toplevel
             if isinstance(self.parent, GeneralizedTrie):
                 output.append("  parent = root node")
             else:

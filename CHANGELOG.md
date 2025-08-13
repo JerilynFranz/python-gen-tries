@@ -20,3 +20,4 @@
 * 0.6.0 - Updated docs, made TrieId a stronger type guarantee and updated tests to match
 * 0.7.0 - Changed prefixes() and prefixed_by() methods to return Generators instead of sets
 * 0.8.0 - Refactored main code into separate files by functional grouping. Removed Bazel build support.
+* 0.8.1 - Added TrieMixinsInterface protocol to cleanup type checking of trie mixins and make the mixin structure better documented

@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 """Entry storage operations for the trie."""
 
-from typing import Any, Optional, TYPE_CHECKING
+# pylint does not understand the Protocol declaration of the mixing class
+# pylint: disable=no-member
+
+from typing import Any, cast, Optional
 
 from ..exceptions import DuplicateKeyError, InvalidGeneralizedKeyError
 from ..nodes import Node
@@ -9,22 +12,13 @@ from ..protocols import GeneralizedKey
 from ..types import TrieEntry, TrieId
 from ..validation import is_generalizedkey
 
-if TYPE_CHECKING:
-    from gentrie.trie.base import TrieBase as GeneralizedTrie
+from .trie_mixins import TrieMixinsInterface
 
 
 class TrieStorageMixin:
     """Mixin providing entry storage operations."""
 
-    # Type hints for expected attributes (will be provided by mixing class)
-    _trie_index: dict[TrieId, Any]
-    _trie_entries: dict[TrieId, TrieEntry]
-    ident: Optional[TrieId]
-    children: dict[Any, Node]
-    parent: Optional["GeneralizedTrie | Node"]
-    value: Optional[Any]
-
-    def add(self, key: GeneralizedKey, value: Optional[Any] = None) -> TrieId:
+    def add(self: TrieMixinsInterface, key: GeneralizedKey, value: Optional[Any] = None) -> TrieId:
         """Adds the key to the trie.
 
         .. warning:: **Keys Must Be Immutable**
@@ -54,9 +48,9 @@ class TrieStorageMixin:
             it returns the id of the new entry. If the key was already in the trie,
             it raises a :class:`DuplicateKeyError`.
         """
-        return self._store_entry(key=key, value=value, allow_value_update=False)
+        return self._store_entry(key=key, value=value, allow_value_update=False)   # pyright: ignore[reportPrivateUsage]
 
-    def update(self, key: GeneralizedKey, value: Optional[Any] = None) -> TrieId:
+    def update(self: TrieMixinsInterface, key: GeneralizedKey, value: Optional[Any] = None) -> TrieId:
         """Updates the key/value pair in the trie.
 
         .. warning:: **Keys Must Be Immutable**
@@ -84,9 +78,12 @@ class TrieStorageMixin:
             it returns the id for the already existing entry. If the key was not already in the trie,
             it returns the id for a new entry.
         """
-        return self._store_entry(key=key, value=value, allow_value_update=True)
+        return self._store_entry(key=key, value=value, allow_value_update=True)  # pyright: ignore[reportPrivateUsage]
 
-    def _store_entry(self, key: GeneralizedKey, value: Any, allow_value_update: bool) -> TrieId:
+    def _store_entry(self: TrieMixinsInterface,
+                     key: GeneralizedKey,
+                     value: Any,
+                     allow_value_update: bool) -> TrieId:
         """Stores a key/value pair entry in the trie.
 
         Args:
@@ -126,7 +123,8 @@ class TrieStorageMixin:
             # If we allow updating, update the value and return the existing id
             if allow_value_update:
                 current_node.value = value
-                self._trie_entries[current_node.ident] = TrieEntry(current_node.ident, key, value)
+                self._trie_entries[current_node.ident] = TrieEntry(  # pyright: ignore[reportPrivateUsage]
+                    current_node.ident, key, value)
                 return current_node.ident
 
             # The key is already in the trie but we are not allowing updating values - so raise an error
@@ -135,16 +133,11 @@ class TrieStorageMixin:
                 " - use `update()` to change the value of an existing key.")
 
         # Assign a new trie id for the node and set the value
-        current_counter = getattr(self, '_ident_counter', 0)
-        current_counter += 1
-        setattr(self, '_ident_counter', current_counter)
-        new_ident = TrieId(current_counter)
+        self._ident_counter += 1  # pyright: ignore[reportPrivateUsage]
+        new_ident = TrieId(self._ident_counter)  # pyright: ignore[reportPrivateUsage]
         current_node.ident = new_ident
         current_node.value = value
-        trie_index = getattr(self, '_trie_index', {})
-        trie_index[new_ident] = current_node
-        setattr(self, '_trie_index', trie_index)
-        trie_entries = getattr(self, '_trie_entries', {})
-        trie_entries[new_ident] = TrieEntry(new_ident, key, value)
-        setattr(self, '_trie_entries', trie_entries)
+        self._trie_index[new_ident] = cast(Node, current_node)  # pyright: ignore[reportPrivateUsage]
+        self._trie_entries[new_ident] = TrieEntry(new_ident, key, value)   # pyright: ignore[reportPrivateUsage]
+
         return new_ident

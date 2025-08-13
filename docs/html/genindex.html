@@ -12,9 +12,9 @@
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="white" />
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="black" />
   
-    <title>Index | gen-tries 0.8.0 documentation</title>
-    <meta property="og:title" content="Index | gen-tries 0.8.0 documentation" />
-    <meta name="twitter:title" content="Index | gen-tries 0.8.0 documentation" />
+    <title>Index | gen-tries 0.8.1 documentation</title>
+    <meta property="og:title" content="Index | gen-tries 0.8.1 documentation" />
+    <meta name="twitter:title" content="Index | gen-tries 0.8.1 documentation" />
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=c309799c" />
       <link rel="stylesheet" type="text/css" href="_static/theme.css?v=42baaae4" />
         <link rel="search" title="Search" href="search.html" />
@@ -39,7 +39,7 @@
     </a><header
   class="sticky top-0 z-40 w-full border-b shadow-sm border-border supports-backdrop-blur:bg-background/60 bg-background/95 backdrop-blur"><div class="container flex items-center h-14">
     <div class="hidden mr-4 md:flex">
-      <a href="index.html" class="flex items-center mr-6"><span class="hidden font-bold sm:inline-block text-clip whitespace-nowrap">gen-tries 0.8.0 documentation</span>
+      <a href="index.html" class="flex items-center mr-6"><span class="hidden font-bold sm:inline-block text-clip whitespace-nowrap">gen-tries 0.8.1 documentation</span>
       </a></div><button
       class="inline-flex items-center justify-center h-10 px-0 py-2 mr-2 text-base font-medium transition-colors rounded-md hover:text-accent-foreground hover:bg-transparent md:hidden"
       type="button" @click="showSidebar = true">
@@ -94,7 +94,7 @@
   class="fixed inset-y-0 left-0 md:top-14 z-50 md:z-30 bg-background md:bg-transparent transition-all duration-100 -translate-x-full md:translate-x-0 ml-0 p-6 md:p-0 md:-ml-2 md:h-[calc(100vh-3.5rem)] w-5/6 md:w-full shrink-0 overflow-y-auto border-r border-border md:sticky"
   :aria-hidden="!showSidebar" :class="{ 'translate-x-0': showSidebar }">
 
-    <a href="index.html" class="!justify-start text-sm md:!hidden bg-background"><span class="font-bold text-clip whitespace-nowrap">gen-tries 0.8.0 documentation</span>
+    <a href="index.html" class="!justify-start text-sm md:!hidden bg-background"><span class="font-bold text-clip whitespace-nowrap">gen-tries 0.8.1 documentation</span>
     </a>
 
     <div class="relative overflow-hidden md:overflow-auto my-4 md:my-0 h-[calc(100vh-8rem)] md:h-auto">
@@ -126,7 +126,7 @@
      class="flex items-center mb-4 space-x-1 text-sm text-muted-foreground">
   <a class="overflow-hidden text-ellipsis whitespace-nowrap hover:text-foreground"
      href="index.html">
-    <span class="hidden md:inline">gen-tries 0.8.0 documentation</span>
+    <span class="hidden md:inline">gen-tries 0.8.1 documentation</span>
     <svg xmlns="http://www.w3.org/2000/svg"
          height="18"
          width="18"
@@ -154,6 +154,8 @@
       <ul style="list-style-type:none">
         <li><a href="gentrie.trie.html#gentrie.trie.storage.TrieStorageMixin.add">(gentrie.trie.storage.TrieStorageMixin method)</a>
 </li>
+        <li><a href="gentrie.trie.html#gentrie.trie.trie_mixins.TrieMixinsInterface.add">(gentrie.trie.trie_mixins.TrieMixinsInterface method)</a>
+</li>
       </ul></li>
   </ul></td>
   </tr>
@@ -165,11 +167,7 @@
       <li><a href="gentrie.html#gentrie.nodes.Node.children">children (gentrie.nodes.Node attribute)</a>
 
       <ul style="list-style-type:none">
-        <li><a href="gentrie.trie.html#gentrie.trie.access.TrieAccessMixin.children">(gentrie.trie.access.TrieAccessMixin attribute)</a>
-</li>
-        <li><a href="gentrie.trie.html#gentrie.trie.storage.TrieStorageMixin.children">(gentrie.trie.storage.TrieStorageMixin attribute)</a>
-</li>
-        <li><a href="gentrie.trie.html#gentrie.trie.traversal.TrieTraversalMixin.children">(gentrie.trie.traversal.TrieTraversalMixin attribute)</a>
+        <li><a href="gentrie.trie.html#gentrie.trie.trie_mixins.TrieMixinsInterface.children">(gentrie.trie.trie_mixins.TrieMixinsInterface attribute)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -275,13 +273,6 @@
 </li>
       </ul></li>
       <li>
-    gentrie.trie.iteration
-
-      <ul style="list-style-type:none">
-        <li><a href="gentrie.trie.html#module-gentrie.trie.iteration">module</a>
-</li>
-      </ul></li>
-      <li>
     gentrie.trie.mutation
 
       <ul style="list-style-type:none">
@@ -310,6 +301,13 @@
 </li>
       </ul></li>
       <li>
+    gentrie.trie.trie_mixins
+
+      <ul style="list-style-type:none">
+        <li><a href="gentrie.trie.html#module-gentrie.trie.trie_mixins">module</a>
+</li>
+      </ul></li>
+      <li>
     gentrie.types
 
       <ul style="list-style-type:none">
@@ -327,6 +325,8 @@
 
       <ul style="list-style-type:none">
         <li><a href="gentrie.trie.html#gentrie.trie.access.TrieAccessMixin.get">(gentrie.trie.access.TrieAccessMixin method)</a>
+</li>
+        <li><a href="gentrie.trie.html#gentrie.trie.trie_mixins.TrieMixinsInterface.get">(gentrie.trie.trie_mixins.TrieMixinsInterface method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -352,11 +352,7 @@
       <li><a href="gentrie.html#gentrie.nodes.Node.ident">ident (gentrie.nodes.Node attribute)</a>
 
       <ul style="list-style-type:none">
-        <li><a href="gentrie.trie.html#gentrie.trie.access.TrieAccessMixin.ident">(gentrie.trie.access.TrieAccessMixin attribute)</a>
-</li>
-        <li><a href="gentrie.trie.html#gentrie.trie.storage.TrieStorageMixin.ident">(gentrie.trie.storage.TrieStorageMixin attribute)</a>
-</li>
-        <li><a href="gentrie.trie.html#gentrie.trie.traversal.TrieTraversalMixin.ident">(gentrie.trie.traversal.TrieTraversalMixin attribute)</a>
+        <li><a href="gentrie.trie.html#gentrie.trie.trie_mixins.TrieMixinsInterface.ident">(gentrie.trie.trie_mixins.TrieMixinsInterface attribute)</a>
 </li>
         <li><a href="gentrie.html#gentrie.TrieEntry.ident">(gentrie.TrieEntry attribute)</a>
 </li>
@@ -400,8 +396,6 @@
       <ul style="list-style-type:none">
         <li><a href="gentrie.trie.html#gentrie.trie.collection.TrieCollectionMixin.items">(gentrie.trie.collection.TrieCollectionMixin method)</a>
 </li>
-        <li><a href="gentrie.trie.html#gentrie.trie.iteration.TrieIterationMixin.items">(gentrie.trie.iteration.TrieIterationMixin method)</a>
-</li>
       </ul></li>
   </ul></td>
   </tr>
@@ -422,8 +416,6 @@
 
       <ul style="list-style-type:none">
         <li><a href="gentrie.trie.html#gentrie.trie.collection.TrieCollectionMixin.keys">(gentrie.trie.collection.TrieCollectionMixin method)</a>
-</li>
-        <li><a href="gentrie.trie.html#gentrie.trie.iteration.TrieIterationMixin.keys">(gentrie.trie.iteration.TrieIterationMixin method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -453,8 +445,6 @@
 </li>
         <li><a href="gentrie.trie.html#module-gentrie.trie.collection">gentrie.trie.collection</a>
 </li>
-        <li><a href="gentrie.trie.html#module-gentrie.trie.iteration">gentrie.trie.iteration</a>
-</li>
         <li><a href="gentrie.trie.html#module-gentrie.trie.mutation">gentrie.trie.mutation</a>
 </li>
         <li><a href="gentrie.trie.html#module-gentrie.trie.removal">gentrie.trie.removal</a>
@@ -462,6 +452,8 @@
         <li><a href="gentrie.trie.html#module-gentrie.trie.storage">gentrie.trie.storage</a>
 </li>
         <li><a href="gentrie.trie.html#module-gentrie.trie.traversal">gentrie.trie.traversal</a>
+</li>
+        <li><a href="gentrie.trie.html#module-gentrie.trie.trie_mixins">gentrie.trie.trie_mixins</a>
 </li>
         <li><a href="gentrie.html#module-gentrie.types">gentrie.types</a>
 </li>
@@ -487,13 +479,15 @@
       <li><a href="gentrie.html#gentrie.nodes.Node.parent">parent (gentrie.nodes.Node attribute)</a>
 
       <ul style="list-style-type:none">
-        <li><a href="gentrie.trie.html#gentrie.trie.storage.TrieStorageMixin.parent">(gentrie.trie.storage.TrieStorageMixin attribute)</a>
+        <li><a href="gentrie.trie.html#gentrie.trie.trie_mixins.TrieMixinsInterface.parent">(gentrie.trie.trie_mixins.TrieMixinsInterface attribute)</a>
 </li>
       </ul></li>
       <li><a href="reference.html#gentrie.GeneralizedTrie.prefixed_by">prefixed_by() (gentrie.GeneralizedTrie method)</a>
 
       <ul style="list-style-type:none">
         <li><a href="gentrie.trie.html#gentrie.trie.traversal.TrieTraversalMixin.prefixed_by">(gentrie.trie.traversal.TrieTraversalMixin method)</a>
+</li>
+        <li><a href="gentrie.trie.html#gentrie.trie.trie_mixins.TrieMixinsInterface.prefixed_by">(gentrie.trie.trie_mixins.TrieMixinsInterface method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -502,6 +496,8 @@
 
       <ul style="list-style-type:none">
         <li><a href="gentrie.trie.html#gentrie.trie.traversal.TrieTraversalMixin.prefixes">(gentrie.trie.traversal.TrieTraversalMixin method)</a>
+</li>
+        <li><a href="gentrie.trie.html#gentrie.trie.trie_mixins.TrieMixinsInterface.prefixes">(gentrie.trie.trie_mixins.TrieMixinsInterface method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -514,9 +510,9 @@
       <li><a href="reference.html#gentrie.GeneralizedTrie.remove">remove() (gentrie.GeneralizedTrie method)</a>
 
       <ul style="list-style-type:none">
-        <li><a href="gentrie.trie.html#gentrie.trie.mutation.TrieMutationMixin.remove">(gentrie.trie.mutation.TrieMutationMixin method)</a>
-</li>
         <li><a href="gentrie.trie.html#gentrie.trie.removal.TrieRemovalMixin.remove">(gentrie.trie.removal.TrieRemovalMixin method)</a>
+</li>
+        <li><a href="gentrie.trie.html#gentrie.trie.trie_mixins.TrieMixinsInterface.remove">(gentrie.trie.trie_mixins.TrieMixinsInterface method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -527,7 +523,11 @@
   <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul style="margin-left:0;list-style-type:none">
       <li><a href="gentrie.html#gentrie.nodes.Node.token">token (gentrie.nodes.Node attribute)</a>
+
+      <ul style="list-style-type:none">
+        <li><a href="gentrie.trie.html#gentrie.trie.trie_mixins.TrieMixinsInterface.token">(gentrie.trie.trie_mixins.TrieMixinsInterface attribute)</a>
 </li>
+      </ul></li>
       <li><a href="gentrie.html#gentrie.types.TRIE_IDENT">TRIE_IDENT (in module gentrie.types)</a>
 </li>
       <li><a href="gentrie.html#gentrie.types.TRIE_KEY">TRIE_KEY (in module gentrie.types)</a>
@@ -554,14 +554,14 @@
         <li><a href="gentrie.html#gentrie.types.TrieId">(class in gentrie.types)</a>, <a href="reference.html#gentrie.types.TrieId">[1]</a>
 </li>
       </ul></li>
-      <li><a href="gentrie.trie.html#gentrie.trie.iteration.TrieIterationMixin">TrieIterationMixin (class in gentrie.trie.iteration)</a>
-</li>
       <li><a href="gentrie.html#gentrie.TrieKeyToken">TrieKeyToken (class in gentrie)</a>
 
       <ul style="list-style-type:none">
         <li><a href="gentrie.html#gentrie.protocols.TrieKeyToken">(class in gentrie.protocols)</a>, <a href="reference.html#gentrie.protocols.TrieKeyToken">[1]</a>
 </li>
       </ul></li>
+      <li><a href="gentrie.trie.html#gentrie.trie.trie_mixins.TrieMixinsInterface">TrieMixinsInterface (class in gentrie.trie.trie_mixins)</a>
+</li>
       <li><a href="gentrie.trie.html#gentrie.trie.mutation.TrieMutationMixin">TrieMutationMixin (class in gentrie.trie.mutation)</a>
 </li>
       <li><a href="gentrie.trie.html#gentrie.trie.removal.TrieRemovalMixin">TrieRemovalMixin (class in gentrie.trie.removal)</a>
@@ -580,9 +580,9 @@
       <li><a href="reference.html#gentrie.GeneralizedTrie.update">update() (gentrie.GeneralizedTrie method)</a>
 
       <ul style="list-style-type:none">
-        <li><a href="gentrie.trie.html#gentrie.trie.mutation.TrieMutationMixin.update">(gentrie.trie.mutation.TrieMutationMixin method)</a>
-</li>
         <li><a href="gentrie.trie.html#gentrie.trie.storage.TrieStorageMixin.update">(gentrie.trie.storage.TrieStorageMixin method)</a>
+</li>
+        <li><a href="gentrie.trie.html#gentrie.trie.trie_mixins.TrieMixinsInterface.update">(gentrie.trie.trie_mixins.TrieMixinsInterface method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -592,7 +592,7 @@
   <h2 id="V">V</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul style="margin-left:0;list-style-type:none">
-      <li><a href="gentrie.trie.html#gentrie.trie.storage.TrieStorageMixin.value">value (gentrie.trie.storage.TrieStorageMixin attribute)</a>
+      <li><a href="gentrie.trie.html#gentrie.trie.trie_mixins.TrieMixinsInterface.value">value (gentrie.trie.trie_mixins.TrieMixinsInterface attribute)</a>
 
       <ul style="list-style-type:none">
         <li><a href="gentrie.html#gentrie.TrieEntry.value">(gentrie.TrieEntry attribute)</a>
@@ -606,8 +606,6 @@
 
       <ul style="list-style-type:none">
         <li><a href="gentrie.trie.html#gentrie.trie.collection.TrieCollectionMixin.values">(gentrie.trie.collection.TrieCollectionMixin method)</a>
-</li>
-        <li><a href="gentrie.trie.html#gentrie.trie.iteration.TrieIterationMixin.values">(gentrie.trie.iteration.TrieIterationMixin method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -634,7 +632,7 @@
 </footer>
   </div>
   
-    <script src="_static/documentation_options.js?v=486e5634"></script>
+    <script src="_static/documentation_options.js?v=ec16d22d"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script defer="defer" src="_static/theme.js?v=073f68d9"></script>
