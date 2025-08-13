@@ -9,6 +9,11 @@ from ..validation import is_generalizedkey
 
 from .trie_mixins import TrieMixinsInterface
 
+# Disabled because pyright does not understand mixins
+# use of private attributes from the mixing class as declared
+# in the TrieMixinsInterface protocol.
+# pyright: reportPrivateUsage=false
+
 
 class TrieAccessMixin:
     """Mixin providing data access operations.
@@ -34,9 +39,9 @@ class TrieAccessMixin:
         """
         if isinstance(key_or_ident, TrieId):
             # If it's a TrieId, check if it exists in the trie index
-            return key_or_ident in self._trie_index  # pyright: ignore[reportPrivateUsage]
+            return key_or_ident in self._trie_index
 
-        if not is_generalizedkey(key_or_ident):
+        if not (self.runtime_validation and is_generalizedkey(key_or_ident)):
             return False
 
         current_node = self
@@ -63,14 +68,15 @@ class TrieAccessMixin:
             TypeError ([GTGI002]): if the key arg is neither a :class:`TrieId` or a valid :class:`GeneralizedKey`.
         """
         if isinstance(key, TrieId):
-            if key not in self._trie_index:  # pyright: ignore[reportPrivateUsage]
+            if key not in self._trie_index:
                 raise KeyError(
                     "[GTGI001] key does not match any idents or keys in the trie"
                 )
             # Return the TrieEntry for the TrieId
-            return self._trie_entries[key]  # pyright: ignore[reportPrivateUsage]
+            return self._trie_entries[key]
 
-        if is_generalizedkey(key):
+        # If runtime validation is disabled, we just ASSUME the key is a GeneralizedKey if we get here.
+        if (not self.runtime_validation) or is_generalizedkey(key):
             # Find the TrieId for the key
             current_node = self
             for token in key:
@@ -81,7 +87,7 @@ class TrieAccessMixin:
                 current_node = current_node.children[token]
             if current_node.ident:
                 # Return the TrieEntry for the TrieId
-                return self._trie_entries[current_node.ident]  # pyright: ignore[reportPrivateUsage]
+                return self._trie_entries[current_node.ident]
             raise KeyError(
                 "[GTGI001] key does not match any idents or keys in the trie")
 

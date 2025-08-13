@@ -11,6 +11,11 @@ from ..validation import is_generalizedkey
 
 from .trie_mixins import TrieMixinsInterface
 
+# Disabled because pyright does not understand mixins
+# use of private attributes from the mixing class as declared
+# in the TrieMixinsInterface protocol.
+# pyright: reportPrivateUsage=false
+
 
 class TrieTraversalMixin:
     """Mixin providing traversal operations (prefixes, prefixed_by)."""
@@ -60,21 +65,21 @@ class TrieTraversalMixin:
             # 3: a
             # 4: abcd
         """
-        if not is_generalizedkey(key):
+        if self.runtime_validation and not is_generalizedkey(key):
             raise InvalidGeneralizedKeyError("[GTM001] key is not a valid `GeneralizedKey`")
 
         current_node = self
 
         for token in key:
             if current_node.ident:
-                yield self._trie_entries[current_node.ident]  # pyright: ignore[reportPrivateUsage]
+                yield self._trie_entries[current_node.ident]
             if token not in current_node.children:
                 return  # no match in children, so the generator is done
             current_node = current_node.children[token]
 
         # If we reached here, we have a match for the full key
         if current_node.ident:
-            yield self._trie_entries[current_node.ident]  # pyright: ignore[reportPrivateUsage]
+            yield self._trie_entries[current_node.ident]
 
     def prefixed_by(self: TrieMixinsInterface, key: GeneralizedKey, depth: int = -1
                     ) -> Generator[TrieEntry, None, None]:
@@ -153,7 +158,7 @@ class TrieTraversalMixin:
         while queue:
             node, current_depth = queue.popleft()
             if node.ident:
-                yield self._trie_entries[node.ident]  # pyright: ignore[reportPrivateUsage]
+                yield self._trie_entries[node.ident]
             if current_depth != 0:
                 for child in node.children.values():
                     queue.append((child, current_depth - 1))

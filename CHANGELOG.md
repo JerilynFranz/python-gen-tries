@@ -22,3 +22,4 @@
 * 0.8.0 - Refactored main code into separate files by functional grouping. Removed Bazel build support.
 * 0.8.1 - Added TrieMixinsInterface protocol to cleanup type checking of trie mixins and make the mixin structure better documented
 * 0.9.0 - Changed __contains__ and get() to conform to Pythonic conventions. Cleanup of type checking issues subsequent to change to mixin architecture.
+* 0.9.1 - Added 'runtime_validation' property and initialization parameter for performance. Tweaked use of pyright directives to reduce visual noise in code. Simplified GeneralizedKey alias declaration by removing explict inclusion of 'str'.

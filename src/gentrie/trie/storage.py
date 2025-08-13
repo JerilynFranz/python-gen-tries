@@ -14,6 +14,11 @@ from ..validation import is_generalizedkey
 
 from .trie_mixins import TrieMixinsInterface
 
+# Disabled because pyright does not understand mixins
+# use of private attributes from the mixing class as declared
+# in the TrieMixinsInterface protocol.
+# pyright: reportPrivateUsage=false
+
 
 class TrieStorageMixin:
     """Mixin providing entry storage operations."""
@@ -48,7 +53,7 @@ class TrieStorageMixin:
             it returns the id of the new entry. If the key was already in the trie,
             it raises a :class:`DuplicateKeyError`.
         """
-        return self._store_entry(key=key, value=value, allow_value_update=False)   # pyright: ignore[reportPrivateUsage]
+        return self._store_entry(key=key, value=value, allow_value_update=False)
 
     def update(self: TrieMixinsInterface, key: GeneralizedKey, value: Optional[Any] = None) -> TrieId:
         """Updates the key/value pair in the trie.
@@ -78,7 +83,7 @@ class TrieStorageMixin:
             it returns the id for the already existing entry. If the key was not already in the trie,
             it returns the id for a new entry.
         """
-        return self._store_entry(key=key, value=value, allow_value_update=True)  # pyright: ignore[reportPrivateUsage]
+        return self._store_entry(key=key, value=value, allow_value_update=True)
 
     def _store_entry(self: TrieMixinsInterface,
                      key: GeneralizedKey,
@@ -106,7 +111,7 @@ class TrieStorageMixin:
             is False, it raises a DuplicateKeyError. If allow_value_update is True, it replaces the value
             and returns the id of the existing entry.
         """
-        if not is_generalizedkey(key):
+        if self.runtime_validation and not is_generalizedkey(key):
             raise InvalidGeneralizedKeyError("[GTSE001] key is not a valid `GeneralizedKey`")
 
         # Traverse the trie to find the insertion point for the key,
@@ -123,21 +128,21 @@ class TrieStorageMixin:
             # If we allow updating, update the value and return the existing id
             if allow_value_update:
                 current_node.value = value
-                self._trie_entries[current_node.ident] = TrieEntry(  # pyright: ignore[reportPrivateUsage]
+                self._trie_entries[current_node.ident] = TrieEntry(
                     current_node.ident, key, value)
                 return current_node.ident
 
             # The key is already in the trie but we are not allowing updating values - so raise an error
             raise DuplicateKeyError(
-                "[GTSE002] Attempted to store a key with a value that is already in the trie with "
+                "[GTSE002] Attempted to store a key with a value that is already in the trie "
                 " - use `update()` to change the value of an existing key.")
 
         # Assign a new trie id for the node and set the value
-        self._ident_counter += 1  # pyright: ignore[reportPrivateUsage]
-        new_ident = TrieId(self._ident_counter)  # pyright: ignore[reportPrivateUsage]
+        self._ident_counter += 1
+        new_ident = TrieId(self._ident_counter)
         current_node.ident = new_ident
         current_node.value = value
-        self._trie_index[new_ident] = cast(Node, current_node)  # pyright: ignore[reportPrivateUsage]
-        self._trie_entries[new_ident] = TrieEntry(new_ident, key, value)   # pyright: ignore[reportPrivateUsage]
+        self._trie_index[new_ident] = cast(Node, current_node)
+        self._trie_entries[new_ident] = TrieEntry(new_ident, key, value)
 
         return new_ident

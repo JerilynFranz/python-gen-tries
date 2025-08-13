@@ -14,6 +14,7 @@ class TrieMixinsInterface(Protocol):
     """
     # --- Shared Private State ---
     # These attributes are the "contract" for the shared data model.
+    runtime_validation: bool
     _ident_counter: int
     _trie_index: dict[TrieId, Node]
     _trie_entries: dict[TrieId, TrieEntry]

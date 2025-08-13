@@ -69,7 +69,7 @@ class Hashable(TrieKeyToken, Protocol):
         ...
 
 
-GeneralizedKey: TypeAlias = Sequence[TrieKeyToken | str]
+GeneralizedKey: TypeAlias = Sequence[TrieKeyToken]
 """A :class:`GeneralizedKey` is an object of any class that is a :class:`Sequence` and
 that when iterated returns tokens conforming to the :class:`TrieKeyToken` protocol.
 

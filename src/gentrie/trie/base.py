@@ -14,10 +14,25 @@ if TYPE_CHECKING:
 
 
 class TrieBase:
-    """Base class providing core trie structure and utilities."""
+    """Base class providing core trie structure and utilities.
 
-    def __init__(self) -> None:
-        """Initializes a new TrieBase instance."""
+    Properties:
+        runtime_validation (bool): Whether to enable runtime validation of keys.
+    """
+
+    def __init__(self, runtime_validation: bool = True) -> None:
+        """Initializes a new TrieBase instance.
+
+        By default, runtime validation of keys is enabled. If your code is well tested,
+        you can disable it for improved performance. How the code will react to invalid
+        keys when validation is disabled is not defined and may lead to unexpected
+        behavior.
+
+        Args:
+            runtime_validation (bool, default=True): Whether to enable runtime validation of keys.
+
+        """
+        self.runtime_validation: bool = bool(runtime_validation)
         self.token: Optional[TrieKeyToken] = None
         self.value: Optional[Any] = None
         # The parent of the root node is always None.

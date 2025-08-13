@@ -8,6 +8,11 @@ from ..validation import is_generalizedkey
 
 from .trie_mixins import TrieMixinsInterface
 
+# Disabled because pyright does not understand mixins
+# use of private attributes from the mixing class as declared
+# in the TrieMixinsInterface protocol.
+# pyright: reportPrivateUsage=false
+
 
 class TrieRemovalMixin:
     """Mixin providing entry removal operations.
@@ -32,7 +37,9 @@ class TrieRemovalMixin:
         ident: Optional[TrieId] = None
         if isinstance(key, TrieId):
             ident = key
-        elif is_generalizedkey(key):
+        # If runtime validation is disabled, we just ASSUME the key is a GeneralizedKey
+        # if we got to here.
+        elif (not self.runtime_validation) or is_generalizedkey(key):
             try:
                 ident = self[key].ident
             except KeyError:
@@ -44,14 +51,14 @@ class TrieRemovalMixin:
                 "[GTR001] key arg must be of type TrieId or a valid GeneralizedKey"
             )
 
-        if ident is None or ident not in self._trie_index:  # pyright: ignore[reportPrivateUsage]
+        if ident is None or ident not in self._trie_index:
             raise KeyError("[GTR002] key not found")
 
         # Get the node and delete its id from the trie index and entries
         # and remove the node from the trie.
-        node = self._trie_index[ident]  # pyright: ignore[reportPrivateUsage]
-        del self._trie_index[ident]  # pyright: ignore[reportPrivateUsage]
-        del self._trie_entries[ident]  # pyright: ignore[reportPrivateUsage]
+        node = self._trie_index[ident]
+        del self._trie_index[ident]
+        del self._trie_entries[ident]
 
         # Remove the id from the node
         node.ident = None
