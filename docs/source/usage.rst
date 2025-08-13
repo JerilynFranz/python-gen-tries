@@ -4,6 +4,9 @@ Using gen-trie
 
 .. _gentrie-installation:
 
+
+.. index::
+
 ------------
 Installation
 ------------

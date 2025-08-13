@@ -69,6 +69,7 @@
 <div class="overflow-y-auto h-full w-full relative pr-6"><nav class="table w-full min-w-full my-6 lg:my-8">
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Using gen-trie</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">API Reference</a></li>
 <li class="toctree-l1 current" x-data="{ expanded: $el.classList.contains('current') ? true : false }"><a :class="{ 'expanded' : expanded }" @click="expanded = !expanded" class="reference internal expandable" href="gentrie.html">gentrie package<button @click.prevent.stop="expanded = !expanded" type="button"><span class="sr-only"></span><svg fill="currentColor" height="18px" stroke="none" viewbox="0 0 24 24" width="18px" xmlns="http://www.w3.org/2000/svg"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg></button></a><ul class="current" x-show="expanded">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">gentrie.trie package</a></li>
 </ul>
@@ -112,11 +113,11 @@
 <p>This mixin expects the class it’s mixed with to provide:
 - _trie_index: Dict[TrieId, Any]
 - _trie_entries: Dict[TrieId, TrieEntry]
-- children: Dict[Any, TrieNode]
+- children: Dict[TrieKeyToken, TrieNode]
 - ident: Optional[TrieId]</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="gentrie.trie.access.TrieAccessMixin.children">
-<span class="sig-name descname"><span class="pre">children</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#gentrie.trie.access.TrieAccessMixin" title="gentrie.trie.access.TrieAccessMixin"><span class="pre">TrieAccessMixin</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#gentrie.trie.access.TrieAccessMixin.children" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.trie.access.TrieAccessMixin.children'">¶</a></dt>
+<span class="sig-name descname"><span class="pre">children</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="gentrie.html#gentrie.protocols.TrieKeyToken" title="gentrie.protocols.TrieKeyToken"><span class="pre">TrieKeyToken</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="gentrie.html#gentrie.nodes.Node" title="gentrie.nodes.Node"><span class="pre">Node</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#gentrie.trie.access.TrieAccessMixin.children" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.trie.access.TrieAccessMixin.children'">¶</a></dt>
 <dd></dd></dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="gentrie.trie.access.TrieAccessMixin.get">
