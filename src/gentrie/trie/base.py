@@ -3,20 +3,27 @@
 
 from copy import deepcopy
 from textwrap import indent
-from typing import Any, Optional
+from typing import Any, Optional, TYPE_CHECKING
 
 from ..nodes import Node
 from ..protocols import TrieKeyToken
 from ..types import TrieEntry, TrieId
+
+if TYPE_CHECKING:
+    from .trie_mixins import TrieMixinsInterface
 
 
 class TrieBase:
     """Base class providing core trie structure and utilities."""
 
     def __init__(self) -> None:
+        """Initializes a new TrieBase instance."""
         self.token: Optional[TrieKeyToken] = None
         self.value: Optional[Any] = None
-        self.parent: Optional["TrieBase | Node"] = None
+        # The parent of the root node is always None.
+        # Typing it as the protocol interface makes it compatible with the
+        # final GeneralizedTrie class.
+        self.parent: Optional["TrieMixinsInterface"] = None
         self.children: dict[TrieKeyToken, Node] = {}
         self.ident: Optional[TrieId] = None
         # Counter for the next unique identifier to assign to a key in the trie.

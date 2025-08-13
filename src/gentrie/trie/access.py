@@ -3,7 +3,6 @@
 
 from typing import Any, Optional
 
-from ..exceptions import InvalidGeneralizedKeyError
 from ..types import TrieEntry, TrieId, GeneralizedKey
 from ..validation import is_generalizedkey
 
@@ -38,18 +37,13 @@ class TrieAccessMixin:
 
         Returns:
             :class:`bool`: True if there is a matching GeneralizedKey/TrieId in the trie. False otherwise.
-
-        Raises:
-            :class:`TypeError`:
-                If key arg is not a GeneralizedKey or TrieId.
         """
         if isinstance(key_or_ident, TrieId):
             # If it's a TrieId, check if it exists in the trie index
             return key_or_ident in self._trie_index  # pyright: ignore[reportPrivateUsage]
 
         if not is_generalizedkey(key_or_ident):
-            raise InvalidGeneralizedKeyError(
-                "[GTC001] key_or_ident is not a valid `GeneralizedKey` or `TrieId`")
+            return False
 
         current_node = self
         for token in key_or_ident:
