@@ -3,6 +3,7 @@
 
 from typing import Any, Optional
 
+from ..exceptions import InvalidGeneralizedKeyError
 from ..types import TrieEntry, TrieId, GeneralizedKey
 from ..validation import is_generalizedkey
 
@@ -117,13 +118,5 @@ class TrieAccessMixin:
         """
         try:
             return self[key]
-        except KeyError:
-            return default
-        except TypeError as exc:
-            # Re-raise the TypeError if the key type is invalid, as this is a usage error, not a "not found" case.
-            if "[GTGI002]" in str(exc):
-                raise TypeError(
-                    "[GTG002] key must be either a :class:TrieId or a :class:`GeneralizedKey`"
-                ) from exc
-            # For other TypeErrors that might arise from key validation, treat as not found.
+        except (KeyError, InvalidGeneralizedKeyError):
             return default
