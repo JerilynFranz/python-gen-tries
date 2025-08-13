@@ -18,7 +18,8 @@ def main(plan):  # type: ignore
         pyunit.PyUnit(
             name="gen-trie tests",
             description="PyUnit testcases for the gentri module",
-            testcases=[test_gentri.TestHashable,
+            testcases=[test_gentri.TestTrieKeyToken,
+                       test_gentri.TestTrieId,
                        test_gentri.TestGeneralizedKey,
                        test_gentri.TestGeneralizedTrie],
         )

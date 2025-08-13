@@ -7,13 +7,15 @@
 <meta content="white" media="(prefers-color-scheme: light)" name="theme-color"/>
 <meta content="black" media="(prefers-color-scheme: dark)" name="theme-color"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>src | gen-tries 0.8.0 documentation</title>
-<meta content="src | gen-tries 0.8.0 documentation" property="og:title"/>
-<meta content="src | gen-tries 0.8.0 documentation" name="twitter:title"/>
+<title>API Reference | gen-tries 0.8.0 documentation</title>
+<meta content="API Reference | gen-tries 0.8.0 documentation" property="og:title"/>
+<meta content="API Reference | gen-tries 0.8.0 documentation" name="twitter:title"/>
 <link href="_static/pygments.css?v=c309799c" rel="stylesheet" type="text/css"/>
 <link href="_static/theme.css?v=42baaae4" rel="stylesheet" type="text/css"/>
 <link href="search.html" rel="search" title="Search"/>
 <link href="genindex.html" rel="index" title="Index"/>
+<link href="gentrie.html" rel="next" title="gentrie package"/>
+<link href="usage.html" rel="prev" title="Using gen-trie"/>
 <script>
     <!-- Prevent Flash of wrong theme -->
       const userPreference = localStorage.getItem('darkMode');
@@ -66,8 +68,9 @@
 </a>
 <div class="relative overflow-hidden md:overflow-auto my-4 md:my-0 h-[calc(100vh-8rem)] md:h-auto">
 <div class="overflow-y-auto h-full w-full relative pr-6"><nav class="table w-full min-w-full my-6 lg:my-8">
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Using gen-trie</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a></li>
 <li class="toctree-l1" x-data="{ expanded: $el.classList.contains('current') ? true : false }"><a :class="{ 'expanded' : expanded }" @click="expanded = !expanded" class="reference internal expandable" href="gentrie.html">gentrie package<button @click.prevent.stop="expanded = !expanded" type="button"><span class="sr-only"></span><svg fill="currentColor" height="18px" stroke="none" viewbox="0 0 24 24" width="18px" xmlns="http://www.w3.org/2000/svg"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg></button></a><ul x-show="expanded">
 <li class="toctree-l2"><a class="reference internal" href="gentrie.trie.html">gentrie.trie package</a></li>
 </ul>
@@ -91,104 +94,53 @@
 <path d="M240 856h120V616h240v240h120V496L480 316 240 496v360Zm-80 80V456l320-240 320 240v480H520V696h-80v240H160Zm320-350Z"></path>
 </svg>
 </a>
-<div class="mr-1">/</div><span aria-current="page" class="font-medium text-foreground overflow-hidden text-ellipsis whitespace-nowrap">src</span>
+<div class="mr-1">/</div><span aria-current="page" class="font-medium text-foreground overflow-hidden text-ellipsis whitespace-nowrap">API Reference</span>
 </nav>
 <div id="content" role="main">
-<section id="src">
-<h1>src<a class="headerlink" href="#src" title="Link to this heading">¶</a></h1>
-<div class="toctree-wrapper compound">
+<section id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading">¶</a></h1>
+<p>This section provides detailed information about the API of <strong>gen-trie</strong>.
+It includes descriptions of the main classes, methods, and attributes
+available in the library.</p>
+<p>gen-trie is a Python library for creating and manipulating
+‘generalized’ trie data structures. Unlike common trie implementations that
+only support strings or some other specific types as keys, this generalized
+trie can handle various types of tokens in keys, including integers, floats,
+tuples, lists, frozen sets,  and even custom objects, as long as they are hashable.</p>
+<p>It is designed to be flexible and efficient, allowing for complex data structures
+to be represented and manipulated easily.</p>
+<dl class="py class" id="module-gentrie">
+<dt class="sig sig-object py" id="gentrie.GeneralizedTrie">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">GeneralizedTrie</span></span><a class="headerlink" href="#gentrie.GeneralizedTrie" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.GeneralizedTrie'">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="gentrie.GeneralizedTrie.insert">
+<span class="sig-name descname"><span class="pre">insert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.GeneralizedTrie.insert" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.GeneralizedTrie.insert'">¶</a></dt>
+<dd><p>Inserts a key-value pair into the trie.</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="gentrie.GeneralizedTrie.search">
+<span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.GeneralizedTrie.search" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.GeneralizedTrie.search'">¶</a></dt>
+<dd><p>Searches for a key in the trie and returns its associated value, if found.</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="gentrie.GeneralizedTrie.delete">
+<span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.GeneralizedTrie.delete" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.GeneralizedTrie.delete'">¶</a></dt>
+<dd><p>Deletes a key-value pair from the trie.</p>
+</dd></dl>
+</dd></dl>
+</section>
+</div></div><aside class="hidden text-sm xl:block" id="right-sidebar">
+<div class="sticky top-16 -mt-10 max-h-[calc(100vh-5rem)] overflow-y-auto pt-6 space-y-2"><p class="font-medium">On this page</p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="gentrie.html">gentrie package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="gentrie.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.trie.html">gentrie.trie package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.trie.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.trie.html#module-gentrie.trie.access">gentrie.trie.access module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.trie.html#module-gentrie.trie.base">gentrie.trie.base module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.trie.html#module-gentrie.trie.collection">gentrie.trie.collection module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.trie.html#module-gentrie.trie.iteration">gentrie.trie.iteration module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.trie.html#module-gentrie.trie.mutation">gentrie.trie.mutation module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.trie.html#module-gentrie.trie.removal">gentrie.trie.removal module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.trie.html#module-gentrie.trie.storage">gentrie.trie.storage module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.trie.html#module-gentrie.trie.traversal">gentrie.trie.traversal module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.trie.html#module-gentrie.trie">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="gentrie.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gentrie.html#module-gentrie.exceptions">gentrie.exceptions module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.exceptions.DuplicateKeyError"><code class="docutils literal notranslate"><span class="pre">DuplicateKeyError</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.exceptions.InvalidGeneralizedKeyError"><code class="docutils literal notranslate"><span class="pre">InvalidGeneralizedKeyError</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.exceptions.InvalidTrieKeyTokenError"><code class="docutils literal notranslate"><span class="pre">InvalidTrieKeyTokenError</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="gentrie.html#module-gentrie.nodes">gentrie.nodes module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.nodes.Node"><code class="docutils literal notranslate"><span class="pre">Node</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.html#gentrie.nodes.Node.ident"><code class="docutils literal notranslate"><span class="pre">Node.ident</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.html#gentrie.nodes.Node.token"><code class="docutils literal notranslate"><span class="pre">Node.token</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.html#gentrie.nodes.Node.parent"><code class="docutils literal notranslate"><span class="pre">Node.parent</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.html#gentrie.nodes.Node.children"><code class="docutils literal notranslate"><span class="pre">Node.children</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="gentrie.html#module-gentrie.protocols">gentrie.protocols module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.protocols.GeneralizedKey"><code class="docutils literal notranslate"><span class="pre">GeneralizedKey</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.protocols.Hashable"><code class="docutils literal notranslate"><span class="pre">Hashable</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.protocols.TrieKeyToken"><code class="docutils literal notranslate"><span class="pre">TrieKeyToken</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="gentrie.html#module-gentrie.types">gentrie.types module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.types.TRIE_IDENT"><code class="docutils literal notranslate"><span class="pre">TRIE_IDENT</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.types.TRIE_KEY"><code class="docutils literal notranslate"><span class="pre">TRIE_KEY</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.types.TRIE_VALUE"><code class="docutils literal notranslate"><span class="pre">TRIE_VALUE</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.types.TrieEntry"><code class="docutils literal notranslate"><span class="pre">TrieEntry</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.html#gentrie.types.TrieEntry.ident"><code class="docutils literal notranslate"><span class="pre">TrieEntry.ident</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.html#gentrie.types.TrieEntry.key"><code class="docutils literal notranslate"><span class="pre">TrieEntry.key</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.html#gentrie.types.TrieEntry.value"><code class="docutils literal notranslate"><span class="pre">TrieEntry.value</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.types.TrieId"><code class="docutils literal notranslate"><span class="pre">TrieId</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="gentrie.html#module-gentrie.validation">gentrie.validation module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.validation.is_generalizedkey"><code class="docutils literal notranslate"><span class="pre">is_generalizedkey()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.validation.is_hashable"><code class="docutils literal notranslate"><span class="pre">is_hashable()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.validation.is_triekeytoken"><code class="docutils literal notranslate"><span class="pre">is_triekeytoken()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="gentrie.html#module-gentrie">Module contents</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#usage">Usage</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.html#example-1-basic-usage">Example 1 - Basic Usage</a></li>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.html#example-2-trie-of-urls">Example 2 - Trie of URLs</a></li>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.html#example-3-entries-prefixed-by-a-key">Example 3 - Entries prefixed by a key</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.DuplicateKeyError"><code class="docutils literal notranslate"><span class="pre">DuplicateKeyError</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.GeneralizedKey"><code class="docutils literal notranslate"><span class="pre">GeneralizedKey</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.GeneralizedTrie"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.Hashable"><code class="docutils literal notranslate"><span class="pre">Hashable</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.InvalidGeneralizedKeyError"><code class="docutils literal notranslate"><span class="pre">InvalidGeneralizedKeyError</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.InvalidTrieKeyTokenError"><code class="docutils literal notranslate"><span class="pre">InvalidTrieKeyTokenError</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.TrieEntry"><code class="docutils literal notranslate"><span class="pre">TrieEntry</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.html#gentrie.TrieEntry.ident"><code class="docutils literal notranslate"><span class="pre">TrieEntry.ident</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.html#gentrie.TrieEntry.key"><code class="docutils literal notranslate"><span class="pre">TrieEntry.key</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="gentrie.html#gentrie.TrieEntry.value"><code class="docutils literal notranslate"><span class="pre">TrieEntry.value</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.TrieId"><code class="docutils literal notranslate"><span class="pre">TrieId</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.TrieKeyToken"><code class="docutils literal notranslate"><span class="pre">TrieKeyToken</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.is_generalizedkey"><code class="docutils literal notranslate"><span class="pre">is_generalizedkey()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.is_hashable"><code class="docutils literal notranslate"><span class="pre">is_hashable()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="gentrie.html#gentrie.is_triekeytoken"><code class="docutils literal notranslate"><span class="pre">is_triekeytoken()</span></code></a></li>
-</ul>
-</li>
+<li><a :data-current="activeSection === '#gentrie.GeneralizedTrie'" class="reference internal" href="#gentrie.GeneralizedTrie"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie</span></code></a><ul>
+<li><a :data-current="activeSection === '#gentrie.GeneralizedTrie.insert'" class="reference internal" href="#gentrie.GeneralizedTrie.insert"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.insert()</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.GeneralizedTrie.search'" class="reference internal" href="#gentrie.GeneralizedTrie.search"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.search()</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.GeneralizedTrie.delete'" class="reference internal" href="#gentrie.GeneralizedTrie.delete"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie.delete()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </div>
-</section>
-</div></div>
+</aside>
 </main>
 </div>
 </div><footer class="py-6 border-t border-border md:py-0">
