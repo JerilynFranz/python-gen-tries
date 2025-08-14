@@ -11,6 +11,11 @@ from itertools import permutations
 import time
 from typing import NamedTuple, Sequence
 
+
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path('../src').resolve()))
+
 from gentrie import GeneralizedTrie, GeneralizedKey
 
 
