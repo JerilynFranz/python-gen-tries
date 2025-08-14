@@ -290,39 +290,39 @@ if __name__ == '__main__':
                        depth=default_depth,
                        symbols=SYMBOLS,
                        max_keys=default_max_keys,
-                       profile=True))
+                       profile=False))
 
-    #all_results.append(benchmark_key_in_trie(
-    #                    runtime_validation=False,
-    #                    iterations=default_iterations,
-    #                    depth=default_depth,
-    #                    symbols=SYMBOLS,
-    #                    max_keys=default_max_keys,
-    #                    profile=False))
+    all_results.append(benchmark_key_in_trie(
+                        runtime_validation=False,
+                        iterations=default_iterations,
+                        depth=default_depth,
+                        symbols=SYMBOLS,
+                        max_keys=default_max_keys,
+                        profile=False))
 
-    # all_results.append(benchmark_null_loop(iterations=default_iterations, size=default_size))
-    # all_results.append(benchmark_add_with_validation(test_data=default_test_data,
-    #                                                  iterations=default_iterations,
-    #                                                  depth=default_depth))
-    # all_results.append(benchmark_add_without_validation(test_data=default_test_data,
-    #                                                     iterations=default_iterations,
-    #                                                     depth=default_depth))
+    all_results.append(benchmark_null_loop(iterations=default_iterations, size=default_size))
+    all_results.append(benchmark_add_with_validation(test_data=default_test_data,
+                                                     iterations=default_iterations,
+                                                     depth=default_depth))
+    all_results.append(benchmark_add_without_validation(test_data=default_test_data,
+                                                        iterations=default_iterations,
+                                                        depth=default_depth))
 
-    # all_results.append(benchmark_trie_key_assignment_with_validation(test_data=default_test_data,
-    #                                                                  iterations=default_iterations,
-    #                                                                  depth=default_depth))
+    all_results.append(benchmark_trie_key_assignment_with_validation(test_data=default_test_data,
+                                                                     iterations=default_iterations,
+                                                                     depth=default_depth))
 
-    # all_results.append(benchmark_trie_key_assignment_without_validation(test_data=default_test_data,
-    #                                                                     iterations=default_iterations,
-    #                                                                     depth=default_depth))
+    all_results.append(benchmark_trie_key_assignment_without_validation(test_data=default_test_data,
+                                                                        iterations=default_iterations,
+                                                                        depth=default_depth))
 
-    # all_results.append(benchmark_update_with_validation(test_data=default_test_data,
-    #                                                    iterations=default_iterations,
-    #                                                     depth=default_depth))
+    all_results.append(benchmark_update_with_validation(test_data=default_test_data,
+                                                        iterations=default_iterations,
+                                                        depth=default_depth))
 
-    # all_results.append(benchmark_update_without_validation(test_data=default_test_data,
-    #                                                        iterations=default_iterations,
-    #                                                       depth=default_depth))
+    all_results.append(benchmark_update_without_validation(test_data=default_test_data,
+                                                           iterations=default_iterations,
+                                                           depth=default_depth))
 
     # Display the results
     for result in all_results:

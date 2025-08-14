@@ -58,11 +58,25 @@ def is_generalizedkey(key: Any) -> bool:
     # This complex logic makes this hotpath code MUCH faster (as much as 50 or 60 times) by performing
     # very fast dedicated checks for common types before performing much slower per-token generalized
     # protocol based checks.
-    return (
-        isinstance(key, str) or (  # pyright: ignore[reportReturnType]
-            isinstance(key, Sequence)
-            and len(key)  # pyright: ignore[reportUnknownArgumentType]
-            and (
-                all(isinstance(t, (int | float | complex | frozenset |
-                                   str | bytes | tuple)) for t in key)  # pyright: ignore[reportUnknownVariableType]
-                or all(isinstance(t, TrieKeyToken) for t in key))))  # pyright: ignore[reportUnknownVariableType]
+
+    # Fast path 1: A string is a valid key.
+    if isinstance(key, str):
+        return True
+
+    # General check: Must be a sequence.
+    if not isinstance(key, Sequence):
+        return False
+
+    # Now that we know it's a sequence, we can safely check its length.
+    # An empty sequence is not a valid key.
+    if not key:
+        return False
+
+    # Fast path 2: Check for sequences of common, simple built-in types.
+    # This is much faster than the general protocol check.
+    if all(isinstance(t, (int, float, complex, frozenset, str, bytes, tuple)) for t in key):
+        return True
+
+    # Fallback/Cold path: Perform the slower, general protocol check.
+    # This only runs if the fast path fails.
+    return all(isinstance(t, TrieKeyToken) for t in key)
