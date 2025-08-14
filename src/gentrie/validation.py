@@ -59,8 +59,8 @@ def is_generalizedkey(key: Any) -> bool:
     # very fast dedicated checks for common types before performing much slower per-token generalized
     # protocol based checks.
 
-    # Fast path 1: A non-empty string is a valid key.
-    if isinstance(key, str) and key:
+    # Fast path 1: A non-empty string or bytes is a valid key.
+    if isinstance(key, (str, bytes)) and key:
         return True
 
     # General check: Must be a sequence.
@@ -75,7 +75,7 @@ def is_generalizedkey(key: Any) -> bool:
     # Fast path 2: Check for sequences of common, simple built-in types.
     # This is much faster than the general protocol check.
     if all(isinstance(t, (int, float, complex, frozenset,
-                          str, bytes, tuple)) for t in key):  # pyright: ignore[reportUnknownVariableType]
+                          tuple, bool)) for t in key):  # pyright: ignore[reportUnknownVariableType]
         return True
 
     # Fallback/Cold path: Perform the slower, general protocol check.
