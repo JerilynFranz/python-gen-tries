@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
+
 """Validation functions for the gentrie package."""
 
 from collections.abc import Sequence
+from typing import Any
+from warnings import warn
 
-from .protocols import TrieKeyToken, GeneralizedKey
+from .protocols import TrieKeyToken
 
 
-def is_triekeytoken(token: TrieKeyToken) -> bool:
+def is_triekeytoken(token: Any) -> bool:
     """Tests token for whether it is a valid :class:`TrieKeyToken`.
 
     A valid :class:`TrieKeyToken` is a hashable object (implements both ``__eq__()`` and ``__hash__()`` methods).
@@ -16,26 +19,30 @@ def is_triekeytoken(token: TrieKeyToken) -> bool:
     :class:`int`, :class:`str`, :class:`None`, :class:`tuple`.
 
     Args:
-        token (GeneralizedKey): Object for testing.
+        token (Any): Object for testing.
 
     Returns:
         :class:`bool`: ``True`` if a valid :class:`TrieKeyToken`, ``False`` otherwise.
     """
-    return isinstance(
-        token, TrieKeyToken)  # type: ignore[reportUnnecessaryIsInstance]
+    return isinstance(token, TrieKeyToken)
 
 
-def is_hashable(token: TrieKeyToken) -> bool:
+def is_hashable(token: Any) -> bool:
     """is_hashable is deprecated and will be removed in a future version.
 
     This function is a wrapper for :func:`is_triekeytoken` and is only provided for backward compatibility.
 
     Use :func:`is_triekeytoken` instead.
     """
+    warn(
+        "is_hashable is deprecated and will be removed in a future version. Use is_triekeytoken instead.",
+        DeprecationWarning,
+        stacklevel=2
+    )
     return is_triekeytoken(token)
 
 
-def is_generalizedkey(key: GeneralizedKey) -> bool:
+def is_generalizedkey(key: Any) -> bool:
     """Tests key for whether it is a valid `GeneralizedKey`.
 
     A valid :class:`GeneralizedKey` is a :class:`Sequence` that returns
@@ -43,13 +50,12 @@ def is_generalizedkey(key: GeneralizedKey) -> bool:
     iterated. It must have at least one token.
 
     Parameters:
-        key (GeneralizedKey): Key for testing.
+        key (Any): Key for testing.
 
     Returns:
         :class:`bool`: ``True`` if a valid :class:`GeneralizedKey`, ``False`` otherwise.
     """
-    return (
-        isinstance(key, Sequence)  # type: ignore[reportUnnecessaryIsInstance]
-        and len(key)
-        and all(isinstance(t, TrieKeyToken) for t in key)  # type: ignore[reportUnnecessaryIsInstance]
-    )
+    return bool(
+        isinstance(key, Sequence)
+        and len(key)  # pyright: ignore[reportUnknownArgumentType]
+        and all(isinstance(t, TrieKeyToken) for t in key))  # pyright: ignore[reportUnknownVariableType]

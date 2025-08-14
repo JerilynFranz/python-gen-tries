@@ -14,6 +14,7 @@ from gentrie import GeneralizedTrie, GeneralizedKey
 
 SYMBOLS: str = '0123456789ABCDEFGHIJKLMNIOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'  # Define the symbols for the trie
 
+
 def generate_test_data(depth: int, symbols: str) -> list[str]:
     """Generate test data for the Generalized Trie.
 
@@ -31,11 +32,13 @@ def generate_test_data(depth: int, symbols: str) -> list[str]:
         test_data.append(key_string)
     return test_data
 
+
 class TestCase(NamedTuple):
     name: str
     description: str
     data: Sequence[GeneralizedKey]
     iterations: int = 10
+
 
 @dataclass
 class TestResults:
@@ -46,6 +49,7 @@ class TestResults:
     n: int
     iterations: int
     per_second: float
+
 
 if __name__ == '__main__':
     iterations: int = 10  # Number of iterations for each test case
@@ -74,7 +78,7 @@ if __name__ == '__main__':
     iterations: int = 10
     depth: int = default_depth
     test_data = generate_test_data(depth, SYMBOLS)
-    n = len(test_data)
+    n: int = len(test_data)
     elapsed: int = 0
     for _ in range(iterations):
         trie = GeneralizedTrie()
@@ -97,7 +101,7 @@ if __name__ == '__main__':
     # Time the Generalized Trie add operation with nonvalidated keys
     iterations: int = 10
     depth: int = default_depth
-    n = len(test_data)
+    n: int = len(test_data)
     elapsed: int = 0
     for _ in range(iterations):
         trie = GeneralizedTrie(runtime_validation=False)  # Disable runtime validation for performance testing
@@ -122,7 +126,7 @@ if __name__ == '__main__':
     # Time the Generalized Trie hash assignment operation with validated keys
     iterations: int = 10
     depth: int = default_depth
-    n = len(test_data)
+    n: int = len(test_data)
     elapsed: int = 0
     for _ in range(iterations):
         trie = GeneralizedTrie()
@@ -145,7 +149,7 @@ if __name__ == '__main__':
     # Time the Generalized Trie hash assignment operation without validated keys
     iterations: int = 10
     depth: int = default_depth
-    n = len(test_data)
+    n: int = len(test_data)
     elapsed: int = 0
     for _ in range(iterations):
         trie = GeneralizedTrie(runtime_validation=False)  # Disable runtime validation for performance testing
@@ -170,7 +174,7 @@ if __name__ == '__main__':
     # Time the Generalized Trie update operation with validated keys
     iterations: int = 10
     depth: int = default_depth
-    n = len(test_data)
+    n: int = len(test_data)
     elapsed: int = 0
     for _ in range(iterations):
         trie = GeneralizedTrie()
@@ -190,11 +194,10 @@ if __name__ == '__main__':
     )
     all_results.append(result)
 
-
     # Time the Generalized Trie update operation with nonvalidated keys
     iterations: int = 10
     depth: int = default_depth
-    n = len(test_data)
+    n: int = len(test_data)
     elapsed: int = 0
     for _ in range(iterations):
         trie = GeneralizedTrie(runtime_validation=False)  # Disable runtime validation for performance testing
@@ -215,7 +218,6 @@ if __name__ == '__main__':
         per_second=n * iterations / (elapsed / 1e9)
     )
     all_results.append(result)
-
 
     # Display the results
     for result in all_results:
