@@ -59,8 +59,8 @@ def is_generalizedkey(key: Any) -> bool:
     # very fast dedicated checks for common types before performing much slower per-token generalized
     # protocol based checks.
 
-    # Fast path 1: A string is a valid key.
-    if isinstance(key, str):
+    # Fast path 1: A non-empty string is a valid key.
+    if isinstance(key, str) and key:
         return True
 
     # General check: Must be a sequence.

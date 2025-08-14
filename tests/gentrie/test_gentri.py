@@ -230,6 +230,7 @@ class TestGeneralizedKey(unittest.TestCase):
         This test checks that types like dict, set, and complex numbers are not
         considered valid generalized keys."""
         bad_keys: list[Any] = [
+            '',  # empty string is invalid
             dict({'a': 1, 'b': 2, 'c': 3}),
             set('abc'),
             frozenset('abc'),
