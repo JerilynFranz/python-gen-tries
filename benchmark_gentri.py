@@ -6,6 +6,11 @@ This script runs a series of tests to measure the performance of the Generalized
 against a set of predefined test cases.
 """
 
+PROFILE: bool = True  # Set to True to enable profiling with scalene
+if PROFILE:
+    from scalene import scalene_profiler  # type: ignore[import]
+    scalene_profiler.stop()
+
 from dataclasses import dataclass
 from itertools import permutations
 import time
@@ -233,7 +238,8 @@ def benchmark_key_in_trie(
         iterations: int = 10,
         depth: int = 3,
         symbols: str = SYMBOLS,
-        max_keys: int = 1_000_000) -> TestResults:
+        max_keys: int = 1_000_000,
+        profile: bool = False) -> TestResults:
     """Benchmark the in operator for GeneralizedTrie."""
     elapsed: int = 0
     trie = generate_test_trie(depth, symbols, max_keys)
@@ -242,6 +248,9 @@ def benchmark_key_in_trie(
     n: int = len(trie_keys)
 
     key: GeneralizedKey
+    if profile and PROFILE:
+        scalene_profiler.start()
+
     for _ in range(iterations):
         timer_start = time.process_time_ns()
         for key in trie_keys:
@@ -249,9 +258,12 @@ def benchmark_key_in_trie(
                 pass  # Just checking membership
             else:
                 raise KeyError(f"Key {key} not found in trie")
+
         timer_end = time.process_time_ns()
         elapsed += (timer_end - timer_start)
 
+    if profile and PROFILE:
+        scalene_profiler.stop()
     return TestResults(
         name=f'in operator on trie (runtime validation: {runtime_validation})',
         description=f'Timing for checking membership in GeneralizedTrie (runtime validation: {runtime_validation})',
@@ -265,7 +277,7 @@ def benchmark_key_in_trie(
 
 if __name__ == '__main__':
     default_depth: int = 15  # Default depth for test data generation
-    default_max_keys: int = 1_000_000  # Default maximum number of keys to generate
+    default_max_keys: int = 100_000  # Default maximum number of keys to generate
     default_iterations: int = 1  # Number of iterations for each test case
     default_size: int = 10_000_000  # Number of elements for the tests
     default_test_data = generate_test_data(default_depth, SYMBOLS, default_max_keys)
@@ -273,17 +285,20 @@ if __name__ == '__main__':
     all_results: list[TestResults] = []
 
     all_results.append(benchmark_key_in_trie(
-                        runtime_validation=True,
-                        iterations=default_iterations,
-                        depth=default_depth,
-                        symbols=SYMBOLS,
-                        max_keys=default_max_keys))
-    all_results.append(benchmark_key_in_trie(
-                        runtime_validation=False,
-                        iterations=default_iterations,
-                        depth=default_depth,
-                        symbols=SYMBOLS,
-                        max_keys=default_max_keys))
+                       runtime_validation=True,
+                       iterations=default_iterations,
+                       depth=default_depth,
+                       symbols=SYMBOLS,
+                       max_keys=default_max_keys,
+                       profile=True))
+
+    #all_results.append(benchmark_key_in_trie(
+    #                    runtime_validation=False,
+    #                    iterations=default_iterations,
+    #                    depth=default_depth,
+    #                    symbols=SYMBOLS,
+    #                    max_keys=default_max_keys,
+    #                    profile=False))
 
     # all_results.append(benchmark_null_loop(iterations=default_iterations, size=default_size))
     # all_results.append(benchmark_add_with_validation(test_data=default_test_data,

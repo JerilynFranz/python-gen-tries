@@ -137,7 +137,7 @@ class TrieTraversalMixin:
             # 1: abcdef
             # 4: abcd
         """
-        if not is_generalizedkey(key):
+        if self.runtime_validation and not is_generalizedkey(key):
             raise InvalidGeneralizedKeyError("[GTS001] key arg is not a valid GeneralizedKey")
 
         if not isinstance(depth, int):  # type: ignore[reportUnnecessaryIsInstance]
