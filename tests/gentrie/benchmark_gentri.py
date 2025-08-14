@@ -6,8 +6,6 @@ This script runs a series of tests to measure the performance of the Generalized
 against a set of predefined test cases.
 """
 
-from scalene import scalene_profiler  # type: ignore
-
 from dataclasses import dataclass
 from itertools import permutations
 import time
@@ -119,10 +117,8 @@ def benchmark_add_without_validation(test_data: Sequence[GeneralizedKey],
     for _ in range(iterations):
         trie = GeneralizedTrie(runtime_validation=False)
         timer_start = time.process_time_ns()
-        scalene_profiler.start()  # Start the profiler
         for key in test_data:
             trie.add(key)
-        scalene_profiler.stop()
         timer_end = time.process_time_ns()
         elapsed += (timer_end - timer_start)
     return TestResults(
@@ -232,7 +228,8 @@ def benchmark_update_without_validation(test_data: Sequence[GeneralizedKey],
     )
 
 
-def benchmark_key_in_trie_with_validation(
+def benchmark_key_in_trie(
+        runtime_validation: bool = True,
         iterations: int = 10,
         depth: int = 3,
         symbols: str = SYMBOLS,
@@ -240,27 +237,24 @@ def benchmark_key_in_trie_with_validation(
     """Benchmark the in operator for GeneralizedTrie."""
     elapsed: int = 0
     trie = generate_test_trie(depth, symbols, max_keys)
-    trie.runtime_validation = False  # Ensure runtime validation is enabled
+    trie.runtime_validation = runtime_validation
     trie_keys: list[GeneralizedKey] = list(entry.key for entry in trie.values())
     n: int = len(trie_keys)
 
-    print(f'keys: {trie_keys}')
     key: GeneralizedKey
     for _ in range(iterations):
         timer_start = time.process_time_ns()
-        scalene_profiler.start()  # Start the profiler
         for key in trie_keys:
             if key in trie:
                 pass  # Just checking membership
             else:
                 raise KeyError(f"Key {key} not found in trie")
-        scalene_profiler.stop()
         timer_end = time.process_time_ns()
         elapsed += (timer_end - timer_start)
 
     return TestResults(
-        name='in operator on trie',
-        description='Timing for checking membership in GeneralizedTrie',
+        name=f'in operator on trie (runtime validation: {runtime_validation})',
+        description=f'Timing for checking membership in GeneralizedTrie (runtime validation: {runtime_validation})',
         data=[],
         elapsed=elapsed,
         n=n,
@@ -271,14 +265,21 @@ def benchmark_key_in_trie_with_validation(
 
 if __name__ == '__main__':
     default_depth: int = 15  # Default depth for test data generation
-    default_max_keys: int = 10  # Default maximum number of keys to generate
+    default_max_keys: int = 1_000_000  # Default maximum number of keys to generate
     default_iterations: int = 1  # Number of iterations for each test case
     default_size: int = 10_000_000  # Number of elements for the tests
     default_test_data = generate_test_data(default_depth, SYMBOLS, default_max_keys)
 
     all_results: list[TestResults] = []
 
-    all_results.append(benchmark_key_in_trie_with_validation(
+    all_results.append(benchmark_key_in_trie(
+                        runtime_validation=True,
+                        iterations=default_iterations,
+                        depth=default_depth,
+                        symbols=SYMBOLS,
+                        max_keys=default_max_keys))
+    all_results.append(benchmark_key_in_trie(
+                        runtime_validation=False,
                         iterations=default_iterations,
                         depth=default_depth,
                         symbols=SYMBOLS,
