@@ -69,11 +69,11 @@ if __name__ == '__main__':
     all_results.append(null_timer)
 
     default_depth: int = 3  # Default depth for test data generation
+
     # Time the Generalized Trie add operation with validated keys
     iterations: int = 10
     depth: int = default_depth
     test_data = generate_test_data(depth, SYMBOLS)
-    print(f"Generated {len(test_data)} test keys of depth {depth} using symbols: {SYMBOLS}")
     n = len(test_data)
     elapsed: int = 0
     for _ in range(iterations):
@@ -94,12 +94,9 @@ if __name__ == '__main__':
     )
     all_results.append(result)
 
-
-    # Time the Generalized Trie add operation with validated keys
+    # Time the Generalized Trie add operation with nonvalidated keys
     iterations: int = 10
     depth: int = default_depth
-    test_data = generate_test_data(depth, SYMBOLS)
-    print(f"Generated {len(test_data)} test keys of depth {depth} using symbols: {SYMBOLS}")
     n = len(test_data)
     elapsed: int = 0
     for _ in range(iterations):
@@ -122,12 +119,110 @@ if __name__ == '__main__':
     )
     all_results.append(result)
 
+    # Time the Generalized Trie hash assignment operation with validated keys
+    iterations: int = 10
+    depth: int = default_depth
+    n = len(test_data)
+    elapsed: int = 0
+    for _ in range(iterations):
+        trie = GeneralizedTrie()
+        timer_start = time.process_time_ns()
+        for key in test_data:
+            trie[key] = key  # Assign the key to itself
+        timer_end = time.process_time_ns()
+        elapsed += (timer_end - timer_start)
+    result = TestResults(
+        name='trie[key] = key (validated keys)',
+        description='Timing for trie[key] = key with key validation',
+        data=test_data,
+        elapsed=elapsed,
+        n=n,
+        iterations=iterations,
+        per_second=n * iterations / (elapsed / 1e9)
+    )
+    all_results.append(result)
+
+    # Time the Generalized Trie hash assignment operation without validated keys
+    iterations: int = 10
+    depth: int = default_depth
+    n = len(test_data)
+    elapsed: int = 0
+    for _ in range(iterations):
+        trie = GeneralizedTrie(runtime_validation=False)  # Disable runtime validation for performance testing
+        # Note: This is a performance test, so we assume the keys are valid
+        # In a real-world scenario, you would want to validate keys before assigning them
+        timer_start = time.process_time_ns()
+        for key in test_data:
+            trie[key] = key  # Assign the key to itself
+        timer_end = time.process_time_ns()
+        elapsed += (timer_end - timer_start)
+    result = TestResults(
+        name='trie[key] = key (non-validated keys)',
+        description='Timing for trie[key] = key without key validation',
+        data=test_data,
+        elapsed=elapsed,
+        n=n,
+        iterations=iterations,
+        per_second=n * iterations / (elapsed / 1e9)
+    )
+    all_results.append(result)
+
+    # Time the Generalized Trie update operation with validated keys
+    iterations: int = 10
+    depth: int = default_depth
+    n = len(test_data)
+    elapsed: int = 0
+    for _ in range(iterations):
+        trie = GeneralizedTrie()
+        timer_start = time.process_time_ns()
+        for key in test_data:
+            trie.add(key)
+        timer_end = time.process_time_ns()
+        elapsed += (timer_end - timer_start)
+    result = TestResults(
+        name='update() (validated keys)',
+        description='Timing for GeneralizedTrie.update() with key validation',
+        data=test_data,
+        elapsed=elapsed,
+        n=n,
+        iterations=iterations,
+        per_second=n * iterations / (elapsed / 1e9)
+    )
+    all_results.append(result)
 
 
+    # Time the Generalized Trie update operation with nonvalidated keys
+    iterations: int = 10
+    depth: int = default_depth
+    n = len(test_data)
+    elapsed: int = 0
+    for _ in range(iterations):
+        trie = GeneralizedTrie(runtime_validation=False)  # Disable runtime validation for performance testing
+        # Note: This is a performance test, so we assume the keys are valid
+        # In a real-world scenario, you would want to validate keys before adding them
+        timer_start = time.process_time_ns()
+        for key in test_data:
+            trie.add(key)
+        timer_end = time.process_time_ns()
+        elapsed += (timer_end - timer_start)
+    result = TestResults(
+        name='update() (non-validated keys)',
+        description='Timing for GeneralizedTrie.update() without key validation',
+        data=test_data,
+        elapsed=elapsed,
+        n=n,
+        iterations=iterations,
+        per_second=n * iterations / (elapsed / 1e9)
+    )
+    all_results.append(result)
+
+
+    # Display the results
     for result in all_results:
         # Print the results for each test case
         print("=" * 40)
         print(f"{result.name}: {result.description}")
+        print(f"  Key depth: {default_depth}")
         print(f"  Data size: {result.n}, Iterations: {result.iterations}")
         print(f"  Elapsed time: {result.elapsed / 1e9:.2f} seconds")
         print(f"  Operations per second: {result.per_second:.2f}\n")
