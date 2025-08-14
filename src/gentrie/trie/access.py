@@ -41,7 +41,7 @@ class TrieAccessMixin:
             # If it's a TrieId, check if it exists in the trie index
             return key_or_ident in self._trie_index
 
-        if not (self.runtime_validation and is_generalizedkey(key_or_ident)):
+        if self.runtime_validation and not is_generalizedkey(key_or_ident):
             return False
 
         current_node = self

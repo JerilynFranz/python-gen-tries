@@ -1,10 +1,13 @@
-#!env python3.10
+#!env python3 -m scalene
 # -*- coding: utf-8 -*-
 """
 Benchmark for the Generalized Trie implementation.
 This script runs a series of tests to measure the performance of the Generalized Trie
 against a set of predefined test cases.
 """
+
+from scalene import scalene_profiler  # type: ignore
+
 from dataclasses import dataclass
 from itertools import permutations
 import time
@@ -12,15 +15,17 @@ from typing import NamedTuple, Sequence
 
 from gentrie import GeneralizedTrie, GeneralizedKey
 
+
 SYMBOLS: str = '0123456789ABCDEFGHIJKLMNIOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'  # Define the symbols for the trie
 
 
-def generate_test_data(depth: int, symbols: str) -> list[str]:
+def generate_test_data(depth: int, symbols: str, max_keys: int) -> list[str]:
     """Generate test data for the Generalized Trie.
 
     Args:
         depth (int): The depth of the keys to generate.
-        symbols (str): The symbols to use in the keys."""
+        symbols (str): The symbols to use in the keys.
+        max_keys (int): The maximum number of keys to generate."""
     test_data: list[str] = []
     seen: set[str] = set()
     for key in permutations(symbols, depth):
@@ -30,7 +35,18 @@ def generate_test_data(depth: int, symbols: str) -> list[str]:
             continue
         seen.add(key_string)
         test_data.append(key_string)
+        if len(test_data) >= max_keys:
+            break
     return test_data
+
+
+def generate_test_trie(depth: int, symbols: str, max_keys: int) -> GeneralizedTrie:
+    """Generate a test Generalized Trie for the given depth and symbols."""
+    test_data = generate_test_data(depth, symbols, max_keys)
+    trie = GeneralizedTrie(runtime_validation=False)
+    for key in test_data:
+        trie[key] = key  # Assign the key to itself
+    return trie
 
 
 class TestCase(NamedTuple):
@@ -51,35 +67,31 @@ class TestResults:
     per_second: float
 
 
-if __name__ == '__main__':
-    iterations: int = 10  # Number of iterations for each test case
-    size: int = 10_000_000  # Number of elements for the tests
-    all_results: list[TestResults] = []
-
-    timer_start: int = time.process_time_ns()
+def benchmark_null_loop(iterations: int = 10, size: int = 10_000_000) -> TestResults:
+    elapsed: int = 0
     for _ in range(iterations):
-        for i in range(size):
+        timer_start = time.process_time_ns()
+        for _ in range(size):
             pass
-    timer_end: int = time.process_time_ns()
-    elapsed: int = timer_end - timer_start
-    null_timer = TestResults(name='null_loop',
-                             description='Null loop timing',
-                             data=[],
-                             elapsed=elapsed,
-                             n=size,
-                             iterations=iterations,
-                             per_second=float(iterations * size / (elapsed / 1e9))
-                             )
-    all_results.append(null_timer)
+        timer_end = time.process_time_ns()
+        elapsed += (timer_end - timer_start)
+    return TestResults(
+        name='null_loop',
+        description='Timing for a null loop',
+        data=[],
+        elapsed=elapsed,
+        n=size,
+        iterations=iterations,
+        per_second=float(iterations * size / (elapsed / 1e9))
+    )
 
-    default_depth: int = 3  # Default depth for test data generation
 
-    # Time the Generalized Trie add operation with validated keys
-    iterations: int = 10
-    depth: int = default_depth
-    test_data = generate_test_data(depth, SYMBOLS)
+def benchmark_add_with_validation(test_data: Sequence[GeneralizedKey],
+                                  iterations: int,
+                                  depth: int) -> TestResults:
     n: int = len(test_data)
     elapsed: int = 0
+
     for _ in range(iterations):
         trie = GeneralizedTrie()
         timer_start = time.process_time_ns()
@@ -87,7 +99,7 @@ if __name__ == '__main__':
             trie.add(key)
         timer_end = time.process_time_ns()
         elapsed += (timer_end - timer_start)
-    result = TestResults(
+    return TestResults(
         name='add() (validated keys)',
         description='Timing for GeneralizedTrie.add() with key validation',
         data=test_data,
@@ -96,36 +108,38 @@ if __name__ == '__main__':
         iterations=iterations,
         per_second=n * iterations / (elapsed / 1e9)
     )
-    all_results.append(result)
 
-    # Time the Generalized Trie add operation with nonvalidated keys
-    iterations: int = 10
-    depth: int = default_depth
+
+def benchmark_add_without_validation(test_data: Sequence[GeneralizedKey],
+                                     iterations: int,
+                                     depth: int) -> TestResults:
     n: int = len(test_data)
     elapsed: int = 0
+
     for _ in range(iterations):
-        trie = GeneralizedTrie(runtime_validation=False)  # Disable runtime validation for performance testing
-        # Note: This is a performance test, so we assume the keys are valid
-        # In a real-world scenario, you would want to validate keys before adding them
+        trie = GeneralizedTrie(runtime_validation=False)
         timer_start = time.process_time_ns()
+        scalene_profiler.start()  # Start the profiler
         for key in test_data:
             trie.add(key)
+        scalene_profiler.stop()
         timer_end = time.process_time_ns()
         elapsed += (timer_end - timer_start)
-    result = TestResults(
+    return TestResults(
         name='add() (non-validated keys)',
-        description='Timing for GeneralizedTrie.add() without key validation',
+        description='Timing for GeneralizedTrie.add() without runtime key validation',
         data=test_data,
         elapsed=elapsed,
         n=n,
         iterations=iterations,
         per_second=n * iterations / (elapsed / 1e9)
     )
-    all_results.append(result)
 
-    # Time the Generalized Trie hash assignment operation with validated keys
-    iterations: int = 10
-    depth: int = default_depth
+
+def benchmark_trie_key_assignment_with_validation(
+        test_data: Sequence[GeneralizedKey],
+        iterations: int,
+        depth: int) -> TestResults:
     n: int = len(test_data)
     elapsed: int = 0
     for _ in range(iterations):
@@ -135,7 +149,7 @@ if __name__ == '__main__':
             trie[key] = key  # Assign the key to itself
         timer_end = time.process_time_ns()
         elapsed += (timer_end - timer_start)
-    result = TestResults(
+    return TestResults(
         name='trie[key] = key (validated keys)',
         description='Timing for trie[key] = key with key validation',
         data=test_data,
@@ -144,23 +158,22 @@ if __name__ == '__main__':
         iterations=iterations,
         per_second=n * iterations / (elapsed / 1e9)
     )
-    all_results.append(result)
 
-    # Time the Generalized Trie hash assignment operation without validated keys
-    iterations: int = 10
-    depth: int = default_depth
+
+def benchmark_trie_key_assignment_without_validation(
+        test_data: Sequence[GeneralizedKey],
+        iterations: int,
+        depth: int) -> TestResults:
     n: int = len(test_data)
     elapsed: int = 0
     for _ in range(iterations):
-        trie = GeneralizedTrie(runtime_validation=False)  # Disable runtime validation for performance testing
-        # Note: This is a performance test, so we assume the keys are valid
-        # In a real-world scenario, you would want to validate keys before assigning them
+        trie = GeneralizedTrie(runtime_validation=False)
         timer_start = time.process_time_ns()
         for key in test_data:
             trie[key] = key  # Assign the key to itself
         timer_end = time.process_time_ns()
         elapsed += (timer_end - timer_start)
-    result = TestResults(
+    return TestResults(
         name='trie[key] = key (non-validated keys)',
         description='Timing for trie[key] = key without key validation',
         data=test_data,
@@ -169,21 +182,22 @@ if __name__ == '__main__':
         iterations=iterations,
         per_second=n * iterations / (elapsed / 1e9)
     )
-    all_results.append(result)
 
-    # Time the Generalized Trie update operation with validated keys
-    iterations: int = 10
-    depth: int = default_depth
+
+def benchmark_update_with_validation(test_data: Sequence[GeneralizedKey],
+                                     iterations: int = 10,
+                                     depth: int = 3) -> TestResults:
     n: int = len(test_data)
     elapsed: int = 0
+
     for _ in range(iterations):
         trie = GeneralizedTrie()
         timer_start = time.process_time_ns()
         for key in test_data:
-            trie.add(key)
+            trie.update(key, value=key)  # Update the key with itself as value
         timer_end = time.process_time_ns()
         elapsed += (timer_end - timer_start)
-    result = TestResults(
+    return TestResults(
         name='update() (validated keys)',
         description='Timing for GeneralizedTrie.update() with key validation',
         data=test_data,
@@ -192,23 +206,22 @@ if __name__ == '__main__':
         iterations=iterations,
         per_second=n * iterations / (elapsed / 1e9)
     )
-    all_results.append(result)
 
-    # Time the Generalized Trie update operation with nonvalidated keys
-    iterations: int = 10
-    depth: int = default_depth
+
+def benchmark_update_without_validation(test_data: Sequence[GeneralizedKey],
+                                        iterations: int = 10,
+                                        depth: int = 3) -> TestResults:
     n: int = len(test_data)
     elapsed: int = 0
+
     for _ in range(iterations):
-        trie = GeneralizedTrie(runtime_validation=False)  # Disable runtime validation for performance testing
-        # Note: This is a performance test, so we assume the keys are valid
-        # In a real-world scenario, you would want to validate keys before adding them
+        trie = GeneralizedTrie(runtime_validation=False)
         timer_start = time.process_time_ns()
         for key in test_data:
-            trie.add(key)
+            trie.update(key, value=key)  # Update the key with itself as value
         timer_end = time.process_time_ns()
         elapsed += (timer_end - timer_start)
-    result = TestResults(
+    return TestResults(
         name='update() (non-validated keys)',
         description='Timing for GeneralizedTrie.update() without key validation',
         data=test_data,
@@ -217,7 +230,83 @@ if __name__ == '__main__':
         iterations=iterations,
         per_second=n * iterations / (elapsed / 1e9)
     )
-    all_results.append(result)
+
+
+def benchmark_key_in_trie_with_validation(
+        iterations: int = 10,
+        depth: int = 3,
+        symbols: str = SYMBOLS,
+        max_keys: int = 1_000_000) -> TestResults:
+    """Benchmark the in operator for GeneralizedTrie."""
+    elapsed: int = 0
+    trie = generate_test_trie(depth, symbols, max_keys)
+    trie.runtime_validation = False  # Ensure runtime validation is enabled
+    trie_keys: list[GeneralizedKey] = list(entry.key for entry in trie.values())
+    n: int = len(trie_keys)
+
+    print(f'keys: {trie_keys}')
+    key: GeneralizedKey
+    for _ in range(iterations):
+        timer_start = time.process_time_ns()
+        scalene_profiler.start()  # Start the profiler
+        for key in trie_keys:
+            if key in trie:
+                pass  # Just checking membership
+            else:
+                raise KeyError(f"Key {key} not found in trie")
+        scalene_profiler.stop()
+        timer_end = time.process_time_ns()
+        elapsed += (timer_end - timer_start)
+
+    return TestResults(
+        name='in operator on trie',
+        description='Timing for checking membership in GeneralizedTrie',
+        data=[],
+        elapsed=elapsed,
+        n=n,
+        iterations=iterations,
+        per_second=n * iterations / (elapsed / 1e9)
+    )
+
+
+if __name__ == '__main__':
+    default_depth: int = 15  # Default depth for test data generation
+    default_max_keys: int = 10  # Default maximum number of keys to generate
+    default_iterations: int = 1  # Number of iterations for each test case
+    default_size: int = 10_000_000  # Number of elements for the tests
+    default_test_data = generate_test_data(default_depth, SYMBOLS, default_max_keys)
+
+    all_results: list[TestResults] = []
+
+    all_results.append(benchmark_key_in_trie_with_validation(
+                        iterations=default_iterations,
+                        depth=default_depth,
+                        symbols=SYMBOLS,
+                        max_keys=default_max_keys))
+
+    # all_results.append(benchmark_null_loop(iterations=default_iterations, size=default_size))
+    # all_results.append(benchmark_add_with_validation(test_data=default_test_data,
+    #                                                  iterations=default_iterations,
+    #                                                  depth=default_depth))
+    # all_results.append(benchmark_add_without_validation(test_data=default_test_data,
+    #                                                     iterations=default_iterations,
+    #                                                     depth=default_depth))
+
+    # all_results.append(benchmark_trie_key_assignment_with_validation(test_data=default_test_data,
+    #                                                                  iterations=default_iterations,
+    #                                                                  depth=default_depth))
+
+    # all_results.append(benchmark_trie_key_assignment_without_validation(test_data=default_test_data,
+    #                                                                     iterations=default_iterations,
+    #                                                                     depth=default_depth))
+
+    # all_results.append(benchmark_update_with_validation(test_data=default_test_data,
+    #                                                    iterations=default_iterations,
+    #                                                     depth=default_depth))
+
+    # all_results.append(benchmark_update_without_validation(test_data=default_test_data,
+    #                                                        iterations=default_iterations,
+    #                                                       depth=default_depth))
 
     # Display the results
     for result in all_results:

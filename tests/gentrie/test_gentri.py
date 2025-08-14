@@ -1480,6 +1480,17 @@ class TestGeneralizedTrie(unittest.TestCase):
             trie.add("abc")
             self.assertTrue("abc" in trie)
 
+        trie = GeneralizedTrie()  # Reset trie for next tests
+        test_keys: list[str] = [
+            '0123456789ABCDE', '0123456789ABCDF', '0123456789ABCDG', '0123456789ABCDH', '0123456789ABCDI',
+            '0123456789ABCDJ', '0123456789ABCDK', '0123456789ABCDL', '0123456789ABCDM', '0123456789ABCDN'
+        ]
+        for key in test_keys:
+            trie[key] = key
+
+        with self.subTest(msg="[TC010] '0123456789ABCDE' in trie"):
+            self.assertTrue('0123456789ABCDE' in trie)
+
     def test_keys(self) -> None:
         """Test the keys method of GeneralizedTrie.
 
