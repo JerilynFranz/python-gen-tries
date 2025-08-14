@@ -60,10 +60,6 @@ class TrieBase:
         # Reset the ident counter
         self._ident_counter = 0
 
-    def __len__(self) -> int:
-        """Returns the number of keys in the trie."""
-        return len(self._trie_index)
-
     def __str__(self) -> str:
         """Generates a stringified version of the trie for visual examination."""
         output: list[str] = ["{"]
