@@ -1,15 +1,10 @@
-#!env python3 -m scalene
+#!env python3
 # -*- coding: utf-8 -*-
 """
 Benchmark for the Generalized Trie implementation.
 This script runs a series of tests to measure the performance of the Generalized Trie
 against a set of predefined test cases.
 """
-
-PROFILE: bool = True  # Set to True to enable profiling with scalene
-if PROFILE:
-    from scalene import scalene_profiler  # type: ignore[import]
-    scalene_profiler.stop()
 
 from dataclasses import dataclass
 from itertools import permutations
@@ -68,6 +63,7 @@ class TestResults:
     n: int
     iterations: int
     per_second: float
+    depth: int
 
 
 def benchmark_null_loop(iterations: int = 10, size: int = 10_000_000) -> TestResults:
@@ -85,7 +81,8 @@ def benchmark_null_loop(iterations: int = 10, size: int = 10_000_000) -> TestRes
         elapsed=elapsed,
         n=size,
         iterations=iterations,
-        per_second=float(iterations * size / (elapsed / 1e9))
+        per_second=float(iterations * size / (elapsed / 1e9)),
+        depth=0  # Depth is not applicable for a null loop
     )
 
 
@@ -109,7 +106,8 @@ def benchmark_add_with_validation(test_data: Sequence[GeneralizedKey],
         elapsed=elapsed,
         n=n,
         iterations=iterations,
-        per_second=n * iterations / (elapsed / 1e9)
+        per_second=n * iterations / (elapsed / 1e9),
+        depth=depth
     )
 
 
@@ -133,7 +131,8 @@ def benchmark_add_without_validation(test_data: Sequence[GeneralizedKey],
         elapsed=elapsed,
         n=n,
         iterations=iterations,
-        per_second=n * iterations / (elapsed / 1e9)
+        per_second=n * iterations / (elapsed / 1e9),
+        depth=depth
     )
 
 
@@ -157,7 +156,8 @@ def benchmark_trie_key_assignment_with_validation(
         elapsed=elapsed,
         n=n,
         iterations=iterations,
-        per_second=n * iterations / (elapsed / 1e9)
+        per_second=n * iterations / (elapsed / 1e9),
+        depth=depth
     )
 
 
@@ -181,7 +181,8 @@ def benchmark_trie_key_assignment_without_validation(
         elapsed=elapsed,
         n=n,
         iterations=iterations,
-        per_second=n * iterations / (elapsed / 1e9)
+        per_second=n * iterations / (elapsed / 1e9),
+        depth=depth
     )
 
 
@@ -205,7 +206,8 @@ def benchmark_update_with_validation(test_data: Sequence[GeneralizedKey],
         elapsed=elapsed,
         n=n,
         iterations=iterations,
-        per_second=n * iterations / (elapsed / 1e9)
+        per_second=n * iterations / (elapsed / 1e9),
+        depth=depth,
     )
 
 
@@ -229,7 +231,8 @@ def benchmark_update_without_validation(test_data: Sequence[GeneralizedKey],
         elapsed=elapsed,
         n=n,
         iterations=iterations,
-        per_second=n * iterations / (elapsed / 1e9)
+        per_second=n * iterations / (elapsed / 1e9),
+        depth=depth
     )
 
 
@@ -238,8 +241,7 @@ def benchmark_key_in_trie(
         iterations: int = 10,
         depth: int = 3,
         symbols: str = SYMBOLS,
-        max_keys: int = 1_000_000,
-        profile: bool = False) -> TestResults:
+        max_keys: int = 1_000_000) -> TestResults:
     """Benchmark the in operator for GeneralizedTrie."""
     elapsed: int = 0
     trie = generate_test_trie(depth, symbols, max_keys)
@@ -248,8 +250,6 @@ def benchmark_key_in_trie(
     n: int = len(trie_keys)
 
     key: GeneralizedKey
-    if profile and PROFILE:
-        scalene_profiler.start()
 
     for _ in range(iterations):
         timer_start = time.process_time_ns()
@@ -262,8 +262,6 @@ def benchmark_key_in_trie(
         timer_end = time.process_time_ns()
         elapsed += (timer_end - timer_start)
 
-    if profile and PROFILE:
-        scalene_profiler.stop()
     return TestResults(
         name=f'in operator on trie (runtime validation: {runtime_validation})',
         description=f'Timing for checking membership in GeneralizedTrie (runtime validation: {runtime_validation})',
@@ -271,13 +269,14 @@ def benchmark_key_in_trie(
         elapsed=elapsed,
         n=n,
         iterations=iterations,
-        per_second=n * iterations / (elapsed / 1e9)
+        per_second=n * iterations / (elapsed / 1e9),
+        depth=depth
     )
 
 
 if __name__ == '__main__':
     default_depth: int = 15  # Default depth for test data generation
-    default_max_keys: int = 100_000  # Default maximum number of keys to generate
+    default_max_keys: int = 1_000_000  # Default maximum number of keys to generate
     default_iterations: int = 1  # Number of iterations for each test case
     default_size: int = 10_000_000  # Number of elements for the tests
     default_test_data = generate_test_data(default_depth, SYMBOLS, default_max_keys)
@@ -289,16 +288,14 @@ if __name__ == '__main__':
                        iterations=default_iterations,
                        depth=default_depth,
                        symbols=SYMBOLS,
-                       max_keys=default_max_keys,
-                       profile=False))
+                       max_keys=default_max_keys))
 
     all_results.append(benchmark_key_in_trie(
                         runtime_validation=False,
                         iterations=default_iterations,
                         depth=default_depth,
                         symbols=SYMBOLS,
-                        max_keys=default_max_keys,
-                        profile=False))
+                        max_keys=default_max_keys))
 
     all_results.append(benchmark_null_loop(iterations=default_iterations, size=default_size))
     all_results.append(benchmark_add_with_validation(test_data=default_test_data,
