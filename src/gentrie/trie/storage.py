@@ -110,7 +110,7 @@ class TrieStorageMixin:
         """
         if self.runtime_validation and not is_generalizedkey(key):
             raise InvalidGeneralizedKeyError(
-                msg="[GTSE001] key is not a valid `GeneralizedKey`",
+                msg="key is not a valid `GeneralizedKey`",
                 tag=ErrorTag.STORE_ENTRY_INVALID_GENERALIZED_KEY)
 
         # Traverse the trie to find the insertion point for the key,
@@ -133,7 +133,7 @@ class TrieStorageMixin:
 
             # The key is already in the trie but we are not allowing updating values - so raise an error
             raise DuplicateKeyError(
-                msg=("[GTSE002] Attempted to store a key with a value that is already in the trie "
+                msg=("Attempted to store a key with a value that is already in the trie "
                      " - use `update()` to change the value of an existing key."),
                 tag=ErrorTag.STORE_ENTRY_DUPLICATE_KEY)
 

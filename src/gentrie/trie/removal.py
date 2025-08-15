@@ -32,8 +32,8 @@ class TrieRemovalMixin:
             key (TrieId | GeneralizedKey): identifier for key to remove.
 
         Raises:
-            TypeError ([GTR001]): if the key arg is not a :class:`TrieId` or a valid :class:`GeneralizedKey`.
-            KeyError ([GTR002]): if the key arg does not match the id or trie key of any entries in the trie.
+            TrieTypeError: if the key arg is not a :class:`TrieId` or a valid :class:`GeneralizedKey`.
+            TrieKeyError: if the key arg does not match the id or trie key of any entries in the trie.
         """
         ident: Optional[TrieId] = None
         if isinstance(key, TrieId):
