@@ -4,7 +4,7 @@
 from collections import deque
 from typing import Generator
 
-from ..exceptions import InvalidGeneralizedKeyError
+from ..exceptions import InvalidGeneralizedKeyError, ErrorTag, TrieTypeError, TrieValueError
 from ..protocols import GeneralizedKey
 from ..types import TrieEntry
 from ..validation import is_generalizedkey
@@ -45,7 +45,7 @@ class TrieTraversalMixin:
             :class:`TrieEntry`: The next matching :class:`TrieEntry` instance.
 
         Raises:
-            InvalidGeneralizedKeyError ([GTM001]):
+            InvalidGeneralizedKeyError:
                 If key is not a valid :class:`GeneralizedKey`
                 (is not a :class:`Sequence` of :class:`TrieKeyToken` objects).
 
@@ -66,7 +66,10 @@ class TrieTraversalMixin:
             # 4: abcd
         """
         if self.runtime_validation and not is_generalizedkey(key):
-            raise InvalidGeneralizedKeyError("[GTM001] key is not a valid `GeneralizedKey`")
+            raise InvalidGeneralizedKeyError(
+                msg="key is not a valid `GeneralizedKey`",
+                tag=ErrorTag.TRIE_PREFIXES_INVALID_GENERALIZED_KEY
+            )
 
         current_node = self
 
@@ -112,14 +115,13 @@ class TrieTraversalMixin:
             :class:`TrieEntry`: The next matching :class:`TrieEntry` instance.
 
         Raises:
-            InvalidGeneralizedKeyError ([GTS001]):
-                If key arg is not a GeneralizedKey.
-            TypeError ([GTS002]):
+            InvalidGeneralizedKeyError:
+                If key arg is not a valid GeneralizedKey.
+            TrieTypeError:
                 If depth arg is not an int.
-            ValueError ([GTS003]):
+            TrieValueError:
                 If depth arg is less than -1.
-            InvalidGeneralizedKeyError ([GTS004]):
-                If a token in the key arg does not conform to the :class:`TrieKeyToken` protocol.
+
 
         Usage::
 
@@ -138,12 +140,21 @@ class TrieTraversalMixin:
             # 4: abcd
         """
         if self.runtime_validation and not is_generalizedkey(key):
-            raise InvalidGeneralizedKeyError("[GTS001] key arg is not a valid GeneralizedKey")
+            raise InvalidGeneralizedKeyError(
+                msg="key arg is not a valid GeneralizedKey",
+                tag=ErrorTag.TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY
+            )
 
         if not isinstance(depth, int):  # type: ignore[reportUnnecessaryIsInstance]
-            raise TypeError("[GTS002] depth must be an int")
+            raise TrieTypeError(
+                msg="depth must be an int",
+                tag=ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_TYPE
+            )
         if depth < -1:
-            raise ValueError("[GTS003] depth cannot be less than -1")
+            raise TrieValueError(
+                msg="depth cannot be less than -1",
+                tag=ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_VALUE
+            )
 
         current_node = self
         try:

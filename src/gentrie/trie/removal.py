@@ -2,6 +2,7 @@
 """Entry removal operations for the trie."""
 from typing import Optional
 
+from ..exceptions import ErrorTag, TrieKeyError, TrieTypeError
 from ..protocols import GeneralizedKey, TrieKeyToken
 from ..types import TrieId
 from ..validation import is_generalizedkey
@@ -31,8 +32,8 @@ class TrieRemovalMixin:
             key (TrieId | GeneralizedKey): identifier for key to remove.
 
         Raises:
-            TypeError ([GTR001]): if the key arg is not a :class:`TrieId` or a valid :class:`GeneralizedKey`.
-            KeyError ([GTR002]): if the key arg does not match the id or trie key of any entries in the trie.
+            TrieTypeError: if the key arg is not a :class:`TrieId` or a valid :class:`GeneralizedKey`.
+            TrieKeyError: if the key arg does not match the id or trie key of any entries in the trie.
         """
         ident: Optional[TrieId] = None
         if isinstance(key, TrieId):
@@ -47,12 +48,15 @@ class TrieRemovalMixin:
             except TypeError as exc:
                 raise RuntimeError("[GTR003] failed lookup of key because of unexpected exception") from exc
         else:
-            raise TypeError(
-                "[GTR001] key arg must be of type TrieId or a valid GeneralizedKey"
+            raise TrieTypeError(
+                msg="key arg must be of type TrieId or a valid GeneralizedKey",
+                tag=ErrorTag.REMOVAL_INVALID_KEY_TYPE
             )
 
         if ident is None or ident not in self._trie_index:
-            raise KeyError("[GTR002] key not found")
+            raise TrieKeyError(
+                msg="key not found",
+                tag=ErrorTag.REMOVAL_KEY_NOT_FOUND)
 
         # Get the node and delete its id from the trie index and entries
         # and remove the node from the trie.
