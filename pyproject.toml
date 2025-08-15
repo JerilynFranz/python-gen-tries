@@ -51,6 +51,27 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = []
 
+optional-dependencies = {
+    dev = [
+        "flake8",
+        "black",
+        "pylint",
+        "pytest",
+        "pytest-cov",
+        "pytest-mock",
+        "pytest-xdist",
+        "testplan",
+        "coverage",
+        "mypy",
+    ],
+    docs = [
+        "sphinx",
+        "sphinx-rtd-theme",
+        "sphinx-autodoc-typehints",
+    ],
+}
+
+
 [project.urls]
 Homepage = "https://github.com/JerilynFranz/python-gen-tries"
 Documentation = "https://python-gen-tries.readthedocs.io/en/latest/"
@@ -73,3 +94,6 @@ max-line-length = 120
 
 [tool.pylint.MASTER]
 suggestion-mode = 'yes'
+
+[tool.pytest.ini_options]
+filterwarnings = ["ignore:cannot collect test class 'TestSpec':UserWarning"]
