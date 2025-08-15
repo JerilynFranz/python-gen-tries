@@ -51,26 +51,29 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = []
 
-optional-dependencies = {
-    dev = [
-        "flake8",
-        "black",
-        "pylint",
-        "pytest",
-        "pytest-cov",
-        "pytest-mock",
-        "pytest-xdist",
-        "testplan",
-        "coverage",
-        "mypy",
-    ],
-    docs = [
-        "sphinx",
-        "sphinx-rtd-theme",
-        "sphinx-autodoc-typehints",
-    ],
-}
-
+[project.optional-dependencies]
+tests = [
+    "pytest",
+    "testplan",
+    "coverage"
+]
+dev = [
+    "flake8",
+    "black",
+    "pylint",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "pytest-xdist",
+    "testplan",
+    "coverage",
+    "mypy"
+]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+    "sphinx-autodoc-typehints"
+]
 
 [project.urls]
 Homepage = "https://github.com/JerilynFranz/python-gen-tries"
