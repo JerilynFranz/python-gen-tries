@@ -30,7 +30,7 @@ author = 'Jerilyn Franz'
 # The short X.Y version
 version = '0.9'
 # The full version, including alpha/beta/rc tags
-release = '0.9.1'
+release = '0.9.2'
 
 
 # -- General configuration ---------------------------------------------------
