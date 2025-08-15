@@ -190,29 +190,85 @@
 <p>Custom exceptions for the gentrie package.</p>
 <dl class="py exception">
 <dt class="sig sig-object py" id="gentrie.exceptions.DuplicateKeyError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.exceptions.</span></span><span class="sig-name descname"><span class="pre">DuplicateKeyError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.exceptions.DuplicateKeyError" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.DuplicateKeyError'">¶</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.exceptions.</span></span><span class="sig-name descname"><span class="pre">DuplicateKeyError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gentrie.exceptions.ErrorTag" title="gentrie.exceptions.ErrorTag"><span class="pre">ErrorTag</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.exceptions.DuplicateKeyError" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.DuplicateKeyError'">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#gentrie.exceptions.TrieKeyError" title="gentrie.exceptions.TrieKeyError"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieKeyError</span></code></a></p>
 <p>Raised when an attempt is made to add a key that is already in the trie
 with a different associated value.</p>
 <p>This is a sub-class of <a class="reference internal" href="#gentrie.exceptions.TrieKeyError" title="gentrie.exceptions.TrieKeyError"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieKeyError</span></code></a>.</p>
 </dd></dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="gentrie.exceptions.ErrorTag">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.exceptions.</span></span><span class="sig-name descname"><span class="pre">ErrorTag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.exceptions.ErrorTag" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.ErrorTag'">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<p>Tags for error path identification for tests for the gentrie packages.</p>
+<p>ErrorTags’ are used to identify specific error conditions in the gentrie package.
+Tests use these tags to assert specific error condition paths.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.exceptions.ErrorTag.GETITEM_ID_NOT_FOUND">
+<span class="sig-name descname"><span class="pre">GETITEM_ID_NOT_FOUND</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'GETITEM_ID_NOT_FOUND'</span></em><a class="headerlink" href="#gentrie.exceptions.ErrorTag.GETITEM_ID_NOT_FOUND" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.ErrorTag.GETITEM_ID_NOT_FOUND'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.exceptions.ErrorTag.GETITEM_INVALID_KEY_TYPE">
+<span class="sig-name descname"><span class="pre">GETITEM_INVALID_KEY_TYPE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'GETITEM_INVALID_KEY_TYPE'</span></em><a class="headerlink" href="#gentrie.exceptions.ErrorTag.GETITEM_INVALID_KEY_TYPE" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.ErrorTag.GETITEM_INVALID_KEY_TYPE'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.exceptions.ErrorTag.GETITEM_KEY_NOT_FOUND">
+<span class="sig-name descname"><span class="pre">GETITEM_KEY_NOT_FOUND</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'GETITEM_KEY_NOT_FOUND'</span></em><a class="headerlink" href="#gentrie.exceptions.ErrorTag.GETITEM_KEY_NOT_FOUND" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.ErrorTag.GETITEM_KEY_NOT_FOUND'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.exceptions.ErrorTag.GETITEM_NOT_TERMINAL">
+<span class="sig-name descname"><span class="pre">GETITEM_NOT_TERMINAL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'GETITEM_NOT_TERMINAL'</span></em><a class="headerlink" href="#gentrie.exceptions.ErrorTag.GETITEM_NOT_TERMINAL" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.ErrorTag.GETITEM_NOT_TERMINAL'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.exceptions.ErrorTag.REMOVAL_INVALID_KEY_TYPE">
+<span class="sig-name descname"><span class="pre">REMOVAL_INVALID_KEY_TYPE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'REMOVAL_INVALID_KEY_TYPE'</span></em><a class="headerlink" href="#gentrie.exceptions.ErrorTag.REMOVAL_INVALID_KEY_TYPE" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.ErrorTag.REMOVAL_INVALID_KEY_TYPE'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.exceptions.ErrorTag.REMOVAL_KEY_NOT_FOUND">
+<span class="sig-name descname"><span class="pre">REMOVAL_KEY_NOT_FOUND</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'REMOVAL_KEY_NOT_FOUND'</span></em><a class="headerlink" href="#gentrie.exceptions.ErrorTag.REMOVAL_KEY_NOT_FOUND" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.ErrorTag.REMOVAL_KEY_NOT_FOUND'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.exceptions.ErrorTag.STORE_ENTRY_DUPLICATE_KEY">
+<span class="sig-name descname"><span class="pre">STORE_ENTRY_DUPLICATE_KEY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'STORE_ENTRY_DUPLICATE_KEY'</span></em><a class="headerlink" href="#gentrie.exceptions.ErrorTag.STORE_ENTRY_DUPLICATE_KEY" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.ErrorTag.STORE_ENTRY_DUPLICATE_KEY'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.exceptions.ErrorTag.STORE_ENTRY_INVALID_GENERALIZED_KEY">
+<span class="sig-name descname"><span class="pre">STORE_ENTRY_INVALID_GENERALIZED_KEY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'STORE_ENTRY_INVALID_GENERALIZED_KEY'</span></em><a class="headerlink" href="#gentrie.exceptions.ErrorTag.STORE_ENTRY_INVALID_GENERALIZED_KEY" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.ErrorTag.STORE_ENTRY_INVALID_GENERALIZED_KEY'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.exceptions.ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_TYPE">
+<span class="sig-name descname"><span class="pre">TRIE_PREFIXED_BY_BAD_DEPTH_TYPE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'TRIE_PREFIXED_BY_BAD_DEPTH_TYPE'</span></em><a class="headerlink" href="#gentrie.exceptions.ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_TYPE" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_TYPE'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.exceptions.ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_VALUE">
+<span class="sig-name descname"><span class="pre">TRIE_PREFIXED_BY_BAD_DEPTH_VALUE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'TRIE_PREFIXED_BY_BAD_DEPTH_VALUE'</span></em><a class="headerlink" href="#gentrie.exceptions.ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_VALUE" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_VALUE'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.exceptions.ErrorTag.TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY">
+<span class="sig-name descname"><span class="pre">TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY'</span></em><a class="headerlink" href="#gentrie.exceptions.ErrorTag.TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.ErrorTag.TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.exceptions.ErrorTag.TRIE_PREFIXES_INVALID_GENERALIZED_KEY">
+<span class="sig-name descname"><span class="pre">TRIE_PREFIXES_INVALID_GENERALIZED_KEY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'TRIE_PREFIXES_INVALID_GENERALIZED_KEY'</span></em><a class="headerlink" href="#gentrie.exceptions.ErrorTag.TRIE_PREFIXES_INVALID_GENERALIZED_KEY" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.ErrorTag.TRIE_PREFIXES_INVALID_GENERALIZED_KEY'">¶</a></dt>
+<dd></dd></dl>
+</dd></dl>
 <dl class="py exception">
 <dt class="sig sig-object py" id="gentrie.exceptions.InvalidGeneralizedKeyError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidGeneralizedKeyError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.exceptions.InvalidGeneralizedKeyError" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.InvalidGeneralizedKeyError'">¶</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidGeneralizedKeyError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gentrie.exceptions.ErrorTag" title="gentrie.exceptions.ErrorTag"><span class="pre">ErrorTag</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.exceptions.InvalidGeneralizedKeyError" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.InvalidGeneralizedKeyError'">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#gentrie.exceptions.TrieTypeError" title="gentrie.exceptions.TrieTypeError"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieTypeError</span></code></a></p>
 <p>Raised when a key is not a valid <code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code> object.</p>
 <p>This is a sub-class of <a class="reference internal" href="#gentrie.exceptions.TrieTypeError" title="gentrie.exceptions.TrieTypeError"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieTypeError</span></code></a>.</p>
 </dd></dl>
 <dl class="py exception">
 <dt class="sig sig-object py" id="gentrie.exceptions.InvalidTrieKeyTokenError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidTrieKeyTokenError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.exceptions.InvalidTrieKeyTokenError" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.InvalidTrieKeyTokenError'">¶</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidTrieKeyTokenError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gentrie.exceptions.ErrorTag" title="gentrie.exceptions.ErrorTag"><span class="pre">ErrorTag</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.exceptions.InvalidTrieKeyTokenError" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.InvalidTrieKeyTokenError'">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#gentrie.exceptions.TrieTypeError" title="gentrie.exceptions.TrieTypeError"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieTypeError</span></code></a></p>
 <p>Raised when a token in a key is not a valid <code class="xref py py-class docutils literal notranslate"><span class="pre">TrieKeyToken</span></code> object.</p>
 <p>This is a sub-class of <a class="reference internal" href="#gentrie.exceptions.TrieTypeError" title="gentrie.exceptions.TrieTypeError"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieTypeError</span></code></a>.</p>
 </dd></dl>
 <dl class="py exception">
 <dt class="sig sig-object py" id="gentrie.exceptions.TrieKeyError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.exceptions.</span></span><span class="sig-name descname"><span class="pre">TrieKeyError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.exceptions.TrieKeyError" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.TrieKeyError'">¶</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.exceptions.</span></span><span class="sig-name descname"><span class="pre">TrieKeyError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gentrie.exceptions.ErrorTag" title="gentrie.exceptions.ErrorTag"><span class="pre">ErrorTag</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.exceptions.TrieKeyError" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.TrieKeyError'">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">KeyError</span></code></a></p>
 <p>Base class for all trie-related key errors.</p>
 <p>It differs from a standard KeyError by the addition of a
@@ -224,14 +280,14 @@ the specific code throwing the exception for tests.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>msg</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The error message.</p></li>
-<li><p><strong>tag</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The tag code.</p></li>
+<li><p><strong>tag</strong> (<a class="reference internal" href="#gentrie.exceptions.ErrorTag" title="gentrie.exceptions.ErrorTag"><em>ErrorTag</em></a>) – The tag code.</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 <dl class="py exception">
 <dt class="sig sig-object py" id="gentrie.exceptions.TrieTypeError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.exceptions.</span></span><span class="sig-name descname"><span class="pre">TrieTypeError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.exceptions.TrieTypeError" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.TrieTypeError'">¶</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.exceptions.</span></span><span class="sig-name descname"><span class="pre">TrieTypeError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gentrie.exceptions.ErrorTag" title="gentrie.exceptions.ErrorTag"><span class="pre">ErrorTag</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.exceptions.TrieTypeError" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.TrieTypeError'">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeError</span></code></a></p>
 <p>Base class for all trie-related type errors.</p>
 <p>It differs from a standard TypeError by the addition of a
@@ -239,6 +295,33 @@ tag code used to very specifically identify where the error
 was thrown in the code for testing and development support.</p>
 <p>This tag code does not have a direct semantic meaning except to identify
 the specific code throwing the exception for tests.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>msg</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The error message.</p></li>
+<li><p><strong>tag</strong> (<a class="reference internal" href="#gentrie.exceptions.ErrorTag" title="gentrie.exceptions.ErrorTag"><em>ErrorTag</em></a>) – The tag code.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py exception">
+<dt class="sig sig-object py" id="gentrie.exceptions.TrieValueError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.exceptions.</span></span><span class="sig-name descname"><span class="pre">TrieValueError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gentrie.exceptions.ErrorTag" title="gentrie.exceptions.ErrorTag"><span class="pre">ErrorTag</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.exceptions.TrieValueError" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.exceptions.TrieValueError'">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
+<p>Base class for all trie-related value errors.</p>
+<p>It differs from a standard ValueError by the addition of a
+tag code used to very specifically identify where the error
+was thrown in the code for testing and development support.</p>
+<p>This tag code does not have a direct semantic meaning except to identify
+the specific code throwing the exception for tests.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>msg</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The error message.</p></li>
+<li><p><strong>tag</strong> (<a class="reference internal" href="#gentrie.exceptions.ErrorTag" title="gentrie.exceptions.ErrorTag"><em>ErrorTag</em></a>) – The tag code.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 </section>
 <section id="module-gentrie.nodes">
@@ -655,11 +738,67 @@ that match a specific pattern or structure in the trie.</p>
 </section>
 <dl class="py exception">
 <dt class="sig sig-object py" id="gentrie.DuplicateKeyError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">DuplicateKeyError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.DuplicateKeyError" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.DuplicateKeyError'">¶</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">DuplicateKeyError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gentrie.exceptions.ErrorTag" title="gentrie.exceptions.ErrorTag"><span class="pre">ErrorTag</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.DuplicateKeyError" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.DuplicateKeyError'">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#gentrie.exceptions.TrieKeyError" title="gentrie.exceptions.TrieKeyError"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieKeyError</span></code></a></p>
 <p>Raised when an attempt is made to add a key that is already in the trie
 with a different associated value.</p>
-<p>This is a sub-class of <code class="xref py py-class docutils literal notranslate"><span class="pre">TrieKeyError</span></code>.</p>
+<p>This is a sub-class of <a class="reference internal" href="#gentrie.TrieKeyError" title="gentrie.TrieKeyError"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieKeyError</span></code></a>.</p>
+</dd></dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="gentrie.ErrorTag">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">ErrorTag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.ErrorTag" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.ErrorTag'">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<p>Tags for error path identification for tests for the gentrie packages.</p>
+<p>ErrorTags’ are used to identify specific error conditions in the gentrie package.
+Tests use these tags to assert specific error condition paths.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.ErrorTag.GETITEM_ID_NOT_FOUND">
+<span class="sig-name descname"><span class="pre">GETITEM_ID_NOT_FOUND</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'GETITEM_ID_NOT_FOUND'</span></em><a class="headerlink" href="#gentrie.ErrorTag.GETITEM_ID_NOT_FOUND" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.ErrorTag.GETITEM_ID_NOT_FOUND'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.ErrorTag.GETITEM_INVALID_KEY_TYPE">
+<span class="sig-name descname"><span class="pre">GETITEM_INVALID_KEY_TYPE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'GETITEM_INVALID_KEY_TYPE'</span></em><a class="headerlink" href="#gentrie.ErrorTag.GETITEM_INVALID_KEY_TYPE" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.ErrorTag.GETITEM_INVALID_KEY_TYPE'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.ErrorTag.GETITEM_KEY_NOT_FOUND">
+<span class="sig-name descname"><span class="pre">GETITEM_KEY_NOT_FOUND</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'GETITEM_KEY_NOT_FOUND'</span></em><a class="headerlink" href="#gentrie.ErrorTag.GETITEM_KEY_NOT_FOUND" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.ErrorTag.GETITEM_KEY_NOT_FOUND'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.ErrorTag.GETITEM_NOT_TERMINAL">
+<span class="sig-name descname"><span class="pre">GETITEM_NOT_TERMINAL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'GETITEM_NOT_TERMINAL'</span></em><a class="headerlink" href="#gentrie.ErrorTag.GETITEM_NOT_TERMINAL" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.ErrorTag.GETITEM_NOT_TERMINAL'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.ErrorTag.REMOVAL_INVALID_KEY_TYPE">
+<span class="sig-name descname"><span class="pre">REMOVAL_INVALID_KEY_TYPE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'REMOVAL_INVALID_KEY_TYPE'</span></em><a class="headerlink" href="#gentrie.ErrorTag.REMOVAL_INVALID_KEY_TYPE" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.ErrorTag.REMOVAL_INVALID_KEY_TYPE'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.ErrorTag.REMOVAL_KEY_NOT_FOUND">
+<span class="sig-name descname"><span class="pre">REMOVAL_KEY_NOT_FOUND</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'REMOVAL_KEY_NOT_FOUND'</span></em><a class="headerlink" href="#gentrie.ErrorTag.REMOVAL_KEY_NOT_FOUND" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.ErrorTag.REMOVAL_KEY_NOT_FOUND'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.ErrorTag.STORE_ENTRY_DUPLICATE_KEY">
+<span class="sig-name descname"><span class="pre">STORE_ENTRY_DUPLICATE_KEY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'STORE_ENTRY_DUPLICATE_KEY'</span></em><a class="headerlink" href="#gentrie.ErrorTag.STORE_ENTRY_DUPLICATE_KEY" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.ErrorTag.STORE_ENTRY_DUPLICATE_KEY'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.ErrorTag.STORE_ENTRY_INVALID_GENERALIZED_KEY">
+<span class="sig-name descname"><span class="pre">STORE_ENTRY_INVALID_GENERALIZED_KEY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'STORE_ENTRY_INVALID_GENERALIZED_KEY'</span></em><a class="headerlink" href="#gentrie.ErrorTag.STORE_ENTRY_INVALID_GENERALIZED_KEY" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.ErrorTag.STORE_ENTRY_INVALID_GENERALIZED_KEY'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_TYPE">
+<span class="sig-name descname"><span class="pre">TRIE_PREFIXED_BY_BAD_DEPTH_TYPE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'TRIE_PREFIXED_BY_BAD_DEPTH_TYPE'</span></em><a class="headerlink" href="#gentrie.ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_TYPE" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_TYPE'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_VALUE">
+<span class="sig-name descname"><span class="pre">TRIE_PREFIXED_BY_BAD_DEPTH_VALUE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'TRIE_PREFIXED_BY_BAD_DEPTH_VALUE'</span></em><a class="headerlink" href="#gentrie.ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_VALUE" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_VALUE'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.ErrorTag.TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY">
+<span class="sig-name descname"><span class="pre">TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY'</span></em><a class="headerlink" href="#gentrie.ErrorTag.TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.ErrorTag.TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gentrie.ErrorTag.TRIE_PREFIXES_INVALID_GENERALIZED_KEY">
+<span class="sig-name descname"><span class="pre">TRIE_PREFIXES_INVALID_GENERALIZED_KEY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'TRIE_PREFIXES_INVALID_GENERALIZED_KEY'</span></em><a class="headerlink" href="#gentrie.ErrorTag.TRIE_PREFIXES_INVALID_GENERALIZED_KEY" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.ErrorTag.TRIE_PREFIXES_INVALID_GENERALIZED_KEY'">¶</a></dt>
+<dd></dd></dl>
 </dd></dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="gentrie.GeneralizedKey">
@@ -737,17 +876,17 @@ and <code class="docutils literal notranslate"><span class="pre">__hash__()</spa
 </dd></dl>
 <dl class="py exception">
 <dt class="sig sig-object py" id="gentrie.InvalidGeneralizedKeyError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">InvalidGeneralizedKeyError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.InvalidGeneralizedKeyError" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.InvalidGeneralizedKeyError'">¶</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">InvalidGeneralizedKeyError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gentrie.exceptions.ErrorTag" title="gentrie.exceptions.ErrorTag"><span class="pre">ErrorTag</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.InvalidGeneralizedKeyError" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.InvalidGeneralizedKeyError'">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#gentrie.exceptions.TrieTypeError" title="gentrie.exceptions.TrieTypeError"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieTypeError</span></code></a></p>
 <p>Raised when a key is not a valid <a class="reference internal" href="#gentrie.GeneralizedKey" title="gentrie.GeneralizedKey"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code></a> object.</p>
-<p>This is a sub-class of <code class="xref py py-class docutils literal notranslate"><span class="pre">TrieTypeError</span></code>.</p>
+<p>This is a sub-class of <a class="reference internal" href="#gentrie.TrieTypeError" title="gentrie.TrieTypeError"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieTypeError</span></code></a>.</p>
 </dd></dl>
 <dl class="py exception">
 <dt class="sig sig-object py" id="gentrie.InvalidTrieKeyTokenError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">InvalidTrieKeyTokenError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.InvalidTrieKeyTokenError" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.InvalidTrieKeyTokenError'">¶</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">InvalidTrieKeyTokenError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gentrie.exceptions.ErrorTag" title="gentrie.exceptions.ErrorTag"><span class="pre">ErrorTag</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.InvalidTrieKeyTokenError" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.InvalidTrieKeyTokenError'">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#gentrie.exceptions.TrieTypeError" title="gentrie.exceptions.TrieTypeError"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieTypeError</span></code></a></p>
 <p>Raised when a token in a key is not a valid <a class="reference internal" href="#gentrie.TrieKeyToken" title="gentrie.TrieKeyToken"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieKeyToken</span></code></a> object.</p>
-<p>This is a sub-class of <code class="xref py py-class docutils literal notranslate"><span class="pre">TrieTypeError</span></code>.</p>
+<p>This is a sub-class of <a class="reference internal" href="#gentrie.TrieTypeError" title="gentrie.TrieTypeError"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieTypeError</span></code></a>.</p>
 </dd></dl>
 <dl class="py class">
 <dt class="sig sig-object py" id="gentrie.TrieEntry">
@@ -775,6 +914,25 @@ and <code class="docutils literal notranslate"><span class="pre">__hash__()</spa
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">TrieId</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.TrieId" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.TrieId'">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></p>
 <p>Unique identifier for a key in a trie.</p>
+</dd></dl>
+<dl class="py exception">
+<dt class="sig sig-object py" id="gentrie.TrieKeyError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">TrieKeyError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gentrie.exceptions.ErrorTag" title="gentrie.exceptions.ErrorTag"><span class="pre">ErrorTag</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.TrieKeyError" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.TrieKeyError'">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">KeyError</span></code></a></p>
+<p>Base class for all trie-related key errors.</p>
+<p>It differs from a standard KeyError by the addition of a
+tag code used to very specifically identify where the error
+was thrown in the code for testing and development support.</p>
+<p>This tag code does not have a direct semantic meaning except to identify
+the specific code throwing the exception for tests.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>msg</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The error message.</p></li>
+<li><p><strong>tag</strong> (<a class="reference internal" href="#gentrie.ErrorTag" title="gentrie.ErrorTag"><em>ErrorTag</em></a>) – The tag code.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 <dl class="py class">
 <dt class="sig sig-object py" id="gentrie.TrieKeyToken">
@@ -814,6 +972,25 @@ must depend on the content of the object) if you want to use them as tokens in a
 implementation of <code class="docutils literal notranslate"><span class="pre">__eq__()</span></code> and <code class="docutils literal notranslate"><span class="pre">__hash__()</span></code> uses the memory address of the object, which
 means that two different instances of the same class will not be considered equal.</p>
 </div>
+</dd></dl>
+<dl class="py exception">
+<dt class="sig sig-object py" id="gentrie.TrieTypeError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">TrieTypeError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gentrie.exceptions.ErrorTag" title="gentrie.exceptions.ErrorTag"><span class="pre">ErrorTag</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.TrieTypeError" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.TrieTypeError'">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeError</span></code></a></p>
+<p>Base class for all trie-related type errors.</p>
+<p>It differs from a standard TypeError by the addition of a
+tag code used to very specifically identify where the error
+was thrown in the code for testing and development support.</p>
+<p>This tag code does not have a direct semantic meaning except to identify
+the specific code throwing the exception for tests.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>msg</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The error message.</p></li>
+<li><p><strong>tag</strong> (<a class="reference internal" href="#gentrie.ErrorTag" title="gentrie.ErrorTag"><em>ErrorTag</em></a>) – The tag code.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 <dl class="py function">
 <dt class="sig sig-object py" id="gentrie.is_generalizedkey">
@@ -870,10 +1047,26 @@ iterated. It must have at least one token.</p>
 <li><a :data-current="activeSection === '#submodules'" class="reference internal" href="#submodules">Submodules</a></li>
 <li><a :data-current="activeSection === '#module-gentrie.exceptions'" class="reference internal" href="#module-gentrie.exceptions">gentrie.exceptions module</a><ul>
 <li><a :data-current="activeSection === '#gentrie.exceptions.DuplicateKeyError'" class="reference internal" href="#gentrie.exceptions.DuplicateKeyError"><code class="docutils literal notranslate"><span class="pre">DuplicateKeyError</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.exceptions.ErrorTag'" class="reference internal" href="#gentrie.exceptions.ErrorTag"><code class="docutils literal notranslate"><span class="pre">ErrorTag</span></code></a><ul>
+<li><a :data-current="activeSection === '#gentrie.exceptions.ErrorTag.GETITEM_ID_NOT_FOUND'" class="reference internal" href="#gentrie.exceptions.ErrorTag.GETITEM_ID_NOT_FOUND"><code class="docutils literal notranslate"><span class="pre">ErrorTag.GETITEM_ID_NOT_FOUND</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.exceptions.ErrorTag.GETITEM_INVALID_KEY_TYPE'" class="reference internal" href="#gentrie.exceptions.ErrorTag.GETITEM_INVALID_KEY_TYPE"><code class="docutils literal notranslate"><span class="pre">ErrorTag.GETITEM_INVALID_KEY_TYPE</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.exceptions.ErrorTag.GETITEM_KEY_NOT_FOUND'" class="reference internal" href="#gentrie.exceptions.ErrorTag.GETITEM_KEY_NOT_FOUND"><code class="docutils literal notranslate"><span class="pre">ErrorTag.GETITEM_KEY_NOT_FOUND</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.exceptions.ErrorTag.GETITEM_NOT_TERMINAL'" class="reference internal" href="#gentrie.exceptions.ErrorTag.GETITEM_NOT_TERMINAL"><code class="docutils literal notranslate"><span class="pre">ErrorTag.GETITEM_NOT_TERMINAL</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.exceptions.ErrorTag.REMOVAL_INVALID_KEY_TYPE'" class="reference internal" href="#gentrie.exceptions.ErrorTag.REMOVAL_INVALID_KEY_TYPE"><code class="docutils literal notranslate"><span class="pre">ErrorTag.REMOVAL_INVALID_KEY_TYPE</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.exceptions.ErrorTag.REMOVAL_KEY_NOT_FOUND'" class="reference internal" href="#gentrie.exceptions.ErrorTag.REMOVAL_KEY_NOT_FOUND"><code class="docutils literal notranslate"><span class="pre">ErrorTag.REMOVAL_KEY_NOT_FOUND</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.exceptions.ErrorTag.STORE_ENTRY_DUPLICATE_KEY'" class="reference internal" href="#gentrie.exceptions.ErrorTag.STORE_ENTRY_DUPLICATE_KEY"><code class="docutils literal notranslate"><span class="pre">ErrorTag.STORE_ENTRY_DUPLICATE_KEY</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.exceptions.ErrorTag.STORE_ENTRY_INVALID_GENERALIZED_KEY'" class="reference internal" href="#gentrie.exceptions.ErrorTag.STORE_ENTRY_INVALID_GENERALIZED_KEY"><code class="docutils literal notranslate"><span class="pre">ErrorTag.STORE_ENTRY_INVALID_GENERALIZED_KEY</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.exceptions.ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_TYPE'" class="reference internal" href="#gentrie.exceptions.ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_TYPE"><code class="docutils literal notranslate"><span class="pre">ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_TYPE</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.exceptions.ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_VALUE'" class="reference internal" href="#gentrie.exceptions.ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_VALUE"><code class="docutils literal notranslate"><span class="pre">ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_VALUE</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.exceptions.ErrorTag.TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY'" class="reference internal" href="#gentrie.exceptions.ErrorTag.TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY"><code class="docutils literal notranslate"><span class="pre">ErrorTag.TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.exceptions.ErrorTag.TRIE_PREFIXES_INVALID_GENERALIZED_KEY'" class="reference internal" href="#gentrie.exceptions.ErrorTag.TRIE_PREFIXES_INVALID_GENERALIZED_KEY"><code class="docutils literal notranslate"><span class="pre">ErrorTag.TRIE_PREFIXES_INVALID_GENERALIZED_KEY</span></code></a></li>
+</ul>
+</li>
 <li><a :data-current="activeSection === '#gentrie.exceptions.InvalidGeneralizedKeyError'" class="reference internal" href="#gentrie.exceptions.InvalidGeneralizedKeyError"><code class="docutils literal notranslate"><span class="pre">InvalidGeneralizedKeyError</span></code></a></li>
 <li><a :data-current="activeSection === '#gentrie.exceptions.InvalidTrieKeyTokenError'" class="reference internal" href="#gentrie.exceptions.InvalidTrieKeyTokenError"><code class="docutils literal notranslate"><span class="pre">InvalidTrieKeyTokenError</span></code></a></li>
 <li><a :data-current="activeSection === '#gentrie.exceptions.TrieKeyError'" class="reference internal" href="#gentrie.exceptions.TrieKeyError"><code class="docutils literal notranslate"><span class="pre">TrieKeyError</span></code></a></li>
 <li><a :data-current="activeSection === '#gentrie.exceptions.TrieTypeError'" class="reference internal" href="#gentrie.exceptions.TrieTypeError"><code class="docutils literal notranslate"><span class="pre">TrieTypeError</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.exceptions.TrieValueError'" class="reference internal" href="#gentrie.exceptions.TrieValueError"><code class="docutils literal notranslate"><span class="pre">TrieValueError</span></code></a></li>
 </ul>
 </li>
 <li><a :data-current="activeSection === '#module-gentrie.nodes'" class="reference internal" href="#module-gentrie.nodes">gentrie.nodes module</a><ul>
@@ -919,6 +1112,21 @@ iterated. It must have at least one token.</p>
 </ul>
 </li>
 <li><a :data-current="activeSection === '#gentrie.DuplicateKeyError'" class="reference internal" href="#gentrie.DuplicateKeyError"><code class="docutils literal notranslate"><span class="pre">DuplicateKeyError</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.ErrorTag'" class="reference internal" href="#gentrie.ErrorTag"><code class="docutils literal notranslate"><span class="pre">ErrorTag</span></code></a><ul>
+<li><a :data-current="activeSection === '#gentrie.ErrorTag.GETITEM_ID_NOT_FOUND'" class="reference internal" href="#gentrie.ErrorTag.GETITEM_ID_NOT_FOUND"><code class="docutils literal notranslate"><span class="pre">ErrorTag.GETITEM_ID_NOT_FOUND</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.ErrorTag.GETITEM_INVALID_KEY_TYPE'" class="reference internal" href="#gentrie.ErrorTag.GETITEM_INVALID_KEY_TYPE"><code class="docutils literal notranslate"><span class="pre">ErrorTag.GETITEM_INVALID_KEY_TYPE</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.ErrorTag.GETITEM_KEY_NOT_FOUND'" class="reference internal" href="#gentrie.ErrorTag.GETITEM_KEY_NOT_FOUND"><code class="docutils literal notranslate"><span class="pre">ErrorTag.GETITEM_KEY_NOT_FOUND</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.ErrorTag.GETITEM_NOT_TERMINAL'" class="reference internal" href="#gentrie.ErrorTag.GETITEM_NOT_TERMINAL"><code class="docutils literal notranslate"><span class="pre">ErrorTag.GETITEM_NOT_TERMINAL</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.ErrorTag.REMOVAL_INVALID_KEY_TYPE'" class="reference internal" href="#gentrie.ErrorTag.REMOVAL_INVALID_KEY_TYPE"><code class="docutils literal notranslate"><span class="pre">ErrorTag.REMOVAL_INVALID_KEY_TYPE</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.ErrorTag.REMOVAL_KEY_NOT_FOUND'" class="reference internal" href="#gentrie.ErrorTag.REMOVAL_KEY_NOT_FOUND"><code class="docutils literal notranslate"><span class="pre">ErrorTag.REMOVAL_KEY_NOT_FOUND</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.ErrorTag.STORE_ENTRY_DUPLICATE_KEY'" class="reference internal" href="#gentrie.ErrorTag.STORE_ENTRY_DUPLICATE_KEY"><code class="docutils literal notranslate"><span class="pre">ErrorTag.STORE_ENTRY_DUPLICATE_KEY</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.ErrorTag.STORE_ENTRY_INVALID_GENERALIZED_KEY'" class="reference internal" href="#gentrie.ErrorTag.STORE_ENTRY_INVALID_GENERALIZED_KEY"><code class="docutils literal notranslate"><span class="pre">ErrorTag.STORE_ENTRY_INVALID_GENERALIZED_KEY</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_TYPE'" class="reference internal" href="#gentrie.ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_TYPE"><code class="docutils literal notranslate"><span class="pre">ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_TYPE</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_VALUE'" class="reference internal" href="#gentrie.ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_VALUE"><code class="docutils literal notranslate"><span class="pre">ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_VALUE</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.ErrorTag.TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY'" class="reference internal" href="#gentrie.ErrorTag.TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY"><code class="docutils literal notranslate"><span class="pre">ErrorTag.TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.ErrorTag.TRIE_PREFIXES_INVALID_GENERALIZED_KEY'" class="reference internal" href="#gentrie.ErrorTag.TRIE_PREFIXES_INVALID_GENERALIZED_KEY"><code class="docutils literal notranslate"><span class="pre">ErrorTag.TRIE_PREFIXES_INVALID_GENERALIZED_KEY</span></code></a></li>
+</ul>
+</li>
 <li><a :data-current="activeSection === '#gentrie.GeneralizedKey'" class="reference internal" href="#gentrie.GeneralizedKey"><code class="docutils literal notranslate"><span class="pre">GeneralizedKey</span></code></a></li>
 <li><a :data-current="activeSection === '#gentrie.GeneralizedTrie'" class="reference internal" href="#gentrie.GeneralizedTrie"><code class="docutils literal notranslate"><span class="pre">GeneralizedTrie</span></code></a></li>
 <li><a :data-current="activeSection === '#gentrie.Hashable'" class="reference internal" href="#gentrie.Hashable"><code class="docutils literal notranslate"><span class="pre">Hashable</span></code></a></li>
@@ -931,7 +1139,9 @@ iterated. It must have at least one token.</p>
 </ul>
 </li>
 <li><a :data-current="activeSection === '#gentrie.TrieId'" class="reference internal" href="#gentrie.TrieId"><code class="docutils literal notranslate"><span class="pre">TrieId</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.TrieKeyError'" class="reference internal" href="#gentrie.TrieKeyError"><code class="docutils literal notranslate"><span class="pre">TrieKeyError</span></code></a></li>
 <li><a :data-current="activeSection === '#gentrie.TrieKeyToken'" class="reference internal" href="#gentrie.TrieKeyToken"><code class="docutils literal notranslate"><span class="pre">TrieKeyToken</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.TrieTypeError'" class="reference internal" href="#gentrie.TrieTypeError"><code class="docutils literal notranslate"><span class="pre">TrieTypeError</span></code></a></li>
 <li><a :data-current="activeSection === '#gentrie.is_generalizedkey'" class="reference internal" href="#gentrie.is_generalizedkey"><code class="docutils literal notranslate"><span class="pre">is_generalizedkey()</span></code></a></li>
 <li><a :data-current="activeSection === '#gentrie.is_hashable'" class="reference internal" href="#gentrie.is_hashable"><code class="docutils literal notranslate"><span class="pre">is_hashable()</span></code></a></li>
 <li><a :data-current="activeSection === '#gentrie.is_triekeytoken'" class="reference internal" href="#gentrie.is_triekeytoken"><code class="docutils literal notranslate"><span class="pre">is_triekeytoken()</span></code></a></li>

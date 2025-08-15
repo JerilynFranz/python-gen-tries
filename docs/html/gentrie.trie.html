@@ -128,11 +128,6 @@ for the entry.</p>
 </dd>
 </dl>
 <p>Returns: <code class="xref py py-class docutils literal notranslate"><span class="pre">TrieEntry</span></code>: TrieEntry for the key with the passed identifier or the default value if not found.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.13)"><strong>TypeError</strong></a><strong> (</strong><strong>[</strong><strong>GTG002</strong><strong>]</strong><strong>)</strong> – if the key arg is neither a <code class="xref py py-class docutils literal notranslate"><span class="pre">TrieId</span></code> or a valid <code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code>.</p>
-</dd>
-</dl>
 </dd></dl>
 </dd></dl>
 </section>
@@ -253,8 +248,8 @@ The key can be specified either as a <code class="xref py py-class docutils lite
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.13)"><strong>TypeError</strong></a><strong> (</strong><strong>[</strong><strong>GTR001</strong><strong>]</strong><strong>)</strong> – if the key arg is not a <code class="xref py py-class docutils literal notranslate"><span class="pre">TrieId</span></code> or a valid <code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code>.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.13)"><strong>KeyError</strong></a><strong> (</strong><strong>[</strong><strong>GTR002</strong><strong>]</strong><strong>)</strong> – if the key arg does not match the id or trie key of any entries in the trie.</p></li>
+<li><p><a class="reference internal" href="gentrie.html#gentrie.exceptions.TrieTypeError" title="gentrie.exceptions.TrieTypeError"><strong>TrieTypeError</strong></a> – if the key arg is not a <code class="xref py py-class docutils literal notranslate"><span class="pre">TrieId</span></code> or a valid <code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code>.</p></li>
+<li><p><a class="reference internal" href="gentrie.html#gentrie.exceptions.TrieKeyError" title="gentrie.exceptions.TrieKeyError"><strong>TrieKeyError</strong></a> – if the key arg does not match the id or trie key of any entries in the trie.</p></li>
 </ul>
 </dd>
 </dl>
@@ -294,8 +289,8 @@ returns elements conforming to the <code class="xref py py-class docutils litera
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><a class="reference internal" href="reference.html#gentrie.exceptions.InvalidGeneralizedKeyError" title="gentrie.exceptions.InvalidGeneralizedKeyError"><strong>InvalidGeneralizedKeyError</strong></a><strong> (</strong><strong>[</strong><strong>GTU001</strong><strong>]</strong><strong>)</strong> – If key is not a valid <code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code>.</p></li>
-<li><p><a class="reference internal" href="reference.html#gentrie.exceptions.DuplicateKeyError" title="gentrie.exceptions.DuplicateKeyError"><strong>DuplicateKeyError</strong></a><strong> (</strong><strong>[</strong><strong>GTU002</strong><strong>]</strong><strong>)</strong> – If the key is already in the trie.</p></li>
+<li><p><a class="reference internal" href="reference.html#gentrie.exceptions.InvalidGeneralizedKeyError" title="gentrie.exceptions.InvalidGeneralizedKeyError"><strong>InvalidGeneralizedKeyError</strong></a> – If key is not a valid <code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code>.</p></li>
+<li><p><a class="reference internal" href="reference.html#gentrie.exceptions.DuplicateKeyError" title="gentrie.exceptions.DuplicateKeyError"><strong>DuplicateKeyError</strong></a> – If the key is already in the trie.</p></li>
 </ul>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -332,7 +327,7 @@ returns elements conforming to the <code class="xref py py-class docutils litera
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="reference.html#gentrie.exceptions.InvalidGeneralizedKeyError" title="gentrie.exceptions.InvalidGeneralizedKeyError"><strong>InvalidGeneralizedKeyError</strong></a><strong> (</strong><strong>[</strong><strong>GTSE001</strong><strong>]</strong><strong>)</strong> – If key is not a valid <code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code>.</p>
+<dd class="field-even"><p><a class="reference internal" href="reference.html#gentrie.exceptions.InvalidGeneralizedKeyError" title="gentrie.exceptions.InvalidGeneralizedKeyError"><strong>InvalidGeneralizedKeyError</strong></a> – If key is not a valid <code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code>.</p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Id of the inserted key. If the key was already in the trie with the same value
@@ -390,10 +385,9 @@ The depth determines how many ‘layers’ deeper into the trie to look for pref
 </dd>
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><a class="reference internal" href="reference.html#gentrie.exceptions.InvalidGeneralizedKeyError" title="gentrie.exceptions.InvalidGeneralizedKeyError"><strong>InvalidGeneralizedKeyError</strong></a><strong> (</strong><strong>[</strong><strong>GTS001</strong><strong>]</strong><strong>)</strong> – If key arg is not a GeneralizedKey.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.13)"><strong>TypeError</strong></a><strong> (</strong><strong>[</strong><strong>GTS002</strong><strong>]</strong><strong>)</strong> – If depth arg is not an int.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.13)"><strong>ValueError</strong></a><strong> (</strong><strong>[</strong><strong>GTS003</strong><strong>]</strong><strong>)</strong> – If depth arg is less than -1.</p></li>
-<li><p><a class="reference internal" href="reference.html#gentrie.exceptions.InvalidGeneralizedKeyError" title="gentrie.exceptions.InvalidGeneralizedKeyError"><strong>InvalidGeneralizedKeyError</strong></a><strong> (</strong><strong>[</strong><strong>GTS004</strong><strong>]</strong><strong>)</strong> – If a token in the key arg does not conform to the <code class="xref py py-class docutils literal notranslate"><span class="pre">TrieKeyToken</span></code> protocol.</p></li>
+<li><p><a class="reference internal" href="reference.html#gentrie.exceptions.InvalidGeneralizedKeyError" title="gentrie.exceptions.InvalidGeneralizedKeyError"><strong>InvalidGeneralizedKeyError</strong></a> – If key arg is not a valid GeneralizedKey.</p></li>
+<li><p><a class="reference internal" href="gentrie.html#gentrie.exceptions.TrieTypeError" title="gentrie.exceptions.TrieTypeError"><strong>TrieTypeError</strong></a> – If depth arg is not an int.</p></li>
+<li><p><a class="reference internal" href="gentrie.html#gentrie.exceptions.TrieValueError" title="gentrie.exceptions.TrieValueError"><strong>TrieValueError</strong></a> – If depth arg is less than -1.</p></li>
 </ul>
 </dd>
 </dl>
@@ -441,7 +435,7 @@ exceptions will not be raised until the generator is iterated over.</p>
 <dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">TrieEntry</span></code> – The next matching <code class="xref py py-class docutils literal notranslate"><span class="pre">TrieEntry</span></code> instance.</p>
 </dd>
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="reference.html#gentrie.exceptions.InvalidGeneralizedKeyError" title="gentrie.exceptions.InvalidGeneralizedKeyError"><strong>InvalidGeneralizedKeyError</strong></a><strong> (</strong><strong>[</strong><strong>GTM001</strong><strong>]</strong><strong>)</strong> – If key is not a valid <code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code>
+<dd class="field-odd"><p><a class="reference internal" href="reference.html#gentrie.exceptions.InvalidGeneralizedKeyError" title="gentrie.exceptions.InvalidGeneralizedKeyError"><strong>InvalidGeneralizedKeyError</strong></a> – If key is not a valid <code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedKey</span></code>
     (is not a <code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code> of <code class="xref py py-class docutils literal notranslate"><span class="pre">TrieKeyToken</span></code> objects).</p>
 </dd>
 </dl>
