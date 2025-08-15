@@ -142,7 +142,7 @@ class TrieTraversalMixin:
         if self.runtime_validation and not is_generalizedkey(key):
             raise InvalidGeneralizedKeyError(
                 msg="key arg is not a valid GeneralizedKey",
-                tag=ErrorTag.TRIE_PREFIXES_INVALID_GENERALIZED_KEY
+                tag=ErrorTag.TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY
             )
 
         if not isinstance(depth, int):  # type: ignore[reportUnnecessaryIsInstance]
