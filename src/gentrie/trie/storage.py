@@ -6,7 +6,7 @@
 
 from typing import Any, cast, Optional
 
-from ..exceptions import DuplicateKeyError, InvalidGeneralizedKeyError
+from ..exceptions import DuplicateKeyError, InvalidGeneralizedKeyError, ErrorTag
 from ..nodes import Node
 from ..protocols import GeneralizedKey
 from ..types import TrieEntry, TrieId
@@ -43,9 +43,9 @@ class TrieStorageMixin:
             value (Optional[Any], default=None): Optional value to associate with the key.
 
         Raises:
-            InvalidGeneralizedKeyError ([GTU001]):
+            InvalidGeneralizedKeyError:
                 If key is not a valid :class:`GeneralizedKey`.
-            DuplicateKeyError ([GTU002]):
+            DuplicateKeyError:
                 If the key is already in the trie.
 
         Returns:
@@ -75,7 +75,7 @@ class TrieStorageMixin:
             value (Optional[Any], default=None): Optional value to associate with the key.
 
         Raises:
-            InvalidGeneralizedKeyError ([GTSE001]):
+            InvalidGeneralizedKeyError:
                 If key is not a valid :class:`GeneralizedKey`.
 
         Returns:
@@ -93,26 +93,25 @@ class TrieStorageMixin:
 
         Args:
             key (GeneralizedKey): Must be an object that can be iterated and that when iterated
-                returns elements conforming to the :class:`TrieKeyToken` protocol.
+            returns elements conforming to the :class:`TrieKeyToken` protocol.
             value (Optional[Any], default=None): Optional value to associate with the key.
             allow_value_update (bool):
-                Whether to allow overwriting the value with a different value if the key already exists.
+            Whether to allow overwriting the value if the key already exists.
         Raises:
-            InvalidGeneralizedKeyError ([GTSE001]):
-                If key is not a valid :class:`GeneralizedKey`.
-            DuplicateKeyError ([GTSE002]):
-                If the key is already in the trie but with a different value and allow_value_update
-                is False.
+            InvalidGeneralizedKeyError: If key is not a valid :class:`GeneralizedKey`.
+            DuplicateKeyError: If the key is already in the trie and `allow_value_update` is False.
 
         Returns:
-            :class:`TrieId`: Id of the inserted key. If the key was already in the trie with the same value
-            it returns the id for the already existing entry. If the key was not in the trie,
-            it returns the id of the new entry. If the key was already in the trie and allow_value_update
-            is False, it raises a DuplicateKeyError. If allow_value_update is True, it replaces the value
-            and returns the id of the existing entry.
+            :class:`TrieId`: Id of the key's entry. If the key was not in the trie,
+            it returns the id of the new entry. If the key was already in the trie and
+            `allow_value_update` is True, it updates the value and returns the existing id.
+            If the key was already in the trie and `allow_value_update` is False,
+            it raises a :class:`DuplicateKeyError`.
         """
         if self.runtime_validation and not is_generalizedkey(key):
-            raise InvalidGeneralizedKeyError("[GTSE001] key is not a valid `GeneralizedKey`")
+            raise InvalidGeneralizedKeyError(
+                msg="[GTSE001] key is not a valid `GeneralizedKey`",
+                tag=ErrorTag.STORE_ENTRY_INVALID_GENERALIZED_KEY)
 
         # Traverse the trie to find the insertion point for the key,
         # creating nodes as necessary.
@@ -134,8 +133,9 @@ class TrieStorageMixin:
 
             # The key is already in the trie but we are not allowing updating values - so raise an error
             raise DuplicateKeyError(
-                "[GTSE002] Attempted to store a key with a value that is already in the trie "
-                " - use `update()` to change the value of an existing key.")
+                msg=("[GTSE002] Attempted to store a key with a value that is already in the trie "
+                     " - use `update()` to change the value of an existing key."),
+                tag=ErrorTag.STORE_ENTRY_DUPLICATE_KEY)
 
         # Assign a new trie id for the node and set the value
         self._ident_counter += 1

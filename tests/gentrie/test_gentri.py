@@ -1,123 +1,16 @@
 """Tests for the gentrie module."""  # pylint: disable=too-many-lines
 
-from collections.abc import Callable, Iterable
-from textwrap import dedent
-import traceback
-from typing import Any, NamedTuple, Optional, Sequence
 import unittest
+from collections.abc import Iterable
+from textwrap import dedent
+from typing import Any
 
-from src.gentrie import DuplicateKeyError, GeneralizedTrie, TrieEntry, TrieId, TrieKeyToken, \
-    InvalidGeneralizedKeyError, is_generalizedkey
+from src.gentrie import (DuplicateKeyError, ErrorTag, GeneralizedTrie,
+                         InvalidGeneralizedKeyError, TrieEntry, TrieId,
+                         TrieKeyError, TrieKeyToken, TrieTypeError,
+                         is_generalizedkey)
 
-
-class NoExpectedValue:  # pylint: disable=too-few-public-methods
-    """This is used to distinguish between having an expected return value
-    of None and and not expecting a particular (or any) value."""
-
-
-class TestConfig(NamedTuple):
-    """A generic unit test specification class.
-
-    It allow tests to be specified declaratively while providing a large amount
-    of flexibility.
-
-    Args:
-        name (str):
-            Identifying name for the test.
-        action (Callable[..., Any]):
-            A reference to a callable function or method to be invoked for the test.
-        args (Sequence[Any], default = []):
-            Sequence of positional arguments to be passed to the `action` function or method.
-        kwargs (dict[str, Any], default = {}):
-            Dictionary containing keyword arguments to be passed to the `action` function or method.
-        expected (Any, default=NoExpectedValue() ):
-            Expected value (if any) that is expected to be returned by the `action` function or method.
-            If there is no expected value, the special class NoExpectedValue is used to flag it.
-            This is used so that the specific return value of None can be distinguished from no
-            particular value or any value at all is expected to be returned from the function or method.
-        obj: Optional[Any] = None
-        validate_obj: Optional[Callable] = None  # type: ignore[reportUnknownMemberType]
-        validate_result: Optional[Callable] = None  # type: ignore[reportUnknownMemberType]
-        exception: Optional[type[Exception]] = None
-        exception_tag: Optional[str] = None
-        display_on_fail: Optional[Callable] = None  # type: ignore[reportUnknownMemberType]
-    """
-    name: str
-    action: Callable[..., Any]
-    args: list[Any] = []
-    kwargs: dict[str, Any] = {}
-    expected: Any = NoExpectedValue()
-    obj: Optional[Any] = None
-    validate_obj: Optional[Callable] = None  # type: ignore[reportUnknownMemberType]
-    validate_result: Optional[Callable] = None  # type: ignore[reportUnknownMemberType]
-    exception: Optional[type[Exception]] = None
-    exception_tag: Optional[str] = None
-    display_on_fail: Optional[Callable] = None  # type: ignore[reportUnknownMemberType]
-
-
-def run_tests_list(test_case: unittest.TestCase, tests_list: Sequence[TestConfig]) -> None:
-    """Run a list of tests based on the provided TestConfig entries.
-
-    This function iterates over the list of TestConfig entries and runs each test using
-    the `run_test` function. It allows for a clean and organized way to execute multiple tests.
-
-    Args:
-        test_case (unittest.TestCase): The test case instance that will run the tests.
-        tests_list (list[TestConfig]): A list of TestConfig entries, each representing a test to be run.
-"""
-    for test in tests_list:
-        run_test(test_case, test)
-
-
-def run_test(test_case: unittest.TestCase, entry: TestConfig) -> None:
-    """Run a single test based on the provided TestConfig entry.
-    This function executes the action specified in the entry, checks the result against
-    the expected value, and reports any errors.
-
-    Args:
-        test_case (unittest.TestCase): The test case instance that will run the test.
-        entry (TestConfig): The test configuration entry containing all necessary information for the test.
-    """
-    with test_case.subTest(msg=entry.name):
-        test_description: str = f"{entry.name}"
-        errors: list[str] = []
-        try:
-            found: Any = entry.action(*entry.args, **entry.kwargs)
-            if entry.exception:
-                errors.append("returned result instead of raising exception")
-
-            else:
-                if entry.validate_result and not entry.validate_result(found):  # type: ignore[reportUnknownMemberType]
-                    errors.append(f"failed result validation: found={found}")
-                if entry.validate_obj and not entry.validate_obj(entry.obj):  # type: ignore[reportUnknownMemberType]
-                    errors.append(f"failed object validation: obj={entry.obj}")
-                if (
-                    not isinstance(entry.expected, NoExpectedValue)
-                    and entry.expected != found
-                ):
-                    errors.append(f"expected={entry.expected}, found={found}")
-                    if isinstance(entry.display_on_fail, Callable):  # type: ignore[reportUnknownMemberType]
-                        errors.append(entry.display_on_fail())  # type: ignore[reportUnknownMemberType]
-        except Exception as err:  # pylint: disable=broad-exception-caught
-            if entry.exception is None:
-                errors.append(f"Did not expect exception. Caught exception {repr(err)}")
-                errors.append("stacktrace = ")
-                errors.append("\n".join(traceback.format_tb(tb=err.__traceback__)))
-
-            if not (entry.exception and isinstance(err, entry.exception)):  # type: ignore[reportTypeIssue]
-                errors.append(
-                    f"Unexpected exception type: expected={entry.exception}, "
-                    f"found = {repr(err)}"
-                )
-
-            elif entry.exception_tag:
-                if str(err).find(entry.exception_tag) == -1:
-                    errors.append(
-                        f"correct exception type, but tag "
-                        f"{entry.exception_tag} not found: {repr(err)}"
-                    )
-        if errors:
-            test_case.fail(msg=test_description + ": " + "\n".join(errors))  # type: ignore[reportUnknownMemberType]
+from ..testspec import TestSpec, run_tests_list
 
 
 class MockDefaultTrieKeyToken:
@@ -248,14 +141,14 @@ class TestGeneralizedTrie(unittest.TestCase):
 
         This test checks that the GeneralizedTrie can be instantiated without any arguments
         and that it raises a TypeError when an invalid filter_id is provided."""
-        tests: list[TestConfig] = [
-            TestConfig(
+        tests: list[TestSpec] = [
+            TestSpec(
                 name="[TCT001] create GeneralizedTrie()",
                 action=GeneralizedTrie,
                 validate_result=lambda found: isinstance(found,  # type: ignore[reportUnknownMemberType]
                                                          GeneralizedTrie),
             ),
-            TestConfig(
+            TestSpec(
                 name="[TCT002] create GeneralizedTrie(filter_id=1)",
                 action=GeneralizedTrie,
                 kwargs={"filter_id": 1},
@@ -290,9 +183,9 @@ class TestGeneralizedTrie(unittest.TestCase):
         It also includes tests for error handling when invalid keys are added."""
         # pylint: disable=protected-access, no-member
         trie = GeneralizedTrie()
-        tests: list[TestConfig] = [
+        tests: list[TestSpec] = [
             # Initialize from a list of strings and validate we get the expected id
-            TestConfig(
+            TestSpec(
                 name="[TA001] trie.add(['tree', 'value', 'ape'])",
                 action=trie.add,
                 args=[["tree", "value", "ape"]],
@@ -300,7 +193,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 expected=TrieId(1),
             ),
             # Validate the dictionary representation of the trie is correct after initialization
-            TestConfig(
+            TestSpec(
                 name="[TA002] _as_dict()",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
@@ -336,14 +229,14 @@ class TestGeneralizedTrie(unittest.TestCase):
             ),
 
             # Add another entry ['tree', 'value'] and validate we get the expected id for it
-            TestConfig(
+            TestSpec(
                 name="[TA003] trie.add(['tree', 'value']",
                 action=trie.add,
                 args=[["tree", "value"]],
                 expected=TrieId(2),
             ),
             # Validate the _as_dict representation of the trie is correct
-            TestConfig(
+            TestSpec(
                 name="[TA004] _as_dict()",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
@@ -381,14 +274,14 @@ class TestGeneralizedTrie(unittest.TestCase):
                 }
             ),
             # Add a string entry 'abcdef' and validate we get the expected id for it
-            TestConfig(
+            TestSpec(
                 name="[TA005] trie.add('abcdef')",
                 action=trie.add,
                 args=["abcdef"],
                 expected=TrieId(3),
             ),
             # Add another entry [1, 3, 4, 5] and validate we get the expected id for it
-            TestConfig(
+            TestSpec(
                 name="[TA006] trie.add([1, 3, 4, 5])",
                 action=trie.add,
                 args=[[1, 3, 4, 5]],
@@ -396,7 +289,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 expected=TrieId(4),
             ),
             # Add a frozenset entry and validate we get the expected id for it
-            TestConfig(
+            TestSpec(
                 name="[TA007] trie.add(frozenset([1]), 3, 4, 5])",
                 action=trie.add,
                 args=[[frozenset([1]), 3, 4, 5]],
@@ -405,66 +298,68 @@ class TestGeneralizedTrie(unittest.TestCase):
             ),
             # Add another frozenset entry and validate we get a different id for it
             # than for the previously added frozenset
-            TestConfig(
+            TestSpec(
                 name="[TA008] trie.add(frozenset([1]), 3, 4, 5])",
                 action=trie.add,
                 args=[[frozenset([1]), 3, 4, 6]],
                 expected=TrieId(6),
             ),
             # Attempt to add an integer as a key and validate we get the expected exception
-            TestConfig(
+            TestSpec(
                 name="[TA009] trie.add(1)",
                 action=trie.add,
                 args=[1],
                 exception=InvalidGeneralizedKeyError,
-                exception_tag="[GTSE001]",
+                exception_tag=ErrorTag.STORE_ENTRY_INVALID_GENERALIZED_KEY,
             ),
             # Attempt to add an empty list as a key and validate we get the expected exception
-            TestConfig(
+            TestSpec(
                 name="[TA010] trie.add([])",
                 action=trie.add,
                 args=[[]],
                 exception=InvalidGeneralizedKeyError,
-                exception_tag="[GTSE001]",
+                exception_tag=ErrorTag.STORE_ENTRY_INVALID_GENERALIZED_KEY,
             ),
             # Attempt to add a set as a key element and validate we get the expected exception
-            TestConfig(
+            TestSpec(
                 name="[TA011] trie.add([set([1]), 3, 4, 5])",
                 action=trie.add,
                 args=[[set([1]), 3, 4, 5]],
                 exception=InvalidGeneralizedKeyError,
-                exception_tag="[GTSE001]",
+                exception_tag=ErrorTag.STORE_ENTRY_INVALID_GENERALIZED_KEY,
             ),
             # Add a key that is a list of integers and validate we get the expected id for it
-            TestConfig(
+            TestSpec(
                 name="[TA012] trie.add(key=[1, 3, 4, 7])",
                 action=trie.add,
                 kwargs={"key": [1, 3, 4, 7]},
                 expected=TrieId(7),
             ),
             # Attempt to pass add the wrong number of arguments and validate we get the expected exception
-            TestConfig(name="[TA013] trie.add()", action=trie.add, exception=TypeError),
-            TestConfig(
+            TestSpec(name="[TA013] trie.add()",
+                     action=trie.add,
+                     exception=TypeError),
+            TestSpec(
                 name="[TA014] trie.add(['a'], ['b'], ['c'])",
                 action=trie.add,
                 args=[["a"], ["b"], ["c"]],
                 exception=TypeError,
             ),
             # Validate the length of the trie after all additions
-            TestConfig(name="[TA015] len(trie)", action=len, args=[trie], expected=7),
+            TestSpec(name="[TA015] len(trie)", action=len, args=[trie], expected=7),
             # Add duplicate entry ['tree', 'value', 'ape'] and validate we get a DuplicateKeyError
-            TestConfig(
+            TestSpec(
                 name="[TA016] trie.add(['tree', 'value', 'ape'])",
                 action=trie.add,
                 args=[["tree", "value", "ape"]],
                 kwargs={},
                 exception=DuplicateKeyError,
-                exception_tag="[GTSE002]",
+                exception_tag=ErrorTag.STORE_ENTRY_DUPLICATE_KEY,
             ),
             # Validate the length of the trie trying to add duplicate ['tree', 'value', 'ape'] is unchanged
-            TestConfig(name="[TA017] len(trie)", action=len, args=[trie], expected=7),
+            TestSpec(name="[TA017] len(trie)", action=len, args=[trie], expected=7),
             # Add a trie entry with a value and validate we get the expected id for it
-            TestConfig(
+            TestSpec(
                 name="[TA018] trie.add(['tree', 'value', 'cheetah'], 'feline')",
                 action=trie.add,
                 args=[["tree", "value", "cheetah"], "feline"],
@@ -482,14 +377,14 @@ class TestGeneralizedTrie(unittest.TestCase):
         # Test cases for setting values on trie entries
         tests = [
             # Initialize the trie with a key with a value and validate we get the expected id
-            TestConfig(
+            TestSpec(
                 name="[TA019] trie.add(['tree', 'value', 'cheetah'], 'feline')",
                 action=trie.add,
                 args=[["tree", "value", "cheetah"], "feline"],
                 expected=TrieId(1),
             ),
             # validate that entry 1 (with the key ['tree', 'value', 'cheetah']) has the value of 'feline'
-            TestConfig(
+            TestSpec(
                 name="[TA020] trie[1].value == 'feline' (_as_dict() check)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
@@ -528,19 +423,19 @@ class TestGeneralizedTrie(unittest.TestCase):
             # Add the same key with the same value and validate we get the same id as before
             # (this is to test that the trie does not create a new entry for the same key with the same value
             # and that it does not throw an error)
-            TestConfig(
+            TestSpec(
                 name="[TA021] trie.add(['tree', 'value', 'cheetah'], 'feline')",
                 action=trie.add,
                 args=[["tree", "value", "cheetah"], "feline"],
                 exception=DuplicateKeyError,
-                exception_tag="[GTSE002]",
+                exception_tag=ErrorTag.STORE_ENTRY_DUPLICATE_KEY,
                 # This is expected to raise a DuplicateKeyError, but we are testing that the trie
                 # does not change its state after adding the same key with the same value.
                 # So we do not expect the trie to change, and we will validate that in the
                 # next test case.
             ),
             # validate that the trie is unchanged after exception for trying to add the same key with the same value
-            TestConfig(
+            TestSpec(
                 name="[TA022] trie[1].value == 'feline' (_as_dict() check)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
@@ -577,18 +472,18 @@ class TestGeneralizedTrie(unittest.TestCase):
                 },
             ),
             # Add the same key with a DIFFERENT value (default of None) and validate we get a DuplicateKeyError
-            TestConfig(
+            TestSpec(
                 name="[TA022] trie.add(['tree', 'value', 'cheetah'])",
                 action=trie.add,
                 args=[["tree", "value", "cheetah"]],
                 exception=DuplicateKeyError,
-                exception_tag="[GTSE002]",
+                exception_tag=ErrorTag.STORE_ENTRY_DUPLICATE_KEY,
             ),
             # Validate that the trie is unchanged after attempting to add the same key with a different value of None
             # (this is to test that the trie has not changed the trie despite throwing an error)
             # Validate that the trie is unchanged after attempting to add the same key with a different value of None
             # (this is to test that the trie has not changed the trie despite throwing an error)
-            TestConfig(
+            TestSpec(
                 name="[TA023] trie[1].value == 'feline' (_as_dict() check, no change after DuplicateKeyError)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
@@ -625,12 +520,12 @@ class TestGeneralizedTrie(unittest.TestCase):
                 },
             ),
             # Add the same key with a DIFFERENT value (explictly specified) and validate we get a DuplicateKeyError
-            TestConfig(
+            TestSpec(
                 name="[TA024] trie.add(['tree', 'value', 'cheetah'], 'canide)",
                 action=trie.add,
                 args=[["tree", "value", "cheetah"], "canide"],
                 exception=DuplicateKeyError,
-                exception_tag="[GTSE002]",
+                exception_tag=ErrorTag.STORE_ENTRY_DUPLICATE_KEY,
             ),
         ]
         run_tests_list(self, tests)
@@ -643,9 +538,9 @@ class TestGeneralizedTrie(unittest.TestCase):
         It also includes tests for error handling when invalid keys are added."""
         # pylint: disable=protected-access, no-member
         trie = GeneralizedTrie()
-        tests: list[TestConfig] = [
+        tests: list[TestSpec] = [
             # Initialize from a list of strings and validate we get the expected id
-            TestConfig(
+            TestSpec(
                 name="[TU001] trie.update(['tree', 'value', 'ape'])",
                 action=trie.update,
                 args=[["tree", "value", "ape"]],
@@ -653,7 +548,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 expected=TrieId(1),
             ),
             # Validate the dictionary representation of the trie is correct after initialization
-            TestConfig(
+            TestSpec(
                 name="[TU002] _as_dict()",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
@@ -689,14 +584,14 @@ class TestGeneralizedTrie(unittest.TestCase):
             ),
 
             # Add another entry ['tree', 'value'] and validate we get the expected id for it
-            TestConfig(
+            TestSpec(
                 name="[TU003] trie.update(['tree', 'value']",
                 action=trie.update,
                 args=[["tree", "value"]],
                 expected=TrieId(2),
             ),
             # Validate the _as_dict representation of the trie is correct
-            TestConfig(
+            TestSpec(
                 name="[TU004] _as_dict()",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
@@ -734,14 +629,14 @@ class TestGeneralizedTrie(unittest.TestCase):
                 }
             ),
             # Add a string entry 'abcdef' and validate we get the expected id for it
-            TestConfig(
+            TestSpec(
                 name="[TU005] trie.update('abcdef')",
                 action=trie.update,
                 args=["abcdef"],
                 expected=TrieId(3),
             ),
             # Add another entry [1, 3, 4, 5] and validate we get the expected id for it
-            TestConfig(
+            TestSpec(
                 name="[TU006] trie.update([1, 3, 4, 5])",
                 action=trie.update,
                 args=[[1, 3, 4, 5]],
@@ -749,7 +644,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 expected=TrieId(4),
             ),
             # Add a frozenset entry and validate we get the expected id for it
-            TestConfig(
+            TestSpec(
                 name="[TU007] trie.update(frozenset([1]), 3, 4, 5])",
                 action=trie.update,
                 args=[[frozenset([1]), 3, 4, 5]],
@@ -758,55 +653,55 @@ class TestGeneralizedTrie(unittest.TestCase):
             ),
             # Add another frozenset entry and validate we get a different id for it
             # than for the previously added frozenset
-            TestConfig(
+            TestSpec(
                 name="[TU008] trie.update(frozenset([1]), 3, 4, 5])",
                 action=trie.update,
                 args=[[frozenset([1]), 3, 4, 6]],
                 expected=TrieId(6),
             ),
             # Attempt to add an integer as a key and validate we get the expected exception
-            TestConfig(
+            TestSpec(
                 name="[TU009] trie.update(1)",
                 action=trie.update,
                 args=[1],
                 exception=InvalidGeneralizedKeyError,
-                exception_tag="[GTSE001]",
+                exception_tag=ErrorTag.STORE_ENTRY_INVALID_GENERALIZED_KEY,
             ),
             # Attempt to add an empty list as a key and validate we get the expected exception
-            TestConfig(
+            TestSpec(
                 name="[TU010] trie.update([])",
                 action=trie.update,
                 args=[[]],
                 exception=InvalidGeneralizedKeyError,
-                exception_tag="[GTSE001]",
+                exception_tag=ErrorTag.STORE_ENTRY_INVALID_GENERALIZED_KEY,
             ),
             # Attempt to add a set as a key element and validate we get the expected exception
-            TestConfig(
+            TestSpec(
                 name="[TU011] trie.update([set([1]), 3, 4, 5])",
                 action=trie.update,
                 args=[[set([1]), 3, 4, 5]],
                 exception=InvalidGeneralizedKeyError,
-                exception_tag="[GTSE001]",
+                exception_tag=ErrorTag.STORE_ENTRY_INVALID_GENERALIZED_KEY,
             ),
             # Add a key that is a list of integers and validate we get the expected id for it
-            TestConfig(
+            TestSpec(
                 name="[TU012] trie.update(key=[1, 3, 4, 7])",
                 action=trie.update,
                 kwargs={"key": [1, 3, 4, 7]},
                 expected=TrieId(7),
             ),
             # Attempt to pass add the wrong number of arguments and validate we get the expected exception
-            TestConfig(name="[TU013] trie.update()", action=trie.update, exception=TypeError),
-            TestConfig(
+            TestSpec(name="[TU013] trie.update()", action=trie.update, exception=TypeError),
+            TestSpec(
                 name="[TU014] trie.update(['a'], ['b'], ['c'])",
                 action=trie.update,
                 args=[["a"], ["b"], ["c"]],
                 exception=TypeError,
             ),
             # Validate the length of the trie after all additions
-            TestConfig(name="[TU015] len(trie)", action=len, args=[trie], expected=7),
+            TestSpec(name="[TU015] len(trie)", action=len, args=[trie], expected=7),
             # Add duplicate entry ['tree', 'value', 'ape'] and validate we get the original id for it
-            TestConfig(
+            TestSpec(
                 name="[TU016] trie.update(['tree', 'value', 'ape'])",
                 action=trie.update,
                 args=[["tree", "value", "ape"]],
@@ -814,9 +709,9 @@ class TestGeneralizedTrie(unittest.TestCase):
                 expected=TrieId(1),
             ),
             # Validate the length of the trie after adding duplicate ['tree', 'value', 'ape'] is unchanged
-            TestConfig(name="[TU017] len(trie)", action=len, args=[trie], expected=7),
+            TestSpec(name="[TU017] len(trie)", action=len, args=[trie], expected=7),
             # Add a trie entry with a value and validate we get the expected id for it
-            TestConfig(
+            TestSpec(
                 name="[TU018] trie.update(['tree', 'value', 'cheetah'], 'feline')",
                 action=trie.update,
                 args=[["tree", "value", "cheetah"], "feline"],
@@ -834,14 +729,14 @@ class TestGeneralizedTrie(unittest.TestCase):
         # Test cases for setting values on trie entries
         tests = [
             # Initialize the trie with a key with a value and validate we get the expected id
-            TestConfig(
+            TestSpec(
                 name="[TU019] trie.update(['tree', 'value', 'cheetah'], 'feline')",
                 action=trie.update,
                 args=[["tree", "value", "cheetah"], "feline"],
                 expected=TrieId(1),
             ),
             # validate that entry 1 (with the key ['tree', 'value', 'cheetah']) has the value of 'feline'
-            TestConfig(
+            TestSpec(
                 name="[TU020] trie[1].value == 'feline' (_as_dict() check)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
@@ -880,14 +775,14 @@ class TestGeneralizedTrie(unittest.TestCase):
             # Add the same key with the same value and validate we get the same id as before
             # (this is to test that the trie does not create a new entry for the same key with the same value
             # and that it does not throw an error)
-            TestConfig(
+            TestSpec(
                 name="[TU021] trie.update(['tree', 'value', 'cheetah'], 'feline')",
                 action=trie.update,
                 args=[["tree", "value", "cheetah"], "feline"],
                 expected=TrieId(1),
             ),
             # validate that the trie is unchanged after adding the same key with the same value
-            TestConfig(
+            TestSpec(
                 name="[TU022] trie[1].value == 'feline' (_as_dict() check)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
@@ -926,14 +821,14 @@ class TestGeneralizedTrie(unittest.TestCase):
             # Add the same key with a DIFFERENT value (default of None) and validate it updates the value
             # and returns the id of the existing entry.
             # (this is to test that the trie updates the value of the existing entry).
-            TestConfig(
+            TestSpec(
                 name="[TU023] trie.update(['tree', 'value', 'cheetah'])",
                 action=trie.update,
                 args=[["tree", "value", "cheetah"]],
                 expected=TrieId(1),
             ),
             # Validate that the trie was correctly updated after adding the same key with a different value of None
-            TestConfig(
+            TestSpec(
                 name="[TU024] trie[1].value == None (_as_dict() check)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
@@ -970,14 +865,14 @@ class TestGeneralizedTrie(unittest.TestCase):
                 },
             ),
             # Add the same key with a DIFFERENT value (explictly specified) and validate we get the same id as before
-            TestConfig(
+            TestSpec(
                 name="[TU025] trie.update(['tree', 'value', 'cheetah'], 'canide)",
                 action=trie.update,
                 args=[["tree", "value", "cheetah"], "canide"],
                 expected=TrieId(1),
             ),
             # Validate that the trie was correctly updated after adding the same key with a different value of 'canide'
-            TestConfig(
+            TestSpec(
                 name="[TU026] trie[1].value == 'canide' (_as_dict() check)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
@@ -1037,31 +932,31 @@ class TestGeneralizedTrie(unittest.TestCase):
         with self.subTest(msg='[TAUDC004] c <=> c'):
             self.assertEqual(c, c, msg='c <=> c')
 
-        tests: list[TestConfig] = [
-            TestConfig(
+        tests: list[TestSpec] = [
+            TestSpec(
                 name="[TAUDC005] trie.add(['red', MockDefaultTrieKeyToken(a=(1, 2, 3), b='hello')])",
                 action=trie.add,
                 args=[a],
                 expected=TrieId(1),
             ),
-            TestConfig(
+            TestSpec(
                 name="[TAUDC006] trie.add(['red', MockDefaultTrieKeyToken(a=[1, 2, 3], b='hello')])",
                 action=trie.add,
                 args=[b],
                 expected=TrieId(2),
             ),
-            TestConfig(
+            TestSpec(
                 name="[TAUDC007] trie.add(['red', MockContentAwareTrieKeyToken(a=(1, 2, 3), b='hello')])",
                 action=trie.add,
                 args=[c],
                 expected=TrieId(3),
             ),
-            TestConfig(
+            TestSpec(
                 name="[TAUDC008] trie.add(['red', MockContentAwareTrieKeyToken(a=(1, 2, 3), b='hello')])",
                 action=trie.add,
                 args=[d],
                 exception=DuplicateKeyError,
-                exception_tag="[GTSE002]",
+                exception_tag=ErrorTag.STORE_ENTRY_DUPLICATE_KEY,
             ),
         ]
         run_tests_list(self, tests)
@@ -1139,26 +1034,30 @@ class TestGeneralizedTrie(unittest.TestCase):
         # The original key (["a", "b"]) should still be present
         self.assertTrue(["a", "b"] in trie)
 
-    def test_invalid_argument_types(self):
-        """Test that invalid argument types raise TypeError."""
+    def test_invalid_argument_types_for_prefixes(self):
+        """Test that invalid argument types raise correct exceptions."""
         trie = GeneralizedTrie()
         with self.assertRaises(
               InvalidGeneralizedKeyError,
-              msg='[TIAT001] Failed to raise InvalidGeneralizedKeyError for trie.prefixes(12345)'):
+              msg='[TIATFP001] Failed to raise InvalidGeneralizedKeyError for trie.prefixes(12345)'):
             # Attempt to get prefixes for an invalid key type. Because a Generator is
             # returned, it will not raise the error until the generator is consumed.
             _ = set(trie.prefixes(12345))  # type: ignore[reportGeneralTypeIssues]  # int is not a valid key
         with self.assertRaises(
               InvalidGeneralizedKeyError,
-              msg='[TIAT002] Failed to raise InvalidGeneralizedKeyError for trie.prefixed_by(12345)'):
+              msg='[TIATFP002] Failed to raise InvalidGeneralizedKeyError for trie.prefixes(3.14)'):
+            _ = set(trie.prefixes(3.14))   # type: ignore[reportGeneralTypeIssues]  # float is not a valid key
+
+    def test_invalid_argument_types_for_prefixed_by(self):
+        """Test that invalid argument types raise TypeError."""
+        trie = GeneralizedTrie()
+        with self.assertRaises(
+              InvalidGeneralizedKeyError,
+              msg='[TIATFPB001] Failed to raise InvalidGeneralizedKeyError for trie.prefixed_by(12345)'):
             _ = set(trie.prefixed_by(12345))  # type: ignore[reportGeneralTypeIssues]  # int is not a valid key
         with self.assertRaises(
               InvalidGeneralizedKeyError,
-              msg='[TIAT003] Failed to raise InvalidGeneralizedKeyError for trie.prefixes(3.14)'):
-            _ = set(trie.prefixes(3.14))   # type: ignore[reportGeneralTypeIssues]  # float is not a valid key
-        with self.assertRaises(
-              InvalidGeneralizedKeyError,
-              msg='[TIAT004] Failed to raise InvalidGeneralizedKeyError for trie.prefixed_by(3.14)'):
+              msg='[TIATFPB002] Failed to raise InvalidGeneralizedKeyError for trie.prefixed_by(3.14)'):
             _ = set(trie.prefixed_by(3.14))   # type: ignore[reportGeneralTypeIssues]  # float is not a valid key
 
     def test_large_trie_performance(self):
@@ -1235,108 +1134,108 @@ class TestGeneralizedTrie(unittest.TestCase):
         This test is designed to ensure that the remove method behaves correctly
         and maintains the integrity of the trie structure."""
         trie: GeneralizedTrie = GeneralizedTrie()
-        tests: list[TestConfig] = [
-            TestConfig(
+        tests: list[TestSpec] = [
+            TestSpec(
                 name="[TR001] trie.add('a')", action=trie.add, args=["a"], expected=TrieId(1)
             ),
-            TestConfig(
+            TestSpec(
                 name="[TR002] trie.add('ab')", action=trie.add, args=["ab"], expected=TrieId(2)
             ),
-            TestConfig(
+            TestSpec(
                 name="[TR003] trie.add('abc')", action=trie.add, args=["abc"], expected=TrieId(3),
             ),
-            TestConfig(
+            TestSpec(
                 name="[TR004] trie.add('abe')",
                 action=trie.add,
                 args=["abe"],
                 expected=TrieId(4),
             ),
-            TestConfig(
+            TestSpec(
                 name="[TR005] trie.add('abef')",
                 action=trie.add,
                 args=["abef"],
                 expected=TrieId(5),
             ),
-            TestConfig(
+            TestSpec(
                 name="[TR006] trie.add('abcd')",
                 action=trie.add,
                 args=["abcd"],
                 expected=TrieId(6),
             ),
-            TestConfig(
+            TestSpec(
                 name="[TR007] trie.add('abcde')",
                 action=trie.add,
                 args=["abcde"],
                 expected=TrieId(7),
             ),
-            TestConfig(
+            TestSpec(
                 name="[TR008] trie.add('abcdf')",
                 action=trie.add,
                 args=["abcdef"],
                 expected=TrieId(8),
             ),
-            TestConfig(
+            TestSpec(
                 name="[TR009] trie.add('abcdefg')",
                 action=trie.add,
                 args=["abcdefg"],
                 expected=TrieId(9),
             ),
-            TestConfig(
+            TestSpec(
                 name="[TR010] trie.remove(TrieId(9))",
                 action=trie.remove,
                 args=[TrieId(9)],
                 expected=None,
             ),
-            TestConfig(name="[TR011] len(trie)", action=len, args=[trie], expected=8),
-            TestConfig(
-                name="[TR012] trie.remove(TrieId(9))",
+            TestSpec(name="[TR011] len(trie)", action=len, args=[trie], expected=8),
+            TestSpec(
+                name="[TR012] trie.remove(TrieId(9)) (TrieKeyError, REMOVAL_KEY_NOT_FOUND)",
                 action=trie.remove,
                 args=[TrieId(9)],
-                exception=KeyError,
-                exception_tag="[GTR002]",
+                exception=TrieKeyError,
+                exception_tag=ErrorTag.REMOVAL_KEY_NOT_FOUND,
             ),
-            TestConfig(name="[TR013] len(trie)", action=len, args=[trie], expected=8),
-            TestConfig(
+            TestSpec(name="[TR013] len(trie)", action=len, args=[trie], expected=8),
+            TestSpec(
                 name="[TR014] trie.remove(TrieId(1))",
                 action=trie.remove,
                 args=[TrieId(1)],
                 expected=None,
             ),
-            TestConfig(name="[TR015] len(trie)", action=len, args=[trie], expected=7),
-            TestConfig(
+            TestSpec(name="[TR015] len(trie)", action=len, args=[trie], expected=7),
+            TestSpec(
                 name="[TR016] trie.remove(TrieId(2))",
                 action=trie.remove,
                 args=[TrieId(2)],
                 expected=None,
             ),
-            TestConfig(name="[TR017] len(trie)", action=len, args=[trie], expected=6),
-            TestConfig(
-                name="[TR018] trie.remove('defghi')",
+            TestSpec(name="[TR017] len(trie)", action=len, args=[trie], expected=6),
+            TestSpec(
+                name="[TR018] trie.remove('defghi') (TrieKeyError, REMOVAL_KEY_NOT_FOUND)",
                 action=trie.remove,
                 args=["defghi"],
-                exception=KeyError,
-                exception_tag="[GTR002]",
+                exception=TrieKeyError,
+                exception_tag=ErrorTag.REMOVAL_KEY_NOT_FOUND,
             ),
-            TestConfig(
-                name="[TR019] trie.remove(TrieId(0))",
+            TestSpec(
+                name="[TR019] trie.remove(TrieId(0)) (TrieKeyError, REMOVAL_KEY_NOT_FOUND)",
                 action=trie.remove,
                 args=[TrieId(0)],
-                exception=KeyError,
-                exception_tag="[GTR002]",
+                exception=TrieKeyError,
+                exception_tag=ErrorTag.REMOVAL_KEY_NOT_FOUND,
             ),
-            TestConfig(
+            TestSpec(
                 name="[TR020] trie.add('qrstuv')",
                 action=trie.add,
                 args=['qrstuv'],
                 expected=TrieId(10),
             ),
-            TestConfig(
+            TestSpec(
                 name="[TR021] trie.remove(TrieId(10))",
                 action=trie.remove,
                 args=[TrieId(10)],
                 expected=None,
             ),
-            TestConfig(
+            TestSpec(
                 name="[TR022] len(trie)",
                 action=len,
                 args=[trie],
@@ -1430,39 +1329,96 @@ class TestGeneralizedTrie(unittest.TestCase):
         }""")
         self.assertEqual(found, expected, msg='[TSTR003] str(trie))')
 
+    def test_getitem(self) -> None:
+        """Test the __getitem__ dunder method of GeneralizedTrie.
+
+        This test checks whether the trie correctly retrieves values for
+        existing keys and raises the appropriate errors for non-existing
+        keys or invalid key types."""
+        trie: GeneralizedTrie = GeneralizedTrie()
+        tests: list[TestSpec] = [
+            TestSpec(
+                name="[TGI001] trie.__getitem__(TrieId(1)) (Empty Trie, TrieKeyError, GETITEM_ID_NOT_FOUND)",
+                action=trie.__getitem__,
+                args=[TrieId(1)],
+                exception=TrieKeyError,
+                exception_tag=ErrorTag.GETITEM_ID_NOT_FOUND
+            ),
+            TestSpec(
+                name="[TGI002] trie.add(key='a', value='value')",
+                action=trie.add,
+                kwargs={"key": "a", "value": "value"},
+                expected=TrieId(1)
+            ),
+            TestSpec(
+                name="[TGI003] trie.__getitem__('a') ('a' -> 'value' after add)",
+                action=trie.__getitem__,
+                args=['a'],
+                expected=TrieEntry(ident=TrieId(1), key='a', value='value')
+            ),
+            TestSpec(
+                name="[TGI004] trie.__getitem__('abc') (Non-existent key, TrieKeyError, GETITEM_KEY_NOT_FOUND)",
+                action=trie.__getitem__,
+                args=['abc'],
+                exception=TrieKeyError,
+                exception_tag=ErrorTag.GETITEM_KEY_NOT_FOUND
+            ),
+            TestSpec(
+                name="[TGI005] trie.__getitem__(set('a')) (TrieTypeError, GETITEM_INVALID_KEY_TYPE)",
+                action=trie.__getitem__,
+                args=[set('abc')],
+                exception=TrieTypeError,
+                exception_tag=ErrorTag.GETITEM_INVALID_KEY_TYPE
+            ),
+            TestSpec(
+                name="[TGI006] trie.add(key='abc', value='another value')",
+                action=trie.add,
+                kwargs={"key": "abc", "value": "another value"},
+                expected=TrieId(2)
+            ),
+            TestSpec(
+                name="[TGI007] trie.__getitem__('ab') (Non-existent key, TrieKeyError, GETITEM_NOT_TERMINAL)",
+                action=trie.__getitem__,
+                args=['ab'],
+                exception=TrieKeyError,
+                exception_tag=ErrorTag.GETITEM_NOT_TERMINAL
+            ),
+        ]
+        run_tests_list(self, tests)
+
     def test_contains(self) -> None:
-        """Test the __contains__ method of GeneralizedTrie.
+        """Test the __contains__ dundermethod of GeneralizedTrie.
 
         This test checks whether the trie correctly identifies the presence
         or absence of various keys. It includes tests for both existing and
         non-existing keys, as well as checks for keys that have been added
         and then removed.
 
-        The test verifies that the __contains__ method returns the expected
+        The test verifies that the __contains__ dunder method returns the expected
         boolean values for each key, ensuring that the trie behaves correctly
         when checking for membership."""
         trie: GeneralizedTrie = GeneralizedTrie()
-        tests: list[TestConfig] = [
-            TestConfig(
+        tests: list[TestSpec] = [
+            TestSpec(
                 name="[TC001] trie.__contains__('a') (false)",
                 action=trie.__contains__,
                 args=['a'],
                 expected=False
             ),
-            TestConfig(
+            TestSpec(
                 name="[TC002] trie.add('a')", action=trie.add, args=["a"], expected=TrieId(1)
             ),
-            TestConfig(
+            TestSpec(
                 name="[TC003] trie.__contains__('a') (true)",
                 action=trie.__contains__,
                 args=['a'],
                 expected=True
             ),
-            TestConfig(
+            TestSpec(
                 name="[TC004] trie.remove(TrieId(1))", action=trie.remove, args=[TrieId(1)], expected=None
             ),
-            TestConfig(
-                name="[TC006] trie.__contains__('a') (false after removal)",
+            TestSpec(
+                name="[TC005] trie.__contains__('a') (false after removal)",
                 action=trie.__contains__,
                 args=['a'],
                 expected=False
@@ -1470,14 +1426,14 @@ class TestGeneralizedTrie(unittest.TestCase):
         ]
         run_tests_list(self, tests)
 
-        with self.subTest(msg="[TC007] [1] in trie"):
+        with self.subTest(msg="[TC006] [1] in trie"):
             self.assertFalse([1] in trie)
 
-        with self.subTest(msg="[TC008] 'a' in trie"):
+        with self.subTest(msg="[TC007] 'a' in trie"):
             trie.add("a")
             self.assertTrue("a" in trie)
 
-        with self.subTest(msg="[TC009] 'abc' in trie"):
+        with self.subTest(msg="[TC008] 'abc' in trie"):
             trie.add("abc")
             self.assertTrue("abc" in trie)
 
@@ -1726,20 +1682,20 @@ class TestGeneralizedTrie(unittest.TestCase):
         values for each scenario, ensuring that the trie behaves correctly when
         checking its truthiness."""
         trie = GeneralizedTrie()
-        tests: list[TestConfig] = [
-            TestConfig(
+        tests: list[TestSpec] = [
+            TestSpec(
                 name="[TB001] bool(trie)", action=bool, args=[trie], expected=False
             ),
-            TestConfig(
+            TestSpec(
                 name="[TB002] trie.add('a')", action=trie.add, args=["a"], expected=TrieId(1)
             ),
-            TestConfig(
+            TestSpec(
                 name="[TB003] bool(trie)", action=bool, args=[trie], expected=True
             ),
-            TestConfig(
+            TestSpec(
                 name="[TB004] trie.remove(TrieId(1))", action=trie.remove, args=[TrieId(1)], expected=None
             ),
-            TestConfig(
+            TestSpec(
                 name="[TB005] bool(trie)", action=bool, args=[trie], expected=False
             ),
         ]

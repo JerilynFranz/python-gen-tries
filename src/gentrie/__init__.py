@@ -197,9 +197,12 @@ Value of 'matches'::
 
 # Import all public classes and functions
 from .exceptions import (
+    ErrorTag,
     InvalidTrieKeyTokenError,
     InvalidGeneralizedKeyError,
-    DuplicateKeyError
+    DuplicateKeyError,
+    TrieKeyError,
+    TrieTypeError
 )
 from .protocols import TrieKeyToken, Hashable, GeneralizedKey
 from .types import TrieId, TrieEntry, TRIE_IDENT, TRIE_KEY, TRIE_VALUE
@@ -223,9 +226,12 @@ __all__ = [
     'is_hashable',  # deprecated
 
     # Exceptions
+    'ErrorTag',
     'InvalidTrieKeyTokenError',
     'InvalidGeneralizedKeyError',
     'DuplicateKeyError',
+    'TrieKeyError',
+    'TrieTypeError',
 
     # Constants
     'TRIE_IDENT',

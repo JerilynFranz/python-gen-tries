@@ -3,7 +3,7 @@
 
 from typing import Any, Optional
 
-from ..exceptions import InvalidGeneralizedKeyError
+from ..exceptions import ErrorTag, InvalidGeneralizedKeyError, TrieKeyError, TrieTypeError
 from ..types import TrieEntry, TrieId, GeneralizedKey
 from ..validation import is_generalizedkey
 
@@ -64,13 +64,14 @@ class TrieAccessMixin:
         Returns: :class:`TrieEntry`: TrieEntry for the key with the passed identifier.
 
         Raises:
-            KeyError ([GTGI001]): if the key arg does not match any keys/idents in the trie.
-            TypeError ([GTGI002]): if the key arg is neither a :class:`TrieId` or a valid :class:`GeneralizedKey`.
+            TrieKeyError: if the key arg does not match any keys/idents in the trie.
+            TrieTypeError: if the key arg is neither a :class:`TrieId` or a valid :class:`GeneralizedKey`.
         """
         if isinstance(key, TrieId):
             if key not in self._trie_index:
-                raise KeyError(
-                    "[GTGI001] key does not match any idents or keys in the trie"
+                raise TrieKeyError(
+                    msg="key does not match any idents or keys in the trie",
+                    tag=ErrorTag.GETITEM_ID_NOT_FOUND,
                 )
             # Return the TrieEntry for the TrieId
             return self._trie_entries[key]
@@ -81,19 +82,23 @@ class TrieAccessMixin:
             current_node = self
             for token in key:
                 if token not in current_node.children:
-                    raise KeyError(
-                        "[GTGI001] key does not match any idents or keys in the trie"
+                    raise TrieKeyError(
+                        msg="key does not match any idents or keys in the trie",
+                        tag=ErrorTag.GETITEM_KEY_NOT_FOUND,
                     )
                 current_node = current_node.children[token]
             if current_node.ident:
                 # Return the TrieEntry for the TrieId
                 return self._trie_entries[current_node.ident]
-            raise KeyError(
-                "[GTGI001] key does not match any idents or keys in the trie")
+            raise TrieKeyError(
+                msg="key does not match any idents or keys in the trie",
+                tag=ErrorTag.GETITEM_NOT_TERMINAL,
+            )
 
         # If we reach here, the passed key was neither a TrieId nor a GeneralizedKey
-        raise TypeError(
-            "[GTGI002] key must be either a :class:TrieId or a :class:`GeneralizedKey`"
+        raise TrieTypeError(
+            msg="key must be either a :class:TrieId or a :class:`GeneralizedKey`",
+            tag=ErrorTag.GETITEM_INVALID_KEY_TYPE
         )
 
     def get(self: TrieMixinsInterface,
@@ -111,11 +116,8 @@ class TrieAccessMixin:
             default (Optional[TrieEntry | Any], default=None): The default value to return if the key is not found.
 
         Returns: :class:`TrieEntry`: TrieEntry for the key with the passed identifier or the default value if not found.
-
-        Raises:
-            TypeError ([GTG002]): if the key arg is neither a :class:`TrieId` or a valid :class:`GeneralizedKey`.
         """
         try:
             return self[key]
-        except (KeyError, InvalidGeneralizedKeyError):
+        except (TrieKeyError, TrieTypeError, InvalidGeneralizedKeyError):
             return default
