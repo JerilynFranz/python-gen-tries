@@ -74,8 +74,8 @@ def is_generalizedkey(key: Any) -> bool:
 
     # Fast path 2: Check for sequences of common, simple built-in types.
     # This is much faster than the general protocol check.
-    if all(isinstance(t, (int, float, complex, frozenset,
-                          tuple, bool)) for t in key):  # pyright: ignore[reportUnknownVariableType]
+    if all(isinstance(t, (int, float, complex, frozenset, tuple, bool, str, bytes)
+                      ) for t in key):  # pyright: ignore[reportUnknownVariableType]
         return True
 
     # Fallback/Cold path: Perform the slower, general protocol check.
