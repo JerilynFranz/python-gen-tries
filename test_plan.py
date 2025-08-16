@@ -3,7 +3,6 @@
 
 Usage:
   ./test_plan.py                # run all tests under tests/gentrie
-  ./test_plan.py KeyToken       # pattern filter (class or test name substring / -k expression)
 
 Environment (optional):
   GENTRIE_FAIL_FAST=1           # enable fail-fast (-x)
