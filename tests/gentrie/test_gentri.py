@@ -1,14 +1,20 @@
-"""Tests for the gentrie module."""  # pylint: disable=too-many-lines
+"""Tests for the gentrie module."""
+# pylint: disable=too-many-lines
+# pylint: disable=too-many-public-methods
+# pylint: disable=invalid-name
 
 import unittest
 from collections.abc import Iterable
 from textwrap import dedent
 from typing import Any
 
+import pytest
+
+
 from src.gentrie import (DuplicateKeyError, ErrorTag, GeneralizedTrie,
                          InvalidGeneralizedKeyError, TrieEntry, TrieId,
                          TrieKeyError, TrieKeyToken, TrieTypeError,
-                         is_generalizedkey)
+                         TrieValueError, is_generalizedkey)
 
 from ..testspec import TestSpec, run_tests_list
 
@@ -38,104 +44,215 @@ class MockContentAwareTrieKeyToken:
         return hash((self.a, self.b))
 
 
-class TestTrieKeyToken(unittest.TestCase):
-    """Test the TrieKeyToken interface and its implementation.
-
-    This test checks that the TrieKeyToken interface correctly identifies supported
-    types and their hashability.
-    """
-    def test_supported_builtin_types(self) -> None:
-        """Test that supported types are considered hashable.
-
-        This test checks that types like strings, tuples, and frozensets are recognized
-        as valid hashable types."""
-        good_types: list[Any] = [
-            'a',
-            str('ab'),
-            frozenset('abc'),
-            tuple(['a', 'b', 'c', 'd']),
-            int(1),
-            float(2.0),
-            complex(3.0, 4.0),
-            bytes(456),
-        ]
-        for token in good_types:
-            with self.subTest(msg=f'{token:}'):  # type: ignore[reportUnknownMemberType]
-                self.assertIsInstance(token, TrieKeyToken)
-
-    def test_unsupported_builtin_types(self) -> None:
-        """Test that unsupported types are not considered hashable.
-        This test checks that types like dict, set, and list are not
-        considered valid hashable types."""
-
-        bad_types: list[Any] = [
-            set('a'),
-            list(['a', 'b']),
-            dict({'a': 1, 'b': 2, 'c': 3}),
-            set('abc'),
-
-        ]
-        for token in bad_types:
-            with self.subTest(msg=f'{token:}'):  # type: ignore[reportUnknownMemberType]
-                self.assertNotIsInstance(token, TrieKeyToken)
-
-
-class TestTrieId(unittest.TestCase):
-    """Test the TrieId class and its behavior."""
-    def test_trieid_class(self) -> None:
-        """Test the creation of TrieId instances."""
-        id1 = TrieId(1)
-        with self.subTest(msg="[TTI001] Creating TrieId(1)"):
-            self.assertIsInstance(id1, TrieId, "[TTI001] id1 should be an instance of TrieId")
-        with self.subTest(msg="[TTI002] int(1) is not a TrieId"):
-            self.assertNotIsInstance(int(1), TrieId, "[TTI002] int(1) should not be an instance of TrieId")
-        with self.subTest(msg="[TTI003] TrieId(2) is not equal to TrieId(1)"):
-            self.assertNotEqual(TrieId(2), id1)
-        with self.subTest(msg="[TTI004] TrieId(1) is equal to itself"):
-            self.assertEqual(id1, TrieId(1), "[TTI004] TrieId(1) should be equal to itself")
-
-
-class TestGeneralizedKey(unittest.TestCase):
-    """Test the is_generalizedkey function and its behavior with various types."""
-    def test_supported_builtin_types(self) -> None:
-        """Test that supported types are considered generalized keys.
-
-        This test checks that types like strings, lists, tuples, and frozensets
-        are recognized as valid generalized keys."""
-        good_keys: list[Any] = [
-            'a',
-            str('ab'),
-            ['a', 'b'],
-            tuple(['a', 'b', 'c', 'd']),
-            [int(1)],
-            [float(2.0)],
-            [complex(3.0, 4.0)],
-            [b'abc'],
-            b'abc'
-        ]
-        for key in good_keys:
-            with self.subTest(msg=f'key = {key}'):  # type: ignore[reportUnknownMemberType]
-                self.assertTrue(is_generalizedkey(key))
-
-    def test_unsupported_builtin_types(self) -> None:
-        """Test that unsupported types are not considered generalized keys.
-
-        This test checks that types like dict, set, and complex numbers are not
-        considered valid generalized keys."""
-        bad_keys: list[Any] = [
-            '',  # empty string is invalid
-            dict({'a': 1, 'b': 2, 'c': 3}),
-            set('abc'),
-            frozenset('abc'),
-            complex(3.0, 4.0),
-        ]
-        for key in bad_keys:
-            with self.subTest(msg=f'key = {key}'):  # type: ignore[reportUnknownMemberType]
-                self.assertFalse(is_generalizedkey(key))
-
-
 class TestGeneralizedTrie(unittest.TestCase):
     """Test the GeneralizedTrie class and its methods."""
+
+    @pytest.mark.order(1)
+    @pytest.mark.dependency(name='test_trieid_class')
+    def test_trieid_class(self) -> None:
+        """Test the creation of TrieId instances."""
+        tests: list[TestSpec] = [
+            TestSpec(
+                name="[TTI001] Creating TrieId(1) results in a TrieId instance",
+                action=lambda: isinstance(TrieId(1), TrieId),  # type: ignore[reportUnknownMemberType]
+                expected=True,
+            ),
+            TestSpec(
+                name="[TTI002] int(1) is not a TrieId",
+                action=lambda: isinstance(int(1), TrieId),
+                expected=False,
+            ),
+            TestSpec(
+                name="[TTI003] TrieId(2) is not equal to TrieId(1)",
+                action=lambda: TrieId(2) == TrieId(1),
+                expected=False,
+            ),
+            TestSpec(
+                name="[TTI004] TrieId(1) is equal to itself",
+                action=lambda: TrieId(1) == TrieId(1),
+                expected=True,
+            ),
+        ]
+
+        run_tests_list(self, tests)
+
+    @pytest.mark.order(after='test_trieid_class')
+    @pytest.mark.dependency(
+        name='test_triekeytoken_supported_and_unsupported_builtin_types')
+    def test_triekeytoken_supported_and_unsupported_builtin_types(self) -> None:
+        """Tests that built in types are correctly classified as supported or unsupported."""
+        TEST_ID: int = 0
+        TEST_VALUE: int = 1
+        good_types: list[tuple[str, Any]] = [
+            ('TTKT_TSBT001', 'a'),
+            ('TTKT_TSBT002', str('ab')),
+            ('TTKT_TSBT003', frozenset('abc')),
+            ('TTKT_TSBT004', tuple(['a', 'b', 'c', 'd'])),
+            ('TTKT_TSBT005', int(1)),
+            ('TTKT_TSBT006', float(2.0)),
+            ('TTKT_TSBT007', complex(3.0, 4.0)),
+            ('TTKT_TSBT008', bytes(456)),
+        ]
+
+        tests: list[TestSpec] = [
+            TestSpec(
+                name=f"[{testcase[TEST_ID]}] isinstance({repr(testcase[TEST_VALUE])}, TrieKeyToken) (True)",
+                action=isinstance,
+                args=[testcase[TEST_VALUE], TrieKeyToken],
+                expected=True,
+            )
+            for testcase in good_types
+        ]
+        run_tests_list(self, tests)
+
+        bad_types: list[tuple[str, Any]] = [
+            ('TTKT_TUBT001', set('a')),
+            ('TTKT_TUBT002', list(['a', 'b'])),
+            ('TTKT_TUBT003', dict({'a': 1, 'b': 2, 'c': 3})),
+            ('TTKT_TUBT004', set('abc')),
+        ]
+
+        tests = [
+            TestSpec(
+                name=f"[{testcase[TEST_ID]}] isinstance({repr(testcase[TEST_VALUE])}, TrieKeyToken) (False)",
+                action=isinstance,
+                args=[testcase[TEST_VALUE], TrieKeyToken],
+                expected=False,
+            )
+            for testcase in bad_types
+        ]
+        run_tests_list(self, tests)
+
+    @pytest.mark.order(after=['test_triekeytoken_supported_and_unsupported_builtin_types'])
+    @pytest.mark.dependency(
+        name='test_generalizedkey_supported_and_unsupported_builtin_types',
+        depends=['test_triekeytoken_supported_and_unsupported_builtin_types'])
+    def test_generalizedkey_supported_and_unsupported_builtin_types(self) -> None:
+        """Tests supported and unsupported types for generalized keys.
+
+        This test checks that types like strings, lists, and tuples
+        of immutable types are recognized as valid generalized keys
+        while non-sequence or mutable types like dict, set, and complex
+        numbers are not considered valid generalized keys."""
+        TEST_ID: int = 0
+        TEST_VALUE: int = 1
+        good_keys: list[tuple[str, Any]] = [
+            ('TGK_SBT001', 'a'),
+            ('TGK_SBT002', str('ab')),
+            ('TGK_SBT003', ['a', 'b']),
+            ('TGK_SBT004', tuple(['a', 'b', 'c', 'd'])),
+            ('TGK_SBT005', [int(1)]),
+            ('TGK_SBT006', [float(2.0)]),
+            ('TGK_SBT007', [complex(3.0, 4.0)]),
+            ('TGK_SBT007', [b'abc']),
+            ('TGK_SBT008', b'abc')
+        ]
+        tests: list[TestSpec] = [
+            TestSpec(
+                name=f"[{testcase[TEST_ID]}] is_generalizedkey({repr(testcase[TEST_VALUE])}) (True)",
+                action=is_generalizedkey,
+                args=[testcase[TEST_VALUE]],
+                expected=True,
+            )
+            for testcase in good_keys
+        ]
+        run_tests_list(self, tests)
+
+        # Test cases for unsupported types
+        bad_keys: list[tuple[str, Any]] = [
+            ('TGK_TUBT001', ''),  # empty string is invalid as a GeneralizedKey
+            ('TGK_TUBT002', dict({'a': 1, 'b': 2, 'c': 3})),
+            ('TGK_TUBT003', set('abc')),
+            ('TGK_TUBT004', frozenset('abc')),
+            ('TGK_TUBT005', complex(3.0, 4.0)),
+        ]
+
+        tests = [
+            TestSpec(
+                name=f"[{testcase[TEST_ID]}] is_generalizedkey({repr(testcase[TEST_VALUE])}) (False)",
+                action=is_generalizedkey,
+                args=[testcase[TEST_VALUE]],
+                expected=False,
+            )
+            for testcase in bad_keys
+        ]
+        run_tests_list(self, tests)
+
+    @pytest.mark.order(after=['test_generalizedkey_supported_and_unsupported_builtin_types'])
+    @pytest.mark.dependency(
+        name='test_is_generalizedkey',
+        depends=['test_generalizedkey_supported_and_unsupported_builtin_types'])
+    def test_is_generalizedkey(self) -> None:
+        """Test the is_generalizedkey function with various inputs.
+
+        This test checks that the is_generalizedkey function correctly identifies
+        valid and invalid generalized keys."""
+        tests: list[TestSpec] = [
+            TestSpec(
+                name="[TIGK001] is_generalizedkey('a') (True)",
+                action=is_generalizedkey,
+                args=['a'],
+                expected=True
+            ),
+            TestSpec(
+                name="[TIGK002] is_generalizedkey(['a', 'b']) (True)",
+                action=is_generalizedkey,
+                args=[['a', 'b']],
+                expected=True
+            ),
+            TestSpec(
+                name="[TIGK003] is_generalizedkey(b'abc') (True)",
+                action=is_generalizedkey,
+                args=[b'abc'],
+                expected=True
+            ),
+            TestSpec(
+                name="[TIGK004] is_generalizedkey('') (False)",
+                action=is_generalizedkey,
+                args=[''],
+                expected=False
+            ),
+            TestSpec(
+                name="[TIGK005] is_generalizedkey([]) (False)",
+                action=is_generalizedkey,
+                args=[[]],
+                expected=False
+            ),
+            TestSpec(
+                name="[TIGK006] is_generalizedkey(123) (False)",
+                action=is_generalizedkey,
+                args=[123],
+                expected=False
+            ),
+            TestSpec(
+                name="[TIGK007] is_generalizedkey(None) (False)",
+                action=is_generalizedkey,
+                args=[None],
+                expected=False
+            ),
+            TestSpec(
+                name="[TIGK008] is_generalizedkey({'a': 1}) (False)",
+                action=is_generalizedkey,
+                args=[{'a': 1}],
+                expected=False
+            ),
+            TestSpec(
+                name="[TIGK009] is_generalizedkey(['a', {'b': 1}]) (False)",
+                action=is_generalizedkey,
+                args=[['a', {'b': 1}]],
+                expected=False
+            ),
+            TestSpec(
+                name="[TIGK010] is_generalizedkey(['a', ['b', ['c']]]) (False)",
+                action=is_generalizedkey,
+                args=[['a', ['b', ['c']]]],
+                expected=False
+            ),
+        ]
+        run_tests_list(self, tests)
+
+    @pytest.mark.order(order=6)
+    @pytest.mark.dependency(name='test_create_trie')
     def test_create_trie(self) -> None:
         """Test the creation of a GeneralizedTrie instance.
 
@@ -157,6 +274,10 @@ class TestGeneralizedTrie(unittest.TestCase):
         ]
         run_tests_list(self, tests)
 
+    @pytest.mark.order(after=['test_contains', 'test_bool'])
+    @pytest.mark.dependency(
+        name='test_clear',
+        depends=['test_create_trie', 'test_add', 'test_contains', 'test_bool', 'test_keys'])
     def test_clear(self) -> None:
         """Test the clear method of GeneralizedTrie."""
         trie = GeneralizedTrie()
@@ -175,6 +296,10 @@ class TestGeneralizedTrie(unittest.TestCase):
                          "[TCL006] Trie ident counter should be reset after clear()")
         self.assertEqual(list(trie.keys()), [], "[TCL007] Trie keys should be empty after clear()]")
 
+    @pytest.mark.order(after="test_create_trie")
+    @pytest.mark.dependency(
+        name='test_add',
+        depends=['test_create_trie', 'test_trieid_class'])
     def test_add(self) -> None:
         """Test the add method of GeneralizedTrie.
 
@@ -530,6 +655,10 @@ class TestGeneralizedTrie(unittest.TestCase):
         ]
         run_tests_list(self, tests)
 
+    @pytest.mark.order(after=['test_create_trie', 'test_trieid_class'])
+    @pytest.mark.dependency(
+        name='test_update',
+        depends=['test_create_trie', 'test_trieid_class'])
     def test_update(self) -> None:
         """Test the update method of GeneralizedTrie.
 
@@ -818,9 +947,8 @@ class TestGeneralizedTrie(unittest.TestCase):
                     }
                 },
             ),
-            # Add the same key with a DIFFERENT value (default of None) and validate it updates the value
-            # and returns the id of the existing entry.
-            # (this is to test that the trie updates the value of the existing entry).
+            # Add the same key with a DIFFERENT value (default of None) and validate we get the expected id
+            # (this is to test that the trie updates the value of the existing entry)
             TestSpec(
                 name="[TU023] trie.update(['tree', 'value', 'cheetah'])",
                 action=trie.update,
@@ -911,6 +1039,10 @@ class TestGeneralizedTrie(unittest.TestCase):
         ]
         run_tests_list(self, tests)
 
+    @pytest.mark.order(after=['test_create_trie', 'test_add'])
+    @pytest.mark.dependency(
+        name='test_add_user_defined_classes',
+        depends=['test_create_trie', 'test_add'])
     def test_add_user_defined_classes(self) -> None:
         """Test adding user-defined classes to GeneralizedTrie.
 
@@ -961,37 +1093,160 @@ class TestGeneralizedTrie(unittest.TestCase):
         ]
         run_tests_list(self, tests)
 
+    @pytest.mark.order(after=['test_create_trie', 'test_add', 'test_trieid_class'])
+    @pytest.mark.dependency(
+        name='test_prefixes',
+        depends=['test_create_trie', 'test_add', 'test_trieid_class'])
     def test_prefixes(self) -> None:
         """Test the prefixes method of GeneralizedTrie.
 
         This test checks that the prefixes method correctly identifies all prefixes
         of a given key in the trie, including those that are not complete entries."""
         trie: GeneralizedTrie = GeneralizedTrie()
+        tests: list[TestSpec] = [
+            TestSpec(
+                name="[TGT_TP001] trie.prefixes(['tree', 'value', 'ape']) (empty trie)",
+                action=lambda key: list(trie.prefixes(key)),  # type: ignore[reportUnknownMemberType]
+                args=[['tree', 'value', 'ape']],
+                expected=[]
+            ),
+            TestSpec(
+                name="[TGT_TP002] trie.add(['tree', 'value', 'ape'])",
+                action=trie.add,
+                args=[["tree", "value", "ape"]],
+                expected=TrieId(1)
+            ),
+            TestSpec(
+                name="[TGT_TP003] trie.prefixes(['tree', 'value', 'ape']) (exact key in trie)",
+                action=lambda key: list(trie.prefixes(key)),  # type: ignore[reportUnknownMemberType]
+                args=[['tree', 'value', 'ape']],
+                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+            ),
+            TestSpec(
+                name=("[TGT_TP004] trie.prefixes(['tree', 'value', 'ape', 'grape']) "
+                      "(NOT exact key in trie, but has other keys that are prefix)"),
+                action=lambda key: list(trie.prefixes(key)),  # type: ignore[reportUnknownMemberType]
+                args=[['tree', 'value', 'ape', 'grape']],
+                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+            ),
+            TestSpec(
+                name=("[TGT_TP005] trie.prefixes(['tree', 'value']) "
+                      "(NOT exact key in trie, does not have other keys that are prefix)"),
+                action=lambda key: list(trie.prefixes(key)),  # type: ignore[reportUnknownMemberType]
+                args=[['tree', 'value']],
+                expected=[]
+            ),
+        ]
+        run_tests_list(self, tests)
 
-        with self.subTest(msg="[TP001] trie.add(['tree', 'value', 'ape'])"):
-            entry_id: TrieId = trie.add(["tree", "value", "ape"])
-            self.assertEqual(entry_id, TrieId(1))
+    @pytest.mark.order(after=['test_create_trie', 'test_add', 'test_trieid_class'])
+    @pytest.mark.dependency(
+        name='test_prefixed_by',
+        depends=['test_create_trie', 'test_add', 'test_trieid_class'])
+    def test_prefixed_by(self) -> None:
+        """Test the prefixed_by method of GeneralizedTrie.
 
-        with self.subTest(msg="[TP002] trie.add(['tree', 'value'])"):
-            entry_id = trie.add(["tree", "value"])
-            self.assertEqual(entry_id, TrieId(2))
+        This test checks that the prefixed_by method correctly identifies all keys
+        in the trie that are prefixed by the specified key."""
+        trie: GeneralizedTrie = GeneralizedTrie()
+        tests: list[TestSpec] = [
+            TestSpec(
+                name="[TGT_TPB001] tree.prefixed_by(['tree']) (empty trie, no possible prefixed keys)",
+                action=lambda key: list(trie.prefixed_by(key)),  # type: ignore[reportUnknownMemberType]
+                args=[['tree']],
+                expected=[]
+            ),
+            TestSpec(
+                name="[TGT_TPB002] trie.add(['tree', 'value', 'ape']) (one key in trie)",
+                action=trie.add,
+                args=[["tree", "value", "ape"]],
+                expected=TrieId(1)
+            ),
+            TestSpec(
+                name="[TGT_TPB003] trie.prefixed_by(['tree', 'value', 'ape']) (exact key in trie, no others)",
+                action=lambda key: list(trie.prefixed_by(key)),  # type: ignore[reportUnknownMemberType]
+                args=[['tree', 'value', 'ape']],
+                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+            ),
+            TestSpec(
+                name=("[TGT_TPB004] trie.prefixed_by(['tree']) "
+                      "(NOT exact key in trie, but prefixes other keys in the trie)"),
+                action=lambda key: list(trie.prefixed_by(key)),  # type: ignore[reportUnknownMemberType]
+                args=[['tree']],
+                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+            ),
+            TestSpec(
+                name=("[TGT_TPB005] trie.prefixed_by(['tree', 'value', 'ape', 'grape']) "
+                      "(NOT exact key in trie, does not have other keys in trie it is a prefix for)"),
+                action=lambda key: list(trie.prefixed_by(key)),  # type: ignore[reportUnknownMemberType]
+                args=[['tree', 'value', 'ape', 'grape']],
+                expected=[]
+            ),
+            TestSpec(
+                name=("[TGT_TPB006] trie.prefixed_by(key=['tree'], depth=0) "
+                      "(NO exact key in trie)"),
+                action=lambda key, depth: list(trie.prefixed_by(  # pyright: ignore[reportUnknownLambdaType]
+                    key=key, depth=depth)),  # type: ignore[reportUnknownMemberType]
+                kwargs={'key': ['tree'], 'depth': 0},
+                expected=[]
+            ),
+            TestSpec(
+                name=("[TGT_TPB007] trie.prefixed_by(key=['tree'], depth=1) "
+                      "(NOT exact key in trie, does not have other keys in trie it is a prefix for within depth 1)"),
+                action=lambda key, depth: list(trie.prefixed_by(  # pyright: ignore[reportUnknownLambdaType]
+                        key=key, depth=depth)),  # type: ignore[reportUnknownMemberType]
+                kwargs={'key': ['tree'], 'depth': 1},
+                expected=[]
+            ),
+            TestSpec(
+                name=("[TGT_TPB008] trie.prefixed_by(key=['tree'], depth=2) "
+                      "(NOT exact key in trie, has other keys in trie it is a prefix for within depth 2)"),
+                action=lambda key, depth: list(trie.prefixed_by(  # pyright: ignore[reportUnknownLambdaType]
+                    key=key, depth=depth)),  # type: ignore[reportUnknownMemberType]
+                kwargs={'key': ['tree'], 'depth': 2},
+                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+            ),
+            TestSpec(
+                name=("[TGT_TPB009] trie.prefixed_by(key=['tree'], depth=-1) "
+                      "(NOT exact key in trie, has other keys in trie it is a prefix for within any depth)"),
+                action=lambda key, depth: list(trie.prefixed_by(  # pyright: ignore[reportUnknownLambdaType]
+                    key=key, depth=depth)),  # type: ignore[reportUnknownMemberType]
+                kwargs={'key': ['tree'], 'depth': -1},
+                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+            ),
+            TestSpec(
+                name=("[TGT_TPB010] trie.prefixed_by(key=['tree'], depth=-2) "
+                      "(TrieValueError, TRIE_PREFIXED_BY_BAD_DEPTH_VALUE)"),
+                action=lambda key, depth: list(trie.prefixed_by(  # pyright: ignore[reportUnknownLambdaType]
+                    key=key, depth=depth)),  # type: ignore[reportUnknownMemberType]
+                kwargs={'key': ['tree'], 'depth': -2},
+                exception=TrieValueError,
+                exception_tag=ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_VALUE,
+            ),
+            TestSpec(
+                name=("[TGT_TPB011] trie.prefixed_by(key=['tree'], depth=-1.0) "
+                      "(TrieTypeError, TRIE_PREFIXED_BY_BAD_DEPTH_TYPE)"),
+                action=lambda key, depth: list(trie.prefixed_by(  # pyright: ignore[reportUnknownLambdaType]
+                    key=key, depth=depth)),  # type: ignore[reportUnknownMemberType]
+                kwargs={'key': ['tree'], 'depth': -1.0},
+                exception=TrieTypeError,
+                exception_tag=ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_TYPE,
+            ),
+            TestSpec(
+                name=("[TGT_TPB012] trie.prefixed_by([set([1]), 3, 4, 5]) "
+                      "(InvalidGeneralizedKeyError, TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY)"),
+                action=lambda key: list(trie.prefixed_by(key)),  # type: ignore[reportUnknownMemberType]
+                args=[[set([1]), 3, 4, 5]],
+                exception=InvalidGeneralizedKeyError,
+                exception_tag=ErrorTag.TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY,
+            ),
+        ]
+        run_tests_list(self, tests)
 
-        with self.subTest(msg="[TP003] trie.add('abcdef')"):
-            entry_id = trie.add("abcdef")
-            self.assertEqual(entry_id, TrieId(3))
-
-        with self.subTest(msg="[TP004] trie.add('abc')"):
-            entry_id = trie.add("abc")
-            self.assertEqual(entry_id, TrieId(4))
-
-        with self.subTest(msg="[TP005] trie.prefixes(['tree', 'value', 'ape'])"):
-            found: set[TrieEntry] = set(trie.prefixes(["tree", "value", "ape"]))
-            expected: set[TrieEntry] = set([
-                TrieEntry(TrieId(1), ['tree', 'value', 'ape']),
-                TrieEntry(TrieId(2), ['tree', 'value'])
-            ])
-            self.assertEqual(found, expected, msg=str(trie))
-
+    @pytest.mark.order(after=['test_create_trie', 'test_add', 'test_trieid_class', 'test_contains'])
+    @pytest.mark.dependency(
+        name='test_deeply_nested_keys',
+        depends=['test_create_trie', 'test_add', 'test_trieid_class', 'test_contains'])
     def test_deeply_nested_keys(self):
         """Test that deeply nested keys can be added and queried correctly.
 
@@ -1005,6 +1260,10 @@ class TestGeneralizedTrie(unittest.TestCase):
         self.assertEqual(set(trie.prefixes(deep_key)), set([TrieEntry(TrieId(1), deep_key)]))
         self.assertEqual(set(trie.prefixed_by(deep_key)), set([TrieEntry(TrieId(1), deep_key)]))
 
+    @pytest.mark.order(after=['test_create_trie', 'test_add', 'test_trieid_class', 'test_contains'])
+    @pytest.mark.dependency(
+        name='test_unicode_and_bytes_keys',
+        depends=['test_create_trie', 'test_add', 'test_trieid_class', 'test_contains'])
     def test_unicode_and_bytes_keys(self):
         """Test that unicode and bytes keys can coexist in the trie.
 
@@ -1020,6 +1279,10 @@ class TestGeneralizedTrie(unittest.TestCase):
         self.assertTrue(unicode_key in trie)
         self.assertTrue(bytes_key in trie)
 
+    @pytest.mark.order(after=['test_contains', 'test_create_trie', 'test_add', 'test_trieid_class'])
+    @pytest.mark.dependency(
+        name='test_mutated_key_after_insertion',
+        depends=['test_trieid_class', 'test_create_trie', 'test_add', 'test_contains'])
     def test_mutated_key_after_insertion(self):
         """Test that mutating a key after insertion does not affect the trie.
 
@@ -1034,6 +1297,10 @@ class TestGeneralizedTrie(unittest.TestCase):
         # The original key (["a", "b"]) should still be present
         self.assertTrue(["a", "b"] in trie)
 
+    @pytest.mark.order(after=['test_create_trie', 'test_is_generalizedkey'])
+    @pytest.mark.dependency(
+        name='test_invalid_argument_types_for_prefixes',
+        depends=['test_create_trie', 'test_is_generalizedkey'])
     def test_invalid_argument_types_for_prefixes(self):
         """Test that invalid argument types raise correct exceptions."""
         trie = GeneralizedTrie()
@@ -1070,6 +1337,9 @@ class TestGeneralizedTrie(unittest.TestCase):
         self.assertTrue([10, 11, 12] in trie)
         self.assertTrue([999, 1000, 1001] in trie)
 
+    @pytest.mark.order(after='test_contains')
+    @pytest.mark.dependency(name='test_bytes_vs_str',
+                            depends=['test_create_trie', 'test_contains'])
     def test_bytes_vs_str(self):
         """Test that adding a string and bytes with the same content generates different IDs.
 
@@ -1120,6 +1390,9 @@ class TestGeneralizedTrie(unittest.TestCase):
         self.assertNotEqual(id1, id2)
         self.assertTrue(key in trie)
 
+    @pytest.mark.order(after='test_add')
+    @pytest.mark.dependency(name='test_remove', depends=[
+        'test_create_trie', 'test_trieid_class', 'test_add'])
     def test_remove(self) -> None:
         """Test the remove method of GeneralizedTrie.
 
@@ -1386,6 +1659,9 @@ class TestGeneralizedTrie(unittest.TestCase):
         ]
         run_tests_list(self, tests)
 
+    @pytest.mark.order(after='test_add')
+    @pytest.mark.dependency(name='test_contains', depends=[
+        'test_create_trie', 'test_add'])
     def test_contains(self) -> None:
         """Test the __contains__ dundermethod of GeneralizedTrie.
 
@@ -1448,6 +1724,9 @@ class TestGeneralizedTrie(unittest.TestCase):
         with self.subTest(msg="[TC010] '0123456789ABCDE' in trie"):
             self.assertTrue('0123456789ABCDE' in trie)
 
+    @pytest.mark.order(after='test_remove')
+    @pytest.mark.dependency(name='test_keys', depends=[
+        'test_create_trie', 'test_add', 'test_contains', 'test_remove'])
     def test_keys(self) -> None:
         """Test the keys method of GeneralizedTrie.
 
@@ -1499,6 +1778,8 @@ class TestGeneralizedTrie(unittest.TestCase):
             found_id_list = list(trie.keys())
             self.assertEqual(found_id_list, expect_id_list)
 
+    @pytest.mark.order(after='test_add')
+    @pytest.mark.dependency(name='test_values', depends=['test_create_trie', 'test_trieid_class', 'test_add'])
     def test_values(self) -> None:
         """Test the values method of GeneralizedTrie.
 
@@ -1599,6 +1880,10 @@ class TestGeneralizedTrie(unittest.TestCase):
             found_items_list = list(sorted(trie.items()))
             self.assertEqual(found_items_list, expect_items_list)
 
+    @pytest.mark.order(after='test_remove')
+    @pytest.mark.dependency(name="test_getitem_dunder", depends=[
+        'test_create_trie', 'test_add',
+        'test_remove', 'test_trieid_class'])
     def test_getitem_dunder(self) -> None:
         """Test the __getitem__ method of GeneralizedTrie.
 
@@ -1672,6 +1957,10 @@ class TestGeneralizedTrie(unittest.TestCase):
                 found_ids_list.append(entry)
             self.assertEqual(sorted(found_ids_list), expect_ids_list)
 
+    @pytest.mark.order(after='test_remove')
+    @pytest.mark.dependency(name='test_bool', depends=[
+        'test_create_trie', 'test_add',
+        'test_remove'])
     def test_bool(self) -> None:
         """Test the __bool__ method of GeneralizedTrie.
 

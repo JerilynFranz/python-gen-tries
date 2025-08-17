@@ -69,10 +69,7 @@ class TrieAccessMixin:
         """
         if isinstance(key, TrieId):
             if key not in self._trie_index:
-                raise TrieKeyError(
-                    msg="key does not match any idents or keys in the trie",
-                    tag=ErrorTag.GETITEM_ID_NOT_FOUND,
-                )
+                raise TrieKeyError("TrieId not found in trie index", ErrorTag.GETITEM_ID_NOT_FOUND)
             # Return the TrieEntry for the TrieId
             return self._trie_entries[key]
 

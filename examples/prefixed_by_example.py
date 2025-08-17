@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+"""Example of using a GeneralizedTrie for indexing sequences of strings."""
 from typing import Generator
 from gentrie import GeneralizedTrie, TrieEntry
 

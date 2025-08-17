@@ -7,9 +7,11 @@ from typing import Any, NamedTuple, Optional, Sequence
 import unittest
 
 
-class NoExpectedValue:  # pylint: disable=too-few-public-methods
-    """This is used to distinguish between having an expected return value
-    of None for a test and not expecting a particular (or any) value."""
+# Sentinel value used to indicate that no expected value is set
+NO_EXPECTED_VALUE = object()
+"""
+A sentinel value used to indicate that no expected value is set.
+"""
 
 
 class TestSpec(NamedTuple):
@@ -27,7 +29,7 @@ class TestSpec(NamedTuple):
             Sequence of positional arguments to be passed to the `action` function or method.
         kwargs (dict[str, Any], default = {}):
             Dictionary containing keyword arguments to be passed to the `action` function or method.
-        expected (Any, default=NoExpectedValue() ):
+        expected (Any, default=NO_EXPECTED_VALUE ):
             Expected value (if any) that is expected to be returned by the `action` function or method.
             If there is no expected value, the special class NoExpectedValue is used to flag it.
             This is used so that the specific return value of None can be distinguished from no
@@ -43,7 +45,7 @@ class TestSpec(NamedTuple):
     action: Callable[..., Any]
     args: Optional[list[Any]] = None
     kwargs: Optional[dict[str, Any]] = None
-    expected: Any = NoExpectedValue()
+    expected: Any = NO_EXPECTED_VALUE
     obj: Optional[Any] = None
     validate_obj: Optional[Callable[[Any], bool]] = None
     validate_result: Optional[Callable[[Any], bool]] = None
@@ -91,10 +93,7 @@ def run_test(test_case: unittest.TestCase, spec: TestSpec) -> None:  # pylint: d
                     errors.append(f"failed result validation: found={found}")
                 if spec.validate_obj and not spec.validate_obj(spec.obj):
                     errors.append(f"failed object validation: obj={spec.obj}")
-                if (
-                    not isinstance(spec.expected, NoExpectedValue)
-                    and spec.expected != found
-                ):
+                if spec.expected is not NO_EXPECTED_VALUE and spec.expected != found:
                     errors.append(f"expected={spec.expected}, found={found}")
                     if isinstance(spec.display_on_fail, Callable):
                         errors.append(spec.display_on_fail())
