@@ -24,3 +24,4 @@
 * 0.9.0 - Changed \_\_contains\_\_ and get() to conform to Pythonic conventions. Cleanup of type checking issues subsequent to change to mixin architecture.
 * 0.9.1 - Added 'runtime_validation' property and initialization parameter for performance. Tweaked use of pyright directives to reduce visual noise in code. Simplified GeneralizedKey alias declaration by removing explict inclusion of 'str'.
 * 0.9.2 - Refactor of exceptions and test code to use tagged exceptions. Seperation of testspecs testing framework into seperate file. First iteration of benchmarking code.
+* 0.9.3 - Addition of coverage support. Tests for traversal.py. pytest support. Test orchestration using pytest-order and pytest-dependency. Fixed TrieValueError export.
