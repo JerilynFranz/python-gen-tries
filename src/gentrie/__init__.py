@@ -202,7 +202,8 @@ from .exceptions import (
     InvalidGeneralizedKeyError,
     DuplicateKeyError,
     TrieKeyError,
-    TrieTypeError
+    TrieTypeError,
+    TrieValueError
 )
 from .protocols import TrieKeyToken, Hashable, GeneralizedKey
 from .types import TrieId, TrieEntry, TRIE_IDENT, TRIE_KEY, TRIE_VALUE
@@ -232,6 +233,7 @@ __all__ = [
     'DuplicateKeyError',
     'TrieKeyError',
     'TrieTypeError',
+    'TrieValueError',
 
     # Constants
     'TRIE_IDENT',

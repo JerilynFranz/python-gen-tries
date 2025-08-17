@@ -47,11 +47,9 @@ class TrieKeyToken(Protocol):
         means that two different instances of the same class will not be considered equal.
 
     """
-    def __eq__(self, value: object, /) -> bool:
-        ...
+    def __eq__(self, value: object, /) -> bool: ...
 
-    def __hash__(self) -> int:
-        ...
+    def __hash__(self) -> int: ...
 
 
 @runtime_checkable
@@ -62,11 +60,9 @@ class Hashable(TrieKeyToken, Protocol):
 
     Use :class:`TrieKeyToken` instead.
     """
-    def __eq__(self, value: object, /) -> bool:
-        ...
+    def __eq__(self, value: object, /) -> bool: ...
 
-    def __hash__(self) -> int:
-        ...
+    def __hash__(self) -> int: ...
 
 
 GeneralizedKey: TypeAlias = Sequence[TrieKeyToken]

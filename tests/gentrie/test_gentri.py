@@ -14,7 +14,7 @@ import pytest
 from src.gentrie import (DuplicateKeyError, ErrorTag, GeneralizedTrie,
                          InvalidGeneralizedKeyError, TrieEntry, TrieId,
                          TrieKeyError, TrieKeyToken, TrieTypeError,
-                         is_generalizedkey)
+                         TrieValueError, is_generalizedkey)
 
 from ..testspec import TestSpec, run_tests_list
 
@@ -1105,36 +1105,140 @@ class TestGeneralizedTrie(unittest.TestCase):
         trie: GeneralizedTrie = GeneralizedTrie()
         tests: list[TestSpec] = [
             TestSpec(
-                name="[TP001] trie.add(['tree', 'value', 'ape'])",
+                name="[TGT_TP001] trie.prefixes(['tree', 'value', 'ape']) (empty trie)",
+                action=lambda key: list(trie.prefixes(key)),  # type: ignore[reportUnknownMemberType]
+                args=[['tree', 'value', 'ape']],
+                expected=[]
+            ),
+            TestSpec(
+                name="[TGT_TP002] trie.add(['tree', 'value', 'ape'])",
                 action=trie.add,
                 args=[["tree", "value", "ape"]],
-                expected=TrieId(1),
+                expected=TrieId(1)
             ),
             TestSpec(
-                name="[TP002] trie.add(['tree', 'value'])",
+                name="[TGT_TP003] trie.prefixes(['tree', 'value', 'ape']) (exact key in trie)",
+                action=lambda key: list(trie.prefixes(key)),  # type: ignore[reportUnknownMemberType]
+                args=[['tree', 'value', 'ape']],
+                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+            ),
+            TestSpec(
+                name=("[TGT_TP004] trie.prefixes(['tree', 'value', 'ape', 'grape']) "
+                      "(NOT exact key in trie, but has other keys that are prefix)"),
+                action=lambda key: list(trie.prefixes(key)),  # type: ignore[reportUnknownMemberType]
+                args=[['tree', 'value', 'ape', 'grape']],
+                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+            ),
+            TestSpec(
+                name=("[TGT_TP005] trie.prefixes(['tree', 'value']) "
+                      "(NOT exact key in trie, does not have other keys that are prefix)"),
+                action=lambda key: list(trie.prefixes(key)),  # type: ignore[reportUnknownMemberType]
+                args=[['tree', 'value']],
+                expected=[]
+            ),
+        ]
+        run_tests_list(self, tests)
+
+    @pytest.mark.order(after=['test_create_trie', 'test_add', 'test_trieid_class'])
+    @pytest.mark.dependency(
+        name='test_prefixed_by',
+        depends=['test_create_trie', 'test_add', 'test_trieid_class'])
+    def test_prefixed_by(self) -> None:
+        """Test the prefixed_by method of GeneralizedTrie.
+
+        This test checks that the prefixed_by method correctly identifies all keys
+        in the trie that are prefixed by the specified key."""
+        trie: GeneralizedTrie = GeneralizedTrie()
+        tests: list[TestSpec] = [
+            TestSpec(
+                name="[TGT_TPB001] tree.prefixed_by(['tree']) (empty trie, no possible prefixed keys)",
+                action=lambda key: list(trie.prefixed_by(key)),  # type: ignore[reportUnknownMemberType]
+                args=[['tree']],
+                expected=[]
+            ),
+            TestSpec(
+                name="[TGT_TPB002] trie.add(['tree', 'value', 'ape']) (one key in trie)",
                 action=trie.add,
-                args=[["tree", "value"]],
-                expected=TrieId(2),
+                args=[["tree", "value", "ape"]],
+                expected=TrieId(1)
             ),
             TestSpec(
-                name="[TP003] trie.add('abcdef')",
-                action=trie.add,
-                args=["abcdef"],
-                expected=TrieId(3),
+                name="[TGT_TPB003] trie.prefixed_by(['tree', 'value', 'ape']) (exact key in trie, no others)",
+                action=lambda key: list(trie.prefixed_by(key)),  # type: ignore[reportUnknownMemberType]
+                args=[['tree', 'value', 'ape']],
+                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
             ),
             TestSpec(
-                name="[TP004] trie.add('abc')",
-                action=trie.add,
-                args=["abc"],
-                expected=TrieId(4),
+                name=("[TGT_TPB004] trie.prefixed_by(['tree']) "
+                      "(NOT exact key in trie, but prefixes other keys in the trie)"),
+                action=lambda key: list(trie.prefixed_by(key)),  # type: ignore[reportUnknownMemberType]
+                args=[['tree']],
+                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
             ),
             TestSpec(
-                name="[TP005] trie.prefixes(['tree', 'value', 'ape'])",
-                action=lambda: set(trie.prefixes(["tree", "value", "ape"])),
-                expected={
-                    TrieEntry(TrieId(1), ['tree', 'value', 'ape']),
-                    TrieEntry(TrieId(2), ['tree', 'value'])
-                },
+                name=("[TGT_TPB005] trie.prefixed_by(['tree', 'value', 'ape', 'grape']) "
+                      "(NOT exact key in trie, does not have other keys in trie it is a prefix for)"),
+                action=lambda key: list(trie.prefixed_by(key)),  # type: ignore[reportUnknownMemberType]
+                args=[['tree', 'value', 'ape', 'grape']],
+                expected=[]
+            ),
+            TestSpec(
+                name=("[TGT_TPB006] trie.prefixed_by(key=['tree'], depth=0) "
+                      "(NO exact key in trie)"),
+                action=lambda key, depth: list(trie.prefixed_by(  # pyright: ignore[reportUnknownLambdaType]
+                    key=key, depth=depth)),  # type: ignore[reportUnknownMemberType]
+                kwargs={'key': ['tree'], 'depth': 0},
+                expected=[]
+            ),
+            TestSpec(
+                name=("[TGT_TPB007] trie.prefixed_by(key=['tree'], depth=1) "
+                      "(NOT exact key in trie, does not have other keys in trie it is a prefix for within depth 1)"),
+                action=lambda key, depth: list(trie.prefixed_by(  # pyright: ignore[reportUnknownLambdaType]
+                        key=key, depth=depth)),  # type: ignore[reportUnknownMemberType]
+                kwargs={'key': ['tree'], 'depth': 1},
+                expected=[]
+            ),
+            TestSpec(
+                name=("[TGT_TPB008] trie.prefixed_by(key=['tree'], depth=2) "
+                      "(NOT exact key in trie, has other keys in trie it is a prefix for within depth 2)"),
+                action=lambda key, depth: list(trie.prefixed_by(  # pyright: ignore[reportUnknownLambdaType]
+                    key=key, depth=depth)),  # type: ignore[reportUnknownMemberType]
+                kwargs={'key': ['tree'], 'depth': 2},
+                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+            ),
+            TestSpec(
+                name=("[TGT_TPB009] trie.prefixed_by(key=['tree'], depth=-1) "
+                      "(NOT exact key in trie, has other keys in trie it is a prefix for within any depth)"),
+                action=lambda key, depth: list(trie.prefixed_by(  # pyright: ignore[reportUnknownLambdaType]
+                    key=key, depth=depth)),  # type: ignore[reportUnknownMemberType]
+                kwargs={'key': ['tree'], 'depth': -1},
+                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+            ),
+            TestSpec(
+                name=("[TGT_TPB010] trie.prefixed_by(key=['tree'], depth=-2) "
+                      "(TrieValueError, TRIE_PREFIXED_BY_BAD_DEPTH_VALUE)"),
+                action=lambda key, depth: list(trie.prefixed_by(  # pyright: ignore[reportUnknownLambdaType]
+                    key=key, depth=depth)),  # type: ignore[reportUnknownMemberType]
+                kwargs={'key': ['tree'], 'depth': -2},
+                exception=TrieValueError,
+                exception_tag=ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_VALUE,
+            ),
+            TestSpec(
+                name=("[TGT_TPB011] trie.prefixed_by(key=['tree'], depth=-1.0) "
+                      "(TrieTypeError, TRIE_PREFIXED_BY_BAD_DEPTH_TYPE)"),
+                action=lambda key, depth: list(trie.prefixed_by(  # pyright: ignore[reportUnknownLambdaType]
+                    key=key, depth=depth)),  # type: ignore[reportUnknownMemberType]
+                kwargs={'key': ['tree'], 'depth': -1.0},
+                exception=TrieTypeError,
+                exception_tag=ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_TYPE,
+            ),
+            TestSpec(
+                name=("[TGT_TPB012] trie.prefixed_by([set([1]), 3, 4, 5]) "
+                      "(InvalidGeneralizedKeyError, TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY)"),
+                action=lambda key: list(trie.prefixed_by(key)),  # type: ignore[reportUnknownMemberType]
+                args=[[set([1]), 3, 4, 5]],
+                exception=InvalidGeneralizedKeyError,
+                exception_tag=ErrorTag.TRIE_PREFIXED_BY_INVALID_GENERALIZED_KEY,
             ),
         ]
         run_tests_list(self, tests)
@@ -1175,7 +1279,7 @@ class TestGeneralizedTrie(unittest.TestCase):
         self.assertTrue(unicode_key in trie)
         self.assertTrue(bytes_key in trie)
 
-    @pytest.mark.order(after=['test_contains'])
+    @pytest.mark.order(after=['test_contains', 'test_create_trie', 'test_add', 'test_trieid_class'])
     @pytest.mark.dependency(
         name='test_mutated_key_after_insertion',
         depends=['test_trieid_class', 'test_create_trie', 'test_add', 'test_contains'])

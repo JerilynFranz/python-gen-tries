@@ -992,6 +992,25 @@ the specific code throwing the exception for tests.</p>
 </dd>
 </dl>
 </dd></dl>
+<dl class="py exception">
+<dt class="sig sig-object py" id="gentrie.TrieValueError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">TrieValueError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gentrie.exceptions.ErrorTag" title="gentrie.exceptions.ErrorTag"><span class="pre">ErrorTag</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gentrie.TrieValueError" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.TrieValueError'">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
+<p>Base class for all trie-related value errors.</p>
+<p>It differs from a standard ValueError by the addition of a
+tag code used to very specifically identify where the error
+was thrown in the code for testing and development support.</p>
+<p>This tag code does not have a direct semantic meaning except to identify
+the specific code throwing the exception for tests.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>msg</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The error message.</p></li>
+<li><p><strong>tag</strong> (<a class="reference internal" href="#gentrie.ErrorTag" title="gentrie.ErrorTag"><em>ErrorTag</em></a>) – The tag code.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 <dl class="py function">
 <dt class="sig sig-object py" id="gentrie.is_generalizedkey">
 <span class="sig-prename descclassname"><span class="pre">gentrie.</span></span><span class="sig-name descname"><span class="pre">is_generalizedkey</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#gentrie.is_generalizedkey" title="Link to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#gentrie.is_generalizedkey'">¶</a></dt>
@@ -1142,6 +1161,7 @@ iterated. It must have at least one token.</p>
 <li><a :data-current="activeSection === '#gentrie.TrieKeyError'" class="reference internal" href="#gentrie.TrieKeyError"><code class="docutils literal notranslate"><span class="pre">TrieKeyError</span></code></a></li>
 <li><a :data-current="activeSection === '#gentrie.TrieKeyToken'" class="reference internal" href="#gentrie.TrieKeyToken"><code class="docutils literal notranslate"><span class="pre">TrieKeyToken</span></code></a></li>
 <li><a :data-current="activeSection === '#gentrie.TrieTypeError'" class="reference internal" href="#gentrie.TrieTypeError"><code class="docutils literal notranslate"><span class="pre">TrieTypeError</span></code></a></li>
+<li><a :data-current="activeSection === '#gentrie.TrieValueError'" class="reference internal" href="#gentrie.TrieValueError"><code class="docutils literal notranslate"><span class="pre">TrieValueError</span></code></a></li>
 <li><a :data-current="activeSection === '#gentrie.is_generalizedkey'" class="reference internal" href="#gentrie.is_generalizedkey"><code class="docutils literal notranslate"><span class="pre">is_generalizedkey()</span></code></a></li>
 <li><a :data-current="activeSection === '#gentrie.is_hashable'" class="reference internal" href="#gentrie.is_hashable"><code class="docutils literal notranslate"><span class="pre">is_hashable()</span></code></a></li>
 <li><a :data-current="activeSection === '#gentrie.is_triekeytoken'" class="reference internal" href="#gentrie.is_triekeytoken"><code class="docutils literal notranslate"><span class="pre">is_triekeytoken()</span></code></a></li>
