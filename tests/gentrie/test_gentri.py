@@ -1659,9 +1659,8 @@ class TestGeneralizedTrie(unittest.TestCase):
         ]
         run_tests_list(self, tests)
 
-    @pytest.mark.order(after='test_add')
-    @pytest.mark.dependency(name='test_contains', depends=[
-        'test_create_trie', 'test_add'])
+    @pytest.mark.order(after=['test_create_trie', 'test_add', 'test_remove'])
+    @pytest.mark.dependency(name='test_contains', depends=['test_create_trie', 'test_add', 'test_remove'])
     def test_contains(self) -> None:
         """Test the __contains__ dundermethod of GeneralizedTrie.
 
@@ -1674,55 +1673,241 @@ class TestGeneralizedTrie(unittest.TestCase):
         boolean values for each key, ensuring that the trie behaves correctly
         when checking for membership."""
         trie: GeneralizedTrie = GeneralizedTrie()
+
         tests: list[TestSpec] = [
             TestSpec(
-                name="[TC001] trie.__contains__('a') (false)",
+                name="[TGT_TC001] trie.__contains__() - wrong number of arguments (TypeError)",
+                action=trie.__contains__,
+                args=[],
+                exception=TypeError,
+            ),
+            TestSpec(
+                name="[TGT_TC002] trie.__contains__('a') (false)",
                 action=trie.__contains__,
                 args=['a'],
                 expected=False
             ),
             TestSpec(
-                name="[TC002] trie.add('a')", action=trie.add, args=["a"], expected=TrieId(1)
+                name="[TGT_TC003] 'a' in trie (false)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=['a'],
+                expected=False
             ),
             TestSpec(
-                name="[TC003] trie.__contains__('a') (true)",
+                name="[TGT_TC004] ['a'] in trie (false)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=[['a']],
+                expected=False
+            )
+        ]
+        run_tests_list(self, tests)
+
+        id_a: TrieId = trie.add('a')
+        tests = [
+            TestSpec(
+                name="[TGT_TC005] trie.__contains__('a') (true)",
                 action=trie.__contains__,
                 args=['a'],
                 expected=True
             ),
             TestSpec(
-                name="[TC004] trie.remove(TrieId(1))", action=trie.remove, args=[TrieId(1)], expected=None
+                name="[TGT_TC006] 'a' in trie (true)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=['a'],
+                expected=True
             ),
             TestSpec(
-                name="[TC005] trie.__contains__('a') (false after removal)",
+                name="[TGT_TC007] ['a'] in trie (true)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=[['a']],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC008] trie.__contains__(id_a) (true)",
                 action=trie.__contains__,
-                args=['a'],
+                args=[id_a],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC009] id_a in trie (true)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=[id_a],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC010] trie.__contains__('b') (false)",
+                action=trie.__contains__,
+                args=['b'],
+                expected=False
+            ),
+            TestSpec(
+                name="[TGT_TC011] trie.__contains__(['b']) (false)",
+                action=trie.__contains__,
+                args=[['b']],
+                expected=False
+            ),
+            TestSpec(
+                name="[TGT_TC012] 'b' in trie (false)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=['b'],
                 expected=False
             ),
         ]
         run_tests_list(self, tests)
 
-        with self.subTest(msg="[TC006] [1] in trie"):
-            self.assertFalse([1] in trie)
+        trie.remove(id_a)
 
-        with self.subTest(msg="[TC007] 'a' in trie"):
-            trie.add("a")
-            self.assertTrue("a" in trie)
-
-        with self.subTest(msg="[TC008] 'abc' in trie"):
-            trie.add("abc")
-            self.assertTrue("abc" in trie)
-
-        trie = GeneralizedTrie()  # Reset trie for next tests
-        test_keys: list[str] = [
-            '0123456789ABCDE', '0123456789ABCDF', '0123456789ABCDG', '0123456789ABCDH', '0123456789ABCDI',
-            '0123456789ABCDJ', '0123456789ABCDK', '0123456789ABCDL', '0123456789ABCDM', '0123456789ABCDN'
+        tests = [
+            TestSpec(
+                name="[TGT_TC013] trie.__contains__('a') (false after removal)",
+                action=trie.__contains__,
+                args=['a'],
+                expected=False
+            ),
+            TestSpec(
+                name="[TGT_TC014] 'a' in trie (false after removal)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=['a'],
+                expected=False
+            ),
+            TestSpec(
+                name="[TGT_TC015] trie.__contains__(id_a) (false after removal)",
+                action=trie.__contains__,
+                args=[id_a],
+                expected=False
+            ),
+            TestSpec(
+                name="[TGT_TC016] id_a in trie (false after removal)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=[id_a],
+                expected=False
+            ),
         ]
-        for key in test_keys:
-            trie[key] = key
+        run_tests_list(self, tests)
 
-        with self.subTest(msg="[TC010] '0123456789ABCDE' in trie"):
-            self.assertTrue('0123456789ABCDE' in trie)
+        # Test with different types of keys and a new trie
+        trie = GeneralizedTrie()
+        id_list_1: TrieId = trie.add([1])
+        id_list_none: TrieId = trie.add([None])
+        tests = [
+            TestSpec(
+                name="[TGT_TC017] trie.__contains__(1) (false, int(1) not a valid key type)",
+                action=trie.__contains__,
+                args=[1],
+                expected=False
+            ),
+            TestSpec(
+                name="[TGT_TC018] 1 in trie (false, int(1) not a valid key type)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=[1],
+                expected=False
+            ),
+            TestSpec(
+                name="[TGT_TC019] trie.__contains__([1]) (true)",
+                action=trie.__contains__,
+                args=[[1]],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC020] [1] in trie (true)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=[[1]],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC0019] trie.__contains__(id_list_1) (true)",
+                action=trie.__contains__,
+                args=[id_list_1],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC0020] id_list_1 in trie (true)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=[id_list_1],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC021] trie.__contains__(None) (false, None is not a valid key type)",
+                action=trie.__contains__,
+                args=[None],
+                expected=False
+            ),
+            TestSpec(
+                name="[TGT_TC022] None in trie (false, None is not a valid key type)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=[None],
+                expected=False
+            ),
+            TestSpec(
+                name="[TGT_TC023] trie.__contains__([None]) (true)",
+                action=trie.__contains__,
+                args=[[None]],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC024] [None] in trie (true)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=[[None]],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC025] trie.__contains__(id_list_none) (true)",
+                action=trie.__contains__,
+                args=[id_list_none],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC026] id_list_none in trie (true)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=[id_list_none],
+                expected=True
+            ),
+        ]
+        run_tests_list(self, tests)
+
+        # String key tests
+        trie = GeneralizedTrie()
+        id_str_abc: TrieId = trie.add('abc')
+        tests = [
+            TestSpec(
+                name="[TGT_TC027] trie.__contains__('abcd') (false, 'abcd' not in trie)",
+                action=trie.__contains__,
+                args=['abcd'],
+                expected=False
+            ),
+            TestSpec(
+                name="[TGT_TC028] trie.__contains__('abc') (true, 'abc' in trie)",
+                action=trie.__contains__,
+                args=['abc'],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC029] trie.__contains__(id_str_abc) (true, TrieId id_str_abc in trie)",
+                action=trie.__contains__,
+                args=[id_str_abc],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC030] trie.__contains__('ab') (false, prefix 'ab' not a key in trie)",
+                action=trie.__contains__,
+                args=['ab'],
+                expected=False
+            ),
+            TestSpec(
+                name="[TGT_TC031] trie.__contains__('a') (false, prefix 'a' not a key in trie)",
+                action=trie.__contains__,
+                args=['a'],
+                expected=False
+            ),
+            TestSpec(
+                name="[TGT_TC032] trie.__contains__('') (false, empty string not a key in trie)",
+                action=trie.__contains__,
+                args=[''],
+                expected=False
+            ),
+
+        ]
+        run_tests_list(self, tests)
 
     @pytest.mark.order(after='test_remove')
     @pytest.mark.dependency(name='test_keys', depends=[
