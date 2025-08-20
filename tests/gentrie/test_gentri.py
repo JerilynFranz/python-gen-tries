@@ -1,6 +1,7 @@
 """Tests for the gentrie module."""
 # pylint: disable=too-many-lines
 # pylint: disable=too-many-public-methods
+# pylint: disable=too-few-public-methods
 # pylint: disable=invalid-name
 
 import unittest
@@ -2135,9 +2136,7 @@ class TestGeneralizedTrie(unittest.TestCase):
             self.assertEqual(sorted(found_ids_list), expect_ids_list)
 
     @pytest.mark.order(after='test_remove')
-    @pytest.mark.dependency(name='test_bool', depends=[
-        'test_create_trie', 'test_add',
-        'test_remove'])
+    @pytest.mark.dependency(name='test_bool', depends=['test_create_trie', 'test_add', 'test_remove'])
     def test_bool(self) -> None:
         """Test the __bool__ method of GeneralizedTrie.
 
