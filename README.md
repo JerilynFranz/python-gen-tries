@@ -263,6 +263,121 @@ else:
 # abcdef is in trie
 ```
 
+## Architecture
+
+```mermaid
+graph TB
+    %% User Interface Layer
+    subgraph "Public API"
+        GT[GeneralizedTrie]
+        TE[TrieEntry]
+        TID[TrieId]
+        TKT[TrieKeyToken Protocol]
+        GK[GeneralizedKey TypeAlias]
+    end
+
+    %% Core Implementation Layer
+    subgraph "Core Implementation"
+        subgraph "Mixin Architecture"
+            TB[TrieBase]
+            TSM[TrieStorageMixin]
+            TAM[TrieAccessMixin]
+            TRM[TrieRemovalMixin]
+            TTM[TrieTraversalMixin]
+            TMM[TrieMutationMixin]
+            TCM[TrieCollectionMixin]
+        end
+        
+        TMI[TrieMixinsInterface Protocol]
+        N[Node]
+    end
+
+    %% Support Layer
+    subgraph "Support Systems"
+        subgraph "Type System"
+            P[protocols.py]
+            T[types.py]
+        end
+        
+        subgraph "Validation"
+            V[validation.py]
+        end
+        
+        subgraph "Error Handling"
+            E[exceptions.py]
+            ET[ErrorTag Enum]
+        end
+    end
+
+    %% Testing Framework
+    subgraph "Testing Framework"
+        TS[TestSpec]
+        RTL[run_tests_list]
+        RT[run_test]
+        TGT[TestGeneralizedTrie]
+    end
+
+    %% Composition Relationships
+    GT -.->|inherits from| TB
+    GT -.->|inherits from| TSM
+    GT -.->|inherits from| TAM
+    GT -.->|inherits from| TRM
+    GT -.->|inherits from| TTM
+    GT -.->|inherits from| TMM
+    GT -.->|inherits from| TCM
+
+    %% Protocol Constraints
+    TSM -.->|implements| TMI
+    TAM -.->|implements| TMI
+    TRM -.->|implements| TMI
+    TTM -.->|implements| TMI
+    TMM -.->|implements| TMI
+    TCM -.->|implements| TMI
+
+    %% Data Flow
+    GT -->|creates/manages| N
+    GT -->|creates| TE
+    GT -->|generates| TID
+    N -->|contains| TID
+    N -->|parent/child| N
+
+    %% Type Dependencies
+    GT -->|uses| TKT
+    GT -->|uses| GK
+    TE -->|contains| TID
+    TE -->|contains| GK
+
+    %% Validation Flow
+    TSM -->|validates with| V
+    TAM -->|validates with| V
+    TTM -->|validates with| V
+    V -->|checks against| TKT
+
+    %% Error Handling
+    TSM -->|raises| E
+    TAM -->|raises| E
+    TRM -->|raises| E
+    TTM -->|raises| E
+    E -->|uses| ET
+
+    %% Testing Relationships
+    TGT -->|uses| TS
+    TGT -->|calls| RTL
+    RTL -->|calls| RT
+    TGT -->|tests| GT
+
+    %% Styling
+    classDef publicAPI fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef coreImpl fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef support fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef testing fill:#fff3e0,stroke:#e65100,stroke-width:2px
+
+    class GT,TE,TID,TKT,GK publicAPI
+    class TB,TSM,TAM,TRM,TTM,TMM,TCM,TMI,N coreImpl
+    class P,T,V,E,ET support
+    class TS,RTL,RT,TGT testing
+```
+
 ## Authors and acknowledgment
 
 - Jerilyn Franz
