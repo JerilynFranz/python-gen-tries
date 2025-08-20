@@ -380,6 +380,51 @@ class TestGeneralizedTrie(unittest.TestCase):
         ]
         run_tests_list(self, tests)
 
+    @pytest.mark.order(after=['test_trieid_class', 'test_generalizedkey'])
+    @pytest.mark.dependency(name='test_trieid', depends=['test_trieid_class', 'test_generalizedkey'])
+    def test_trieentry(self) -> None:
+        """Test the TrieEntry class.
+        """
+        id_1: TrieId = TrieId(1)
+        id_2: TrieId = TrieId(2)
+
+        tests: list[TestSpec] = [
+            TestSpec(
+                name='[TGT_TTE001] Test TrieEntry initialization',
+                action=TrieEntry,
+                kwargs={'ident': id_1, 'key': 'test', 'value': 1},
+                validate_result=lambda found: (  # pyright: ignore[reportUnknownLambdaType]
+                    isinstance(found, TrieEntry) and found.ident == id_1 and found.key == 'test' and found.value == 1),
+            ),
+            TestSpec(
+                name='[TGT_TTE002] Test TrieEntry equality vs non-TrieEntry',
+                action=TrieEntry,
+                kwargs={'ident': id_1, 'key': 'test', 'value': 1},
+                validate_result=lambda found: (found != 1)  # pyright: ignore[reportUnknownLambdaType]
+            ),
+            TestSpec(
+                name='[TGT_TTE003] Test TrieEntry equality',
+                action=lambda: TrieEntry(id_1, "test", 1) == TrieEntry(id_1, "test", 1),
+                expected=True,
+            ),
+            TestSpec(
+                name='[TGT_TTE004] Test TrieEntry inequality (ident)',
+                action=lambda: TrieEntry(id_1, "test", 1) == TrieEntry(id_2, "test", 1),
+                expected=False,
+            ),
+            TestSpec(
+                name='[TGT_TTE005] Test TrieEntry inequality (key)',
+                action=lambda: TrieEntry(id_1, "test", 1) == TrieEntry(id_1, "other", 1),
+                expected=False,
+            ),
+            TestSpec(
+                name='[TGT_TTE006] Test TrieEntry inequality (value)',
+                action=lambda: TrieEntry(id_1, "test", 1) == TrieEntry(id_1, "test", 2),
+                expected=False,
+            ),
+        ]
+        run_tests_list(self, tests)
+
     @pytest.mark.order(after=['test_contains_dunder', 'test_bool'])
     @pytest.mark.dependency(
         name='test_clear',
