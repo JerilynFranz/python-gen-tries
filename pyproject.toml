@@ -34,7 +34,7 @@ description = "Generalized trie implementation"
 readme = "README.md"
 keywords = ["trie"]
 license = { file = "LICENSE" }
-version = "0.9.3"
+version = "0.9.4"
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Developers",
@@ -103,6 +103,10 @@ filterwarnings = ["ignore:cannot collect test class 'TestSpec':UserWarning"]
 
 [tool.coverage.run]
 branch = true
+omit = [
+    'test_plan.py',
+    'tests/testspec.py'
+]
 
 [tool.coverage.report]
 # Regexes for lines to exclude from consideration

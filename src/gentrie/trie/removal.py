@@ -45,8 +45,6 @@ class TrieRemovalMixin:
                 ident = self[key].ident
             except KeyError:
                 ident = None
-            except TypeError as exc:
-                raise RuntimeError("[GTR003] failed lookup of key because of unexpected exception") from exc
         else:
             raise TrieTypeError(
                 msg="key arg must be of type TrieId or a valid GeneralizedKey",

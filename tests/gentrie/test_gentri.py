@@ -1,6 +1,7 @@
 """Tests for the gentrie module."""
 # pylint: disable=too-many-lines
 # pylint: disable=too-many-public-methods
+# pylint: disable=too-few-public-methods
 # pylint: disable=invalid-name
 
 import unittest
@@ -14,7 +15,8 @@ import pytest
 from src.gentrie import (DuplicateKeyError, ErrorTag, GeneralizedTrie,
                          InvalidGeneralizedKeyError, TrieEntry, TrieId,
                          TrieKeyError, TrieKeyToken, TrieTypeError,
-                         TrieValueError, is_generalizedkey)
+                         TrieValueError, is_generalizedkey, is_triekeytoken,
+                         is_hashable)
 
 from ..testspec import TestSpec, run_tests_list
 
@@ -120,6 +122,110 @@ class TestGeneralizedTrie(unittest.TestCase):
                 expected=False,
             )
             for testcase in bad_types
+        ]
+        run_tests_list(self, tests)
+
+    @pytest.mark.order(after=['test_triekeytoken_supported_and_unsupported_builtin_types'])
+    @pytest.mark.dependency(
+        name='test_is_triekeytoken',
+        depends=['test_triekeytoken_supported_and_unsupported_builtin_types']
+    )
+    def test_is_triekeytoken(self) -> None:
+        """Test the is_triekeytoken function with various inputs.
+
+        This test checks that the is_triekeytoken function correctly identifies
+        valid and invalid trie key tokens."""
+        TEST_ID: int = 0
+        TEST_VALUE: int = 1
+        good_tokens: list[tuple[str, Any]] = [
+            ('TGT_TITKT001', 'a'),
+            ('TGT_TITKT002', str('ab')),
+            ('TGT_TITKT003', frozenset('abc')),
+            ('TGT_TITKT004', tuple(['a', 'b', 'c', 'd'])),
+            ('TGT_TITKT005', int(1)),
+            ('TGT_TITKT006', float(2.0)),
+            ('TGT_TITKT007', complex(3.0, 4.0)),
+            ('TGT_TITKT008', bytes(456)),
+        ]
+
+        tests: list[TestSpec] = [
+            TestSpec(
+                name=f"[{testcase[TEST_ID]}] is_triekeytoken({repr(testcase[TEST_VALUE])}) (True)",
+                action=is_triekeytoken,
+                args=[testcase[TEST_VALUE]],
+                expected=True,
+            )
+            for testcase in good_tokens
+        ]
+        run_tests_list(self, tests)
+
+        bad_tokens: list[tuple[str, Any]] = [
+            ('TGT_TITKT001', set('a')),
+            ('TGT_TITKT002', list(['a', 'b'])),
+            ('TGT_TITKT003', dict({'a': 1, 'b': 2, 'c': 3})),
+            ('TGT_TITKT004', set('abc')),
+        ]
+
+        tests = [
+            TestSpec(
+                name=f"[{testcase[TEST_ID]}] is_triekeytoken({repr(testcase[TEST_VALUE])}) (False)",
+                action=is_triekeytoken,
+                args=[testcase[TEST_VALUE]],
+                expected=False,
+            )
+            for testcase in bad_tokens
+        ]
+        run_tests_list(self, tests)
+
+    @pytest.mark.order(after=['test_triekeytoken_supported_and_unsupported_builtin_types'])
+    @pytest.mark.dependency(
+        name='test_is_hashable',
+        depends=['test_triekeytoken_supported_and_unsupported_builtin_types']
+    )
+    def test_is_hashable(self) -> None:
+        """Test the deprecated is_hashable function with various inputs.
+
+        This test checks that the is_hashable function correctly identifies
+        valid and invalid trie key tokens."""
+        TEST_ID: int = 0
+        TEST_VALUE: int = 1
+        good_tokens: list[tuple[str, Any]] = [
+            ('TGT_TIH001', 'a'),
+            ('TGT_TIH002', str('ab')),
+            ('TGT_TIHT003', frozenset('abc')),
+            ('TGT_TIHT004', tuple(['a', 'b', 'c', 'd'])),
+            ('TGT_TIHT005', int(1)),
+            ('TGT_TIHT006', float(2.0)),
+            ('TGT_TIHT007', complex(3.0, 4.0)),
+            ('TGT_TIHT008', bytes(456)),
+        ]
+
+        tests: list[TestSpec] = [
+            TestSpec(
+                name=f"[{testcase[TEST_ID]}] is_hashable({repr(testcase[TEST_VALUE])}) (True)",
+                action=is_hashable,
+                args=[testcase[TEST_VALUE]],
+                expected=True,
+            )
+            for testcase in good_tokens
+        ]
+        run_tests_list(self, tests)
+
+        bad_tokens: list[tuple[str, Any]] = [
+            ('TGT_TIHT001', set('a')),
+            ('TGT_TIHT002', list(['a', 'b'])),
+            ('TGT_TIHT003', dict({'a': 1, 'b': 2, 'c': 3})),
+            ('TGT_TIHT004', set('abc')),
+        ]
+
+        tests = [
+            TestSpec(
+                name=f"[{testcase[TEST_ID]}] is_hashable({repr(testcase[TEST_VALUE])}) (False)",
+                action=is_hashable,
+                args=[testcase[TEST_VALUE]],
+                expected=False,
+            )
+            for testcase in bad_tokens
         ]
         run_tests_list(self, tests)
 
@@ -274,10 +380,67 @@ class TestGeneralizedTrie(unittest.TestCase):
         ]
         run_tests_list(self, tests)
 
-    @pytest.mark.order(after=['test_contains', 'test_bool'])
+    @pytest.mark.order(after=['test_trieid_class'])
+    @pytest.mark.dependency(name='test_trieid', depends=['test_trieid_class'])
+    def test_trieentry(self) -> None:
+        """Test the TrieEntry class.
+        """
+        id_1: TrieId = TrieId(1)
+        id_2: TrieId = TrieId(2)
+
+        tests: list[TestSpec] = [
+            TestSpec(
+                name='[TGT_TTE001] Test TrieEntry initialization',
+                action=TrieEntry,
+                kwargs={'ident': id_1, 'key': 'test', 'value': 1},
+                validate_result=lambda found: (  # pyright: ignore[reportUnknownLambdaType]
+                    isinstance(found, TrieEntry) and found.ident == id_1 and found.key == 'test' and found.value == 1),
+            ),
+            TestSpec(
+                name='[TGT_TTE002] Test TrieEntry equality vs non-TrieEntry (False)',
+                action=TrieEntry,
+                kwargs={'ident': id_1, 'key': 'test', 'value': 1},
+                validate_result=lambda found: not (found == 1)  # pyright: ignore[reportUnknownLambdaType]
+            ),
+            TestSpec(
+                name='[TGT_TTE003] Test non-TrieEntry equality vs TrieEntry (False)',
+                action=TrieEntry,
+                kwargs={'ident': id_1, 'key': 'test', 'value': 1},
+                validate_result=lambda found: not (1 == found)  # pyright: ignore[reportUnknownLambdaType]
+            ),
+            TestSpec(
+                name='[TGT_TTE004] trie_entry.__eq__(<other>) (False)',
+                action=TrieEntry,
+                kwargs={'ident': id_1, 'key': 'test', 'value': 1},
+                validate_result=lambda found: not found.__eq__(1)  # noqa: E501  # pyright: ignore[reportUnknownLambdaType, reportUnknownMemberType]
+            ),
+            TestSpec(
+                name='[TGT_TTE005] Test TrieEntry equality',
+                action=lambda: TrieEntry(id_1, "test", 1) == TrieEntry(id_1, "test", 1),
+                expected=True,
+            ),
+            TestSpec(
+                name='[TGT_TTE006] Test TrieEntry inequality (ident)',
+                action=lambda: TrieEntry(id_1, "test", 1) == TrieEntry(id_2, "test", 1),
+                expected=False,
+            ),
+            TestSpec(
+                name='[TGT_TTE007] Test TrieEntry inequality (key)',
+                action=lambda: TrieEntry(id_1, "test", 1) == TrieEntry(id_1, "other", 1),
+                expected=False,
+            ),
+            TestSpec(
+                name='[TGT_TTE008] Test TrieEntry inequality (value)',
+                action=lambda: TrieEntry(id_1, "test", 1) == TrieEntry(id_1, "test", 2),
+                expected=False,
+            ),
+        ]
+        run_tests_list(self, tests)
+
+    @pytest.mark.order(after=['test_contains_dunder', 'test_bool'])
     @pytest.mark.dependency(
         name='test_clear',
-        depends=['test_create_trie', 'test_add', 'test_contains', 'test_bool', 'test_keys'])
+        depends=['test_create_trie', 'test_add', 'test_contains_dunder', 'test_bool', 'test_keys'])
     def test_clear(self) -> None:
         """Test the clear method of GeneralizedTrie."""
         trie = GeneralizedTrie()
@@ -349,7 +512,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                         }
                     },
                     'trie_index': [TrieId(1)],
-                    'trie_entries': {TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'ape'], value=None)"}
+                    'trie_entries': {TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'ape'), value=None)"}
                 }
             ),
 
@@ -393,8 +556,8 @@ class TestGeneralizedTrie(unittest.TestCase):
                     },
                     'trie_index': [TrieId(1), TrieId(2)],
                     'trie_entries': {
-                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'ape'], value=None)",
-                        TrieId(2): "TrieEntry(ident=TrieId(2), key=['tree', 'value'], value=None)"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'ape'), value=None)",
+                        TrieId(2): "TrieEntry(ident=TrieId(2), key=('tree', 'value'), value=None)"
                     }
                 }
             ),
@@ -541,7 +704,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                     },
                     'trie_index': [TrieId(1)],
                     'trie_entries': {
-                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'cheetah'], value='feline')"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'cheetah'), value='feline')"
                     }
                 },
             ),
@@ -592,13 +755,13 @@ class TestGeneralizedTrie(unittest.TestCase):
                     },
                     'trie_index': [TrieId(1)],
                     'trie_entries': {
-                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'cheetah'], value='feline')"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'cheetah'), value='feline')"
                     }
                 },
             ),
             # Add the same key with a DIFFERENT value (default of None) and validate we get a DuplicateKeyError
             TestSpec(
-                name="[TA022] trie.add(['tree', 'value', 'cheetah'])",
+                name="[TA023] trie.add(['tree', 'value', 'cheetah'])",
                 action=trie.add,
                 args=[["tree", "value", "cheetah"]],
                 exception=DuplicateKeyError,
@@ -609,7 +772,7 @@ class TestGeneralizedTrie(unittest.TestCase):
             # Validate that the trie is unchanged after attempting to add the same key with a different value of None
             # (this is to test that the trie has not changed the trie despite throwing an error)
             TestSpec(
-                name="[TA023] trie[1].value == 'feline' (_as_dict() check, no change after DuplicateKeyError)",
+                name="[TA024] trie[1].value == 'feline' (_as_dict() check, no change after DuplicateKeyError)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
                     'ident': None,
@@ -640,13 +803,13 @@ class TestGeneralizedTrie(unittest.TestCase):
                     },
                     'trie_index': [TrieId(1)],
                     'trie_entries': {
-                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'cheetah'], value='feline')"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'cheetah'), value='feline')"
                     }
                 },
             ),
             # Add the same key with a DIFFERENT value (explictly specified) and validate we get a DuplicateKeyError
             TestSpec(
-                name="[TA024] trie.add(['tree', 'value', 'cheetah'], 'canide)",
+                name="[TA025] trie.add(['tree', 'value', 'cheetah'], 'canide)",
                 action=trie.add,
                 args=[["tree", "value", "cheetah"], "canide"],
                 exception=DuplicateKeyError,
@@ -708,7 +871,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                         }
                     },
                     'trie_index': [TrieId(1)],
-                    'trie_entries': {TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'ape'], value=None)"}
+                    'trie_entries': {TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'ape'), value=None)"}
                 }
             ),
 
@@ -752,8 +915,8 @@ class TestGeneralizedTrie(unittest.TestCase):
                     },
                     'trie_index': [TrieId(1), TrieId(2)],
                     'trie_entries': {
-                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'ape'], value=None)",
-                        TrieId(2): "TrieEntry(ident=TrieId(2), key=['tree', 'value'], value=None)"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'ape'), value=None)",
+                        TrieId(2): "TrieEntry(ident=TrieId(2), key=('tree', 'value'), value=None)"
                     }
                 }
             ),
@@ -897,7 +1060,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                     },
                     'trie_index': [TrieId(1)],
                     'trie_entries': {
-                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'cheetah'], value='feline')"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'cheetah'), value='feline')"
                     }
                 },
             ),
@@ -943,7 +1106,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                     },
                     'trie_index': [TrieId(1)],
                     'trie_entries': {
-                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'cheetah'], value='feline')"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'cheetah'), value='feline')"
                     }
                 },
             ),
@@ -988,7 +1151,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                     },
                     'trie_index': [TrieId(1)],
                     'trie_entries': {
-                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'cheetah'], value=None)"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'cheetah'), value=None)"
                     }
                 },
             ),
@@ -1032,7 +1195,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                     },
                     'trie_index': [TrieId(1)],
                     'trie_entries': {
-                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'cheetah'], value='canide')"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'cheetah'), value='canide')"
                     }
                 },
             ),
@@ -1120,14 +1283,14 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TGT_TP003] trie.prefixes(['tree', 'value', 'ape']) (exact key in trie)",
                 action=lambda key: list(trie.prefixes(key)),  # type: ignore[reportUnknownMemberType]
                 args=[['tree', 'value', 'ape']],
-                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+                expected=[TrieEntry(TrieId(1), ('tree', 'value', 'ape'))]
             ),
             TestSpec(
                 name=("[TGT_TP004] trie.prefixes(['tree', 'value', 'ape', 'grape']) "
                       "(NOT exact key in trie, but has other keys that are prefix)"),
                 action=lambda key: list(trie.prefixes(key)),  # type: ignore[reportUnknownMemberType]
                 args=[['tree', 'value', 'ape', 'grape']],
-                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+                expected=[TrieEntry(TrieId(1), ('tree', 'value', 'ape'))]
             ),
             TestSpec(
                 name=("[TGT_TP005] trie.prefixes(['tree', 'value']) "
@@ -1166,14 +1329,14 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TGT_TPB003] trie.prefixed_by(['tree', 'value', 'ape']) (exact key in trie, no others)",
                 action=lambda key: list(trie.prefixed_by(key)),  # type: ignore[reportUnknownMemberType]
                 args=[['tree', 'value', 'ape']],
-                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+                expected=[TrieEntry(TrieId(1), ('tree', 'value', 'ape'))]
             ),
             TestSpec(
                 name=("[TGT_TPB004] trie.prefixed_by(['tree']) "
                       "(NOT exact key in trie, but prefixes other keys in the trie)"),
                 action=lambda key: list(trie.prefixed_by(key)),  # type: ignore[reportUnknownMemberType]
                 args=[['tree']],
-                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+                expected=[TrieEntry(TrieId(1), ('tree', 'value', 'ape'))]
             ),
             TestSpec(
                 name=("[TGT_TPB005] trie.prefixed_by(['tree', 'value', 'ape', 'grape']) "
@@ -1204,7 +1367,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 action=lambda key, depth: list(trie.prefixed_by(  # pyright: ignore[reportUnknownLambdaType]
                     key=key, depth=depth)),  # type: ignore[reportUnknownMemberType]
                 kwargs={'key': ['tree'], 'depth': 2},
-                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+                expected=[TrieEntry(TrieId(1), ('tree', 'value', 'ape'))]
             ),
             TestSpec(
                 name=("[TGT_TPB009] trie.prefixed_by(key=['tree'], depth=-1) "
@@ -1212,7 +1375,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 action=lambda key, depth: list(trie.prefixed_by(  # pyright: ignore[reportUnknownLambdaType]
                     key=key, depth=depth)),  # type: ignore[reportUnknownMemberType]
                 kwargs={'key': ['tree'], 'depth': -1},
-                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+                expected=[TrieEntry(TrieId(1), ('tree', 'value', 'ape'))]
             ),
             TestSpec(
                 name=("[TGT_TPB010] trie.prefixed_by(key=['tree'], depth=-2) "
@@ -1243,10 +1406,10 @@ class TestGeneralizedTrie(unittest.TestCase):
         ]
         run_tests_list(self, tests)
 
-    @pytest.mark.order(after=['test_create_trie', 'test_add', 'test_trieid_class', 'test_contains'])
+    @pytest.mark.order(after=['test_create_trie', 'test_add', 'test_trieid_class', 'test_contains_dunder'])
     @pytest.mark.dependency(
         name='test_deeply_nested_keys',
-        depends=['test_create_trie', 'test_add', 'test_trieid_class', 'test_contains'])
+        depends=['test_create_trie', 'test_add', 'test_trieid_class', 'test_contains_dunder'])
     def test_deeply_nested_keys(self):
         """Test that deeply nested keys can be added and queried correctly.
 
@@ -1257,13 +1420,13 @@ class TestGeneralizedTrie(unittest.TestCase):
         id1 = trie.add(deep_key)
         self.assertEqual(id1, TrieId(1))
         self.assertTrue(deep_key in trie)
-        self.assertEqual(set(trie.prefixes(deep_key)), set([TrieEntry(TrieId(1), deep_key)]))
-        self.assertEqual(set(trie.prefixed_by(deep_key)), set([TrieEntry(TrieId(1), deep_key)]))
+        self.assertEqual(set(trie.prefixes(deep_key)), set([TrieEntry(TrieId(1), tuple(deep_key))]))
+        self.assertEqual(set(trie.prefixed_by(deep_key)), set([TrieEntry(TrieId(1), tuple(deep_key))]))
 
-    @pytest.mark.order(after=['test_create_trie', 'test_add', 'test_trieid_class', 'test_contains'])
+    @pytest.mark.order(after=['test_create_trie', 'test_add', 'test_trieid_class', 'test_contains_dunder'])
     @pytest.mark.dependency(
         name='test_unicode_and_bytes_keys',
-        depends=['test_create_trie', 'test_add', 'test_trieid_class', 'test_contains'])
+        depends=['test_create_trie', 'test_add', 'test_trieid_class', 'test_contains_dunder'])
     def test_unicode_and_bytes_keys(self):
         """Test that unicode and bytes keys can coexist in the trie.
 
@@ -1279,10 +1442,10 @@ class TestGeneralizedTrie(unittest.TestCase):
         self.assertTrue(unicode_key in trie)
         self.assertTrue(bytes_key in trie)
 
-    @pytest.mark.order(after=['test_contains', 'test_create_trie', 'test_add', 'test_trieid_class'])
+    @pytest.mark.order(after=['test_contains_dunder', 'test_create_trie', 'test_add', 'test_trieid_class'])
     @pytest.mark.dependency(
         name='test_mutated_key_after_insertion',
-        depends=['test_trieid_class', 'test_create_trie', 'test_add', 'test_contains'])
+        depends=['test_trieid_class', 'test_create_trie', 'test_add', 'test_contains_dunder'])
     def test_mutated_key_after_insertion(self):
         """Test that mutating a key after insertion does not affect the trie.
 
@@ -1337,9 +1500,9 @@ class TestGeneralizedTrie(unittest.TestCase):
         self.assertTrue([10, 11, 12] in trie)
         self.assertTrue([999, 1000, 1001] in trie)
 
-    @pytest.mark.order(after='test_contains')
+    @pytest.mark.order(after='test_contains_dunder')
     @pytest.mark.dependency(name='test_bytes_vs_str',
-                            depends=['test_create_trie', 'test_contains'])
+                            depends=['test_create_trie', 'test_contains_dunder'])
     def test_bytes_vs_str(self):
         """Test that adding a string and bytes with the same content generates different IDs.
 
@@ -1389,133 +1552,6 @@ class TestGeneralizedTrie(unittest.TestCase):
         id2 = trie.add(key)
         self.assertNotEqual(id1, id2)
         self.assertTrue(key in trie)
-
-    @pytest.mark.order(after='test_add')
-    @pytest.mark.dependency(name='test_remove', depends=[
-        'test_create_trie', 'test_trieid_class', 'test_add'])
-    def test_remove(self) -> None:
-        """Test the remove method of GeneralizedTrie.
-
-        This test covers adding, removing, and checking the state of the trie.
-
-        It includes various scenarios such as removing existing entries, handling
-        non-existing entries, and checking the length of the trie after removals.
-
-        The test also checks for correct exception handling when trying to remove
-        non-existing entries or entries with invalid types.
-
-        This test is designed to ensure that the remove method behaves correctly
-        and maintains the integrity of the trie structure."""
-        trie: GeneralizedTrie = GeneralizedTrie()
-        tests: list[TestSpec] = [
-            TestSpec(
-                name="[TR001] trie.add('a')", action=trie.add, args=["a"], expected=TrieId(1)
-            ),
-            TestSpec(
-                name="[TR002] trie.add('ab')", action=trie.add, args=["ab"], expected=TrieId(2)
-            ),
-            TestSpec(
-                name="[TR003] trie.add('abc')", action=trie.add, args=["abc"], expected=TrieId(3),
-            ),
-            TestSpec(
-                name="[TR004] trie.add('abe')",
-                action=trie.add,
-                args=["abe"],
-                expected=TrieId(4),
-            ),
-            TestSpec(
-                name="[TR005] trie.add('abef')",
-                action=trie.add,
-                args=["abef"],
-                expected=TrieId(5),
-            ),
-            TestSpec(
-                name="[TR006] trie.add('abcd')",
-                action=trie.add,
-                args=["abcd"],
-                expected=TrieId(6),
-            ),
-            TestSpec(
-                name="[TR007] trie.add('abcde')",
-                action=trie.add,
-                args=["abcde"],
-                expected=TrieId(7),
-            ),
-            TestSpec(
-                name="[TR008] trie.add('abcdf')",
-                action=trie.add,
-                args=["abcdef"],
-                expected=TrieId(8),
-            ),
-            TestSpec(
-                name="[TR009] trie.add('abcdefg')",
-                action=trie.add,
-                args=["abcdefg"],
-                expected=TrieId(9),
-            ),
-            TestSpec(
-                name="[TR010] trie.remove(TrieId(9))",
-                action=trie.remove,
-                args=[TrieId(9)],
-                expected=None,
-            ),
-            TestSpec(name="[TR011] len(trie)", action=len, args=[trie], expected=8),
-            TestSpec(
-                name="[TR012] trie.remove(TrieId(9)) (TrieKeyError, REMOVAL_KEY_NOT_FOUND)",
-                action=trie.remove,
-                args=[TrieId(9)],
-                exception=TrieKeyError,
-                exception_tag=ErrorTag.REMOVAL_KEY_NOT_FOUND,
-            ),
-            TestSpec(name="[TR013] len(trie)", action=len, args=[trie], expected=8),
-            TestSpec(
-                name="[TR014] trie.remove(TrieId(1))",
-                action=trie.remove,
-                args=[TrieId(1)],
-                expected=None,
-            ),
-            TestSpec(name="[TR015] len(trie)", action=len, args=[trie], expected=7),
-            TestSpec(
-                name="[TR016] trie.remove(TrieId(2))",
-                action=trie.remove,
-                args=[TrieId(2)],
-                expected=None,
-            ),
-            TestSpec(name="[TR017] len(trie)", action=len, args=[trie], expected=6),
-            TestSpec(
-                name="[TR018] trie.remove('defghi') (TrieKeyError, REMOVAL_KEY_NOT_FOUND)",
-                action=trie.remove,
-                args=["defghi"],
-                exception=TrieKeyError,
-                exception_tag=ErrorTag.REMOVAL_KEY_NOT_FOUND,
-            ),
-            TestSpec(
-                name="[TR019] trie.remove(TrieId(0)) (TrieKeyError, REMOVAL_KEY_NOT_FOUND)",
-                action=trie.remove,
-                args=[TrieId(0)],
-                exception=TrieKeyError,
-                exception_tag=ErrorTag.REMOVAL_KEY_NOT_FOUND,
-            ),
-            TestSpec(
-                name="[TR020] trie.add('qrstuv')",
-                action=trie.add,
-                args=['qrstuv'],
-                expected=TrieId(10),
-            ),
-            TestSpec(
-                name="[TR021] trie.remove(TrieId(10))",
-                action=trie.remove,
-                args=[TrieId(10)],
-                expected=None,
-            ),
-            TestSpec(
-                name="[TR022] len(trie)",
-                action=len,
-                args=[trie],
-                expected=6,
-            ),
-        ]
-        run_tests_list(self, tests)
 
     def test_str(self) -> None:
         """Test the string representation of GeneralizedTrie.
@@ -1602,131 +1638,477 @@ class TestGeneralizedTrie(unittest.TestCase):
         }""")
         self.assertEqual(found, expected, msg='[TSTR003] str(trie))')
 
-    def test_getitem(self) -> None:
+    @pytest.mark.order(after=['test_create_trie', 'test_add', 'test_remove'])
+    @pytest.mark.dependency(name='test_getitem_dunder', depends=['test_create_trie', 'test_add', 'test_remove'])
+    def test_getitem_dunder(self) -> None:
         """Test the __getitem__ dunder method of GeneralizedTrie.
 
         This test checks whether the trie correctly retrieves values for
         existing keys and raises the appropriate errors for non-existing
         keys or invalid key types."""
         trie: GeneralizedTrie = GeneralizedTrie()
+        id_ab: TrieId = trie.add("ab", "value for ab")
+        id_abc: TrieId = trie.add("abc", "another value")
         tests: list[TestSpec] = [
             TestSpec(
-                name="[TGI001] trie.__getitem__(TrieId(1)) (Empty Trie, TrieKeyError, GETITEM_ID_NOT_FOUND)",
+                name="[TGT_TGID001] trie.__getitem__(id_abc) (value for existing ID)",
                 action=trie.__getitem__,
-                args=[TrieId(1)],
-                exception=TrieKeyError,
-                exception_tag=ErrorTag.GETITEM_ID_NOT_FOUND
+                args=[id_abc],
+                expected=TrieEntry(ident=id_abc, key='abc', value='another value')
             ),
             TestSpec(
-                name="[TGI002] trie.add(key='a', value='value')",
-                action=trie.add,
-                kwargs={"key": "a", "value": "value"},
-                expected=TrieId(1)
-            ),
-            TestSpec(
-                name="[TGI003] trie.__getitem__('a') ('a' -> 'value' after add)",
+                name="[TGT_TGID002] trie.__getitem__('abc') (value for key 'abc')",
                 action=trie.__getitem__,
-                args=['a'],
-                expected=TrieEntry(ident=TrieId(1), key='a', value='value')
+                args=['abc'],
+                expected=TrieEntry(ident=id_abc, key='abc', value='another value')
             ),
             TestSpec(
-                name="[TGI004] trie.__getitem__('abc') (Non-existent key, TrieKeyError, GETITEM_KEY_NOT_FOUND)",
+                name="[TGT_TGID003] trie.remove('abc') (remove key 'abc' from trie)",
+                action=trie.remove,
+                args=['abc'],
+                expected=None
+            ),
+            TestSpec(
+                name=("[TGT_TGID004] trie.__getitem__('abc') (non-existent key after removal, "
+                      "TrieKeyError, GETITEM_KEY_NOT_FOUND)"),
                 action=trie.__getitem__,
                 args=['abc'],
                 exception=TrieKeyError,
                 exception_tag=ErrorTag.GETITEM_KEY_NOT_FOUND
             ),
             TestSpec(
-                name="[TGI005] trie.__getitem__(set('a')) (TrieTypeError, GETITEM_INVALID_KEY_TYPE)",
+                name=("[TGT_TGID005] trie.__getitem__(id_abc) (non-existent TrieId "
+                      "after removal, TrieKeyError, GETITEM_ID_NOT_FOUND)"),
+                action=trie.__getitem__,
+                args=[id_abc],
+                exception=TrieKeyError,
+                exception_tag=ErrorTag.GETITEM_ID_NOT_FOUND
+            ),
+            TestSpec(
+                name=("[TGT_TGID006] trie.__getitem__('abc') (Non-existent key, "
+                      "TrieKeyError, GETITEM_KEY_NOT_FOUND)"),
+                action=trie.__getitem__,
+                args=['abc'],
+                exception=TrieKeyError,
+                exception_tag=ErrorTag.GETITEM_KEY_NOT_FOUND
+            ),
+            TestSpec(
+                name="[TGT_TGID007] trie.__getitem__(set('a')) (TrieTypeError, GETITEM_INVALID_KEY_TYPE)",
                 action=trie.__getitem__,
                 args=[set('abc')],
                 exception=TrieTypeError,
                 exception_tag=ErrorTag.GETITEM_INVALID_KEY_TYPE
             ),
             TestSpec(
-                name="[TGI006] trie.add(key='abc', value='another value')",
-                action=trie.add,
-                kwargs={"key": "abc", "value": "another value"},
-                expected=TrieId(2)
-            ),
-            TestSpec(
-                name="[TGI007] trie.__getitem__('ab') (Non-existent key, TrieKeyError, GETITEM_NOT_TERMINAL)",
+                name="[TGT_TGID008] trie.__getitem__('a') (Non-existent key, TrieKeyError, GETITEM_NOT_TERMINAL)",
                 action=trie.__getitem__,
-                args=['ab'],
+                args=['a'],
                 exception=TrieKeyError,
                 exception_tag=ErrorTag.GETITEM_NOT_TERMINAL
+            ),
+            TestSpec(
+                name="[TGT_TGID009] trie['ab'].value == 'value for ab'",
+                action=lambda trie, key: trie[key].value,  # type: ignore[reportUnknownMemberType]
+                args=[trie, 'ab'],
+                expected='value for ab'
+            ),
+            TestSpec(
+                name="[TGT_TGID010] trie[id_ab].value == 'value for ab'",
+                action=lambda trie, key: trie[key].value,  # type: ignore[reportUnknownMemberType]
+                args=[trie, id_ab],
+                expected='value for ab'
+            )
+        ]
+        run_tests_list(self, tests)
+
+    @pytest.mark.order(after=['test_create_trie', 'test_contains_dunder', 'test_getitem_dunder'])
+    @pytest.mark.dependency(name='test_setitem_dunder',
+                            depends=['test_create_trie', 'test_contains_dunder', 'test_getitem_dunder'])
+    def test_setitem_dunder(self) -> None:
+        """Test the __setitem__ dunder method of GeneralizedTrie.
+
+        The __setitem__ dunder method allows assigning values to keys in the trie using
+        the square bracket notation: trie[<key>] = <value>
+        """
+        def _helper_assignment(trie: GeneralizedTrie, key: str, value: str) -> None:
+            """Helper function to assign a value to a key in the trie.
+
+            Args:
+                trie (GeneralizedTrie): The trie to modify.
+                key (str): The key to assign the value to.
+                value (str): The value to assign to the key.
+            """
+            trie[key] = value
+
+        trie: GeneralizedTrie = GeneralizedTrie()
+
+        tests: list[TestSpec] = [
+            TestSpec(
+                name="[TGT_TSID001] trie.__setitem__('a', 'value')",
+                action=trie.__setitem__,
+                args=['a', 'value'],
+                expected=None
+            ),
+            TestSpec(
+                name="[TGT_TSID002] 'a' in trie (verify successful insertion with __setitem__)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=['a'],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TSID003] trie.__setitem__('a', 'value2') (Key already exists, update value)",
+                action=trie.__setitem__,
+                args=['a', 'value2'],
+                expected=None
+            ),
+            TestSpec(
+                name="[TGT_TSID004] trie['a'].value == 'value2' (Key already exists, updated value)",
+                action=lambda trie, key: trie[key].value,  # type: ignore[reportUnknownMemberType]
+                args=[trie, 'a'],
+                expected='value2'
+            ),
+            TestSpec(
+                name="[TGT_TSID005] trie['ab'] = 'value3' (Key does not exist, insert new value)",
+                action=_helper_assignment,
+                args=[trie, 'ab', 'value3'],
+                expected=None
+            ),
+            TestSpec(
+                name="[TGT_TSID006] 'ab' in trie (verify successful insertion using trie['ab'] = 'value3')",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=['ab'],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TSID007] trie['ab'] = 'value4' (Key already exists, update value)",
+                action=_helper_assignment,
+                args=[trie, 'ab', 'value4'],
+                expected=None
+            ),
+            TestSpec(
+                name="[TGT_TSID008] trie['ab'].value == 'value4' (Key already exists, updated value)",
+                action=lambda trie, key: trie[key].value,  # type: ignore[reportUnknownMemberType]
+                args=[trie, 'ab'],
+                expected='value4'
             ),
         ]
         run_tests_list(self, tests)
 
-    @pytest.mark.order(after='test_add')
-    @pytest.mark.dependency(name='test_contains', depends=[
-        'test_create_trie', 'test_add'])
-    def test_contains(self) -> None:
+    @pytest.mark.order(after=['test_create_trie', 'test_add'])
+    @pytest.mark.dependency(name='test_contains_dunder', depends=['test_create_trie', 'test_add'])
+    def test_contains_dunder(self) -> None:
         """Test the __contains__ dundermethod of GeneralizedTrie.
 
         This test checks whether the trie correctly identifies the presence
-        or absence of various keys. It includes tests for both existing and
-        non-existing keys, as well as checks for keys that have been added
-        and then removed.
+        or absence of various keys.
 
         The test verifies that the __contains__ dunder method returns the expected
         boolean values for each key, ensuring that the trie behaves correctly
         when checking for membership."""
         trie: GeneralizedTrie = GeneralizedTrie()
+
         tests: list[TestSpec] = [
             TestSpec(
-                name="[TC001] trie.__contains__('a') (false)",
+                name="[TGT_TC001] trie.__contains__() - wrong number of arguments (TypeError)",
+                action=trie.__contains__,
+                args=[],
+                exception=TypeError,
+            ),
+            TestSpec(
+                name="[TGT_TC002] trie.__contains__('a') (false)",
                 action=trie.__contains__,
                 args=['a'],
                 expected=False
             ),
             TestSpec(
-                name="[TC002] trie.add('a')", action=trie.add, args=["a"], expected=TrieId(1)
+                name="[TGT_TC003] 'a' in trie (false)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=['a'],
+                expected=False
             ),
             TestSpec(
-                name="[TC003] trie.__contains__('a') (true)",
+                name="[TGT_TC004] ['a'] in trie (false)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=[['a']],
+                expected=False
+            )
+        ]
+        run_tests_list(self, tests)
+
+        id_a: TrieId = trie.add('a')
+        tests = [
+            TestSpec(
+                name="[TGT_TC005] trie.__contains__('a') (true)",
                 action=trie.__contains__,
                 args=['a'],
                 expected=True
             ),
             TestSpec(
-                name="[TC004] trie.remove(TrieId(1))", action=trie.remove, args=[TrieId(1)], expected=None
+                name="[TGT_TC006] 'a' in trie (true)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=['a'],
+                expected=True
             ),
             TestSpec(
-                name="[TC005] trie.__contains__('a') (false after removal)",
+                name="[TGT_TC007] ['a'] in trie (true)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=[['a']],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC008] trie.__contains__(id_a) (true)",
                 action=trie.__contains__,
-                args=['a'],
+                args=[id_a],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC009] id_a in trie (true)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=[id_a],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC010] trie.__contains__('b') (false)",
+                action=trie.__contains__,
+                args=['b'],
+                expected=False
+            ),
+            TestSpec(
+                name="[TGT_TC011] trie.__contains__(['b']) (false)",
+                action=trie.__contains__,
+                args=[['b']],
+                expected=False
+            ),
+            TestSpec(
+                name="[TGT_TC012] 'b' in trie (false)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=['b'],
                 expected=False
             ),
         ]
         run_tests_list(self, tests)
 
-        with self.subTest(msg="[TC006] [1] in trie"):
-            self.assertFalse([1] in trie)
-
-        with self.subTest(msg="[TC007] 'a' in trie"):
-            trie.add("a")
-            self.assertTrue("a" in trie)
-
-        with self.subTest(msg="[TC008] 'abc' in trie"):
-            trie.add("abc")
-            self.assertTrue("abc" in trie)
-
-        trie = GeneralizedTrie()  # Reset trie for next tests
-        test_keys: list[str] = [
-            '0123456789ABCDE', '0123456789ABCDF', '0123456789ABCDG', '0123456789ABCDH', '0123456789ABCDI',
-            '0123456789ABCDJ', '0123456789ABCDK', '0123456789ABCDL', '0123456789ABCDM', '0123456789ABCDN'
+        # Test with different types of keys and a new trie
+        trie = GeneralizedTrie()
+        id_list_1: TrieId = trie.add([1])
+        id_list_none: TrieId = trie.add([None])
+        tests = [
+            TestSpec(
+                name="[TGT_TC013] trie.__contains__(1) (false, int(1) not a valid key type)",
+                action=trie.__contains__,
+                args=[1],
+                expected=False
+            ),
+            TestSpec(
+                name="[TGT_TC014] 1 in trie (false, int(1) not a valid key type)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=[1],
+                expected=False
+            ),
+            TestSpec(
+                name="[TGT_TC015] trie.__contains__([1]) (true)",
+                action=trie.__contains__,
+                args=[[1]],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC016] [1] in trie (true)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=[[1]],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC0017] trie.__contains__(id_list_1) (true)",
+                action=trie.__contains__,
+                args=[id_list_1],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC0018] id_list_1 in trie (true)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=[id_list_1],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC019] trie.__contains__(None) (false, None is not a valid key type)",
+                action=trie.__contains__,
+                args=[None],
+                expected=False
+            ),
+            TestSpec(
+                name="[TGT_TC020] None in trie (false, None is not a valid key type)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=[None],
+                expected=False
+            ),
+            TestSpec(
+                name="[TGT_TC021] trie.__contains__([None]) (true)",
+                action=trie.__contains__,
+                args=[[None]],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC022] [None] in trie (true)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=[[None]],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC023] trie.__contains__(id_list_none) (true)",
+                action=trie.__contains__,
+                args=[id_list_none],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC024] id_list_none in trie (true)",
+                action=lambda key: key in trie,  # type: ignore[reportUnknownMemberType]
+                args=[id_list_none],
+                expected=True
+            ),
         ]
-        for key in test_keys:
-            trie[key] = key
+        run_tests_list(self, tests)
 
-        with self.subTest(msg="[TC010] '0123456789ABCDE' in trie"):
-            self.assertTrue('0123456789ABCDE' in trie)
+        # String key tests
+        trie = GeneralizedTrie()
+        id_str_abc: TrieId = trie.add('abc')
+        tests = [
+            TestSpec(
+                name="[TGT_TC027] trie.__contains__('abcd') (false, 'abcd' not in trie)",
+                action=trie.__contains__,
+                args=['abcd'],
+                expected=False
+            ),
+            TestSpec(
+                name="[TGT_TC028] trie.__contains__('abc') (true, 'abc' in trie)",
+                action=trie.__contains__,
+                args=['abc'],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC029] trie.__contains__(id_str_abc) (true, TrieId id_str_abc in trie)",
+                action=trie.__contains__,
+                args=[id_str_abc],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TC030] trie.__contains__('ab') (false, prefix 'ab' not a key in trie)",
+                action=trie.__contains__,
+                args=['ab'],
+                expected=False
+            ),
+            TestSpec(
+                name="[TGT_TC031] trie.__contains__('a') (false, prefix 'a' not a key in trie)",
+                action=trie.__contains__,
+                args=['a'],
+                expected=False
+            ),
+            TestSpec(
+                name="[TGT_TC032] trie.__contains__('') (false, empty string not a key in trie)",
+                action=trie.__contains__,
+                args=[''],
+                expected=False
+            ),
+
+        ]
+        run_tests_list(self, tests)
+
+    @pytest.mark.order(after=['test_create_trie', 'test_add', 'test_remove'])
+    @pytest.mark.dependency(name='test_get', depends=['test_create_trie', 'test_add', 'test_remove'])
+    def test_get(self) -> None:
+        """Test the get method of GeneralizedTrie.
+
+        This test checks whether the trie correctly retrieves values for
+        existing keys, applies default values or raises the appropriate errors for non-existing
+        keys or invalid key types."""
+        trie: GeneralizedTrie = GeneralizedTrie()
+        id_ab: TrieId = trie.add("ab", "value for ab")
+        id_abc: TrieId = trie.add("abc", "another value")
+        tests: list[TestSpec] = [
+            TestSpec(
+                name="[TGT_TG001] trie.get(id_abc) (value for existing ID)",
+                action=trie.get,
+                args=[id_abc],
+                expected=TrieEntry(ident=id_abc, key='abc', value='another value')
+            ),
+            TestSpec(
+                name="[TGT_TG002] trie.get('abc') (value for key 'abc')",
+                action=trie.get,
+                args=['abc'],
+                expected=TrieEntry(ident=id_abc, key='abc', value='another value')
+            ),
+            TestSpec(
+                name="[TGT_TG003] trie.remove('abc') (remove key 'abc' from trie)",
+                action=trie.remove,
+                args=['abc'],
+                expected=None
+            ),
+            TestSpec(
+                name=("[TGT_TG004] trie.get('abc') (non-existent key after removal, default is None"),
+                action=trie.get,
+                args=['abc'],
+                expected=None
+            ),
+            TestSpec(
+                name=("[TGT_TG005] trie.get(id_abc) (non-existent TrieId after removal, default is None)"),
+                action=trie.get,
+                args=[id_abc],
+                expected=None
+            ),
+            TestSpec(
+                name="[TGT_TG006] trie.get(set('abc')) (bad key type -> default value None)",
+                action=trie.get,
+                args=[set('abc')],
+                expected=None
+            ),
+            TestSpec(
+                name="[TGT_TG007] trie.get('a') (Non-existent partial key -> default value None)",
+                action=trie.get,
+                args=['a'],
+                expected=None
+            ),
+            TestSpec(
+                name="[TGT_TG008] trie.get('ab').value == 'value for ab'",
+                action=lambda trie, key: trie[key].value,  # type: ignore[reportUnknownMemberType]
+                args=[trie, 'ab'],
+                expected='value for ab'
+            ),
+            TestSpec(
+                name="[TGT_TG009] trie.get(id_ab).value == 'value for ab'",
+                action=lambda trie, key: trie[key].value,  # type: ignore[reportUnknownMemberType]
+                args=[trie, id_ab],
+                expected='value for ab'
+            ),
+
+            TestSpec(
+                name=("[TGT_TG010] trie.get('abc', 'bleh') (non-existent key after removal, default is 'bleh'"),
+                action=trie.get,
+                args=['abc', 'bleh'],
+                expected='bleh'
+            ),
+            TestSpec(
+                name=("[TGT_TG011] trie.get(id_abc, 'bleh') (non-existent TrieId after removal, default is 'bleh')"),
+                action=trie.get,
+                args=[id_abc, 'bleh'],
+                expected='bleh'
+            ),
+            TestSpec(
+                name="[TGT_TG012] trie.get(set('abc'), 'bleh') (bad key type -> default value 'bleh')",
+                action=trie.get,
+                args=[set('abc'), 'bleh'],
+                expected='bleh'
+            ),
+            TestSpec(
+                name="[TGT_TG013] trie.get('a', 'bleh') (Non-existent partial key -> default value 'bleh')",
+                action=trie.get,
+                args=['a', 'bleh'],
+                expected='bleh'
+            )
+        ]
+        run_tests_list(self, tests)
 
     @pytest.mark.order(after='test_remove')
     @pytest.mark.dependency(name='test_keys', depends=[
-        'test_create_trie', 'test_add', 'test_contains', 'test_remove'])
+        'test_create_trie', 'test_add', 'test_contains_dunder', 'test_remove'])
     def test_keys(self) -> None:
         """Test the keys method of GeneralizedTrie.
 
@@ -1880,48 +2262,6 @@ class TestGeneralizedTrie(unittest.TestCase):
             found_items_list = list(sorted(trie.items()))
             self.assertEqual(found_items_list, expect_items_list)
 
-    @pytest.mark.order(after='test_remove')
-    @pytest.mark.dependency(name="test_getitem_dunder", depends=[
-        'test_create_trie', 'test_add',
-        'test_remove', 'test_trieid_class'])
-    def test_getitem_dunder(self) -> None:
-        """Test the __getitem__ method of GeneralizedTrie.
-
-        This test checks the functionality of the __getitem__ method, which should
-        allow access to TrieEntry objects by their TrieId. The test includes scenarios
-        for an empty trie, adding entries, and accessing entries by their IDs.
-        It verifies that the __getitem__ method returns the expected TrieEntry objects
-        and raises KeyError when trying to access non-existing IDs.
-        It also checks that the method behaves correctly when entries are added and
-        accessed, ensuring that the trie maintains its integrity."""
-        trie: GeneralizedTrie = GeneralizedTrie()
-
-        with self.assertRaises(KeyError, msg="[TGID001] trie[TrieId(1)]"):
-            _ = trie[TrieId(1)]
-
-        with self.subTest(msg="[TGID002] trie.add('abcdef')"):
-            expect_id: TrieId = TrieId(1)
-            found_id: TrieId = trie.add("abcdef")
-            self.assertEqual(found_id, expect_id)
-
-        with self.subTest(msg="[TGID003] trie[TrieId(1)]"):
-            expect_entry: TrieEntry = TrieEntry(TrieId(1), 'abcdef')
-            found_entry: TrieEntry = trie[TrieId(1)]
-            self.assertEqual(found_entry, expect_entry)
-
-        with self.subTest(msg="[TGID004] trie.add('abc')"):
-            expect_id = TrieId(2)
-            found_id = trie.add("abc")
-            self.assertEqual(found_id, expect_id)
-
-        with self.subTest(msg="[TGID005] trie[TrieId(2)]"):
-            expect_entry = TrieEntry(TrieId(2), 'abc')
-            found_entry = trie[TrieId(2)]
-            self.assertEqual(found_entry, expect_entry)
-
-        with self.assertRaises(KeyError, msg="[TGID006] trie[TrieId(3)]"):
-            _ = trie[TrieId(3)]
-
     def test_iter(self) -> None:
         """Test the iteration over GeneralizedTrie."""
         trie: GeneralizedTrie = GeneralizedTrie()
@@ -1958,9 +2298,7 @@ class TestGeneralizedTrie(unittest.TestCase):
             self.assertEqual(sorted(found_ids_list), expect_ids_list)
 
     @pytest.mark.order(after='test_remove')
-    @pytest.mark.dependency(name='test_bool', depends=[
-        'test_create_trie', 'test_add',
-        'test_remove'])
+    @pytest.mark.dependency(name='test_bool', depends=['test_create_trie', 'test_add', 'test_remove'])
     def test_bool(self) -> None:
         """Test the __bool__ method of GeneralizedTrie.
 
@@ -1986,6 +2324,433 @@ class TestGeneralizedTrie(unittest.TestCase):
             ),
             TestSpec(
                 name="[TB005] bool(trie)", action=bool, args=[trie], expected=False
+            ),
+        ]
+        run_tests_list(self, tests)
+
+    @pytest.mark.order(after=[
+        'test_create_trie', 'test_trieid_class', 'test_add', 'test_contains_dunder'])
+    @pytest.mark.dependency(
+        name='test_remove',
+        depends=['test_create_trie', 'test_trieid_class', 'test_add', 'test_contains_dunder'])
+    def test_remove(self) -> None:
+        """Test the remove method of GeneralizedTrie."""
+        trie = GeneralizedTrie()
+        id_a: TrieId = trie.add("a")
+        id_ab: TrieId = trie.add("ab")
+        id_abc: TrieId = trie.add("abc")
+        id_abcd: TrieId = trie.add("abcd")
+        id_d: TrieId = trie.add("d")
+        tests: list[TestSpec] = [
+            TestSpec(
+                name="[TGT_TR001] 'abc' in trie (validate 'abc' in trie before deletion)",
+                action=lambda key: key in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=['abc'],
+            ),
+            # delete 'abc'
+            TestSpec(
+                name="[TGT_TR002] trie.remove('abc') (deletes 'abc' from trie)",
+                action=trie.remove,
+                args=['abc'],
+                expected=None
+            ),
+            TestSpec(
+                name="[TGT_TR003] 'abc' not in trie (validate 'abc' not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=['abc'],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TR004] id_abc not in trie (validate id_abc not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=[id_abc],
+                expected=True
+            ),
+            TestSpec(
+                name=("[TGT_TR005] all(key in trie for key in ['a', 'ab', 'abcd', 'd']) "
+                      "in trie (validate all other keys still in trie after deletion)"),
+                action=lambda trie, keys: all(  # pyright: ignore[reportUnknownLambdaType]
+                    key in trie for key in keys),  # pyright: ignore[reportUnknownLambdaType, reportUnknownVariableType]
+                args=[trie, ['a', 'ab', 'abcd', 'd']],
+                expected=True
+            ),
+            TestSpec(
+                name=("[TGT_TR006] all(trie_id in trie for trie_id in [id_a, id_ab, id_abcd, id_d]) "
+                      "in trie (validate all other trie ids still in trie after deletion)"),
+                action=lambda trie, trie_ids: all(    # pyright: ignore[reportUnknownLambdaType]
+                    trie_id in trie
+                    for trie_id in trie_ids),  # pyright: ignore[reportUnknownLambdaType, reportUnknownVariableType]
+                args=[trie, [id_a, id_ab, id_abcd, id_d]],
+                expected=True
+            ),
+            # delete 'd'
+            TestSpec(
+                name="[TGT_TR007] trie.remove('d') (deletes 'd' from trie)",
+                action=trie.remove,
+                args=['d'],
+                expected=None
+            ),
+            TestSpec(
+                name="[TGT_TR008] 'd' not in trie (validate 'd' not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=['d'],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TR009] id_d not in trie (validate id_d not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=[id_d],
+                expected=True
+            ),
+            TestSpec(
+                name=("[TGT_TR010] all(key in trie for key in ['ab', 'abcd']) "
+                      "in trie (validate all other keys still in trie after deletion)"),
+                action=lambda trie, keys: all(  # pyright: ignore[reportUnknownLambdaType]
+                    key in trie for key in keys),  # pyright: ignore[reportUnknownVariableType]
+                args=[trie, ['ab', 'abcd']],
+                expected=True
+            ),
+            TestSpec(
+                name=("[TGT_TR011] all(trie_id in trie for trie_id in [id_ab, id_abcd]) "
+                      "in trie (validate all other trie ids still in trie after deletion)"),
+                action=lambda trie, trie_ids: all(  # pyright: ignore[reportUnknownLambdaType]
+                    trie_id in trie
+                    for trie_id in trie_ids),  # pyright: ignore[reportUnknownLambdaType, reportUnknownVariableType]
+                args=[trie, [id_a, id_ab, id_abcd]],
+                expected=True
+            ),
+            # delete 'abcd'
+            TestSpec(
+                name="[TGT_TR012] trie.remove('abcd') (deletes 'abcd' from trie)",
+                action=trie.remove,
+                args=['abcd'],
+                expected=None
+            ),
+            TestSpec(
+                name="[TGT_TR013] 'abcd' not in trie (validate 'abcd' not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=['abcd'],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TR014] id_abcd not in trie (validate id_abcd not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=[id_abcd],
+                expected=True
+            ),
+            TestSpec(
+                name=("[TGT_TR015] all(key in trie for key in ['ab']) in trie "
+                      "(validate all other keys still in trie after deletion)"),
+                action=lambda trie, keys: all(  # pyright: ignore[reportUnknownLambdaType]
+                    key in trie
+                    for key in keys),  # pyright: ignore[reportUnknownLambdaType, reportUnknownVariableType]
+                args=[trie, ['ab']],
+                expected=True
+            ),
+            TestSpec(
+                name=("[TGT_TR016] all(trie_id in trie for trie_id in [id_ab]) "
+                      "in trie (validate all other trie ids still in trie after deletion)"),
+                action=lambda trie, trie_ids: all(  # pyright: ignore[reportUnknownLambdaType]
+                    trie_id in trie
+                    for trie_id in trie_ids),  # pyright: ignore[reportUnknownLambdaType, reportUnknownVariableType]
+                args=[trie, [id_ab]],
+                expected=True
+            ),
+            # delete 'ab'
+            TestSpec(
+                name="[TGT_TR017] trie.remove('ab') (deletes 'ab' from trie)",
+                action=trie.remove,
+                args=['ab'],
+                expected=None
+            ),
+            TestSpec(
+                name="[TGT_TR018] 'ab' not in trie (validate 'ab' not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=['ab'],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TR019] id_ab not in trie (validate id_ab not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=[id_ab],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TR020] trie.remove('a') (deletes 'a' from trie)",
+                action=trie.remove,
+                args=['a'],
+                expected=None
+            ),
+            TestSpec(
+                name="[TGT_TR021] 'a' not in trie (validate 'a' not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=['a'],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TR022] id_a not in trie (validate id_a not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=[id_a],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TR023] len(trie) == 0 (no keys in trie)",
+                action=len,
+                args=[trie],
+                expected=0
+            ),
+            # Try to delete 'a' a second time
+            TestSpec(
+                name="[TGT_TR024] trie.remove('a') (tried to redelete 'a' from trie)",
+                action=trie.__delitem__,
+                args=['a'],
+                exception=TrieKeyError,
+                exception_tag=ErrorTag.REMOVAL_KEY_NOT_FOUND
+            )
+        ]
+        run_tests_list(self, tests)
+
+    @pytest.mark.order(after=[
+        'test_create_trie', 'test_trieid_class', 'test_add', 'test_contains_dunder'])
+    @pytest.mark.dependency(
+        name='test_delitem',
+        depends=['test_create_trie', 'test_trieid_class', 'test_add', 'test_contains_dunder'])
+    def test_delitem_dunder(self) -> None:
+        """Test the __delitem__ dunder method of GeneralizedTrie."""
+
+        trie = GeneralizedTrie()
+        id_a: TrieId = trie.add("a")
+        id_ab: TrieId = trie.add("ab")
+        id_abc: TrieId = trie.add("abc")
+        id_abcd: TrieId = trie.add("abcd")
+        id_d: TrieId = trie.add("d")
+        tests: list[TestSpec] = [
+            TestSpec(
+                name="[TGT_TDID01] 'abc' in trie (validate 'abc' in trie before deletion)",
+                action=lambda key: key in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=['abc'],
+            ),
+            # delete 'abc'
+            TestSpec(
+                name="[TGT_TDID02] trie.__delitem__('abc') (deletes 'abc' from trie)",
+                action=trie.__delitem__,
+                args=['abc'],
+                expected=None
+            ),
+            TestSpec(
+                name="[TGT_TDID03] 'abc' not in trie (validate 'abc' not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=['abc'],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TDID04] id_abc not in trie (validate id_abc not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=[id_abc],
+                expected=True
+            ),
+            TestSpec(
+                name=("[TGT_TDID05] all(key in trie for key in ['a', 'ab', 'abcd', 'd']) "
+                      "in trie (validate all other keys still in trie after deletion)"),
+                action=lambda trie, keys: all(  # pyright: ignore[reportUnknownLambdaType]
+                    key in trie for key in keys),  # pyright: ignore[reportUnknownLambdaType, reportUnknownVariableType]
+                args=[trie, ['a', 'ab', 'abcd', 'd']],
+                expected=True
+            ),
+            TestSpec(
+                name=("[TGT_TDID06] all(trie_id in trie for trie_id in [id_a, id_ab, id_abcd, id_d]) "
+                      "in trie (validate all other trie ids still in trie after deletion)"),
+                action=lambda trie, trie_ids: all(    # pyright: ignore[reportUnknownLambdaType]
+                    trie_id in trie
+                    for trie_id in trie_ids),  # pyright: ignore[reportUnknownLambdaType, reportUnknownVariableType]
+                args=[trie, [id_a, id_ab, id_abcd, id_d]],
+                expected=True
+            ),
+            # delete 'd'
+            TestSpec(
+                name="[TGT_TDID07] trie.__delitem__('d') (deletes 'd' from trie)",
+                action=trie.__delitem__,
+                args=['d'],
+                expected=None
+            ),
+            TestSpec(
+                name="[TGT_TDID08] 'd' not in trie (validate 'd' not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=['d'],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TDID09] id_d not in trie (validate id_d not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=[id_d],
+                expected=True
+            ),
+            TestSpec(
+                name=("[TGT_TDID10] all(key in trie for key in ['ab', 'abcd']) "
+                      "in trie (validate all other keys still in trie after deletion)"),
+                action=lambda trie, keys: all(  # pyright: ignore[reportUnknownLambdaType]
+                    key in trie for key in keys),  # pyright: ignore[reportUnknownVariableType]
+                args=[trie, ['ab', 'abcd']],
+                expected=True
+            ),
+            TestSpec(
+                name=("[TGT_TDID11] all(trie_id in trie for trie_id in [id_ab, id_abcd]) "
+                      "in trie (validate all other trie ids still in trie after deletion)"),
+                action=lambda trie, trie_ids: all(  # pyright: ignore[reportUnknownLambdaType]
+                    trie_id in trie
+                    for trie_id in trie_ids),  # pyright: ignore[reportUnknownLambdaType, reportUnknownVariableType]
+                args=[trie, [id_a, id_ab, id_abcd]],
+                expected=True
+            ),
+            # delete 'abcd'
+            TestSpec(
+                name="[TGT_TDID12] trie.__delitem__('abcd') (deletes 'abcd' from trie)",
+                action=trie.__delitem__,
+                args=['abcd'],
+                expected=None
+            ),
+            TestSpec(
+                name="[TGT_TDID13] 'abcd' not in trie (validate 'abcd' not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=['abcd'],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TDID14] id_abcd not in trie (validate id_abcd not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=[id_abcd],
+                expected=True
+            ),
+            TestSpec(
+                name=("[TGT_TDID15] all(key in trie for key in ['ab']) in trie "
+                      "(validate all other keys still in trie after deletion)"),
+                action=lambda trie, keys: all(  # pyright: ignore[reportUnknownLambdaType]
+                    key in trie
+                    for key in keys),  # pyright: ignore[reportUnknownLambdaType, reportUnknownVariableType]
+                args=[trie, ['ab']],
+                expected=True
+            ),
+            TestSpec(
+                name=("[TGT_TDID16] all(trie_id in trie for trie_id in [id_ab]) "
+                      "in trie (validate all other trie ids still in trie after deletion)"),
+                action=lambda trie, trie_ids: all(  # pyright: ignore[reportUnknownLambdaType]
+                    trie_id in trie
+                    for trie_id in trie_ids),  # pyright: ignore[reportUnknownLambdaType, reportUnknownVariableType]
+                args=[trie, [id_ab]],
+                expected=True
+            ),
+            # delete 'ab'
+            TestSpec(
+                name="[TGT_TDID17] trie.__delitem__('ab') (deletes 'ab' from trie)",
+                action=trie.__delitem__,
+                args=['ab'],
+                expected=None
+            ),
+            TestSpec(
+                name="[TGT_TDID18] 'ab' not in trie (validate 'ab' not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=['ab'],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TDID19] id_ab not in trie (validate id_ab not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=[id_ab],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TDID20] trie.__delitem__('a') (deletes 'a' from trie)",
+                action=trie.__delitem__,
+                args=['a'],
+                expected=None
+            ),
+            TestSpec(
+                name="[TGT_TDID21] 'a' not in trie (validate 'a' not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=['a'],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TDID22] id_a not in trie (validate id_a not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=[id_a],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TDID23] len(trie) == 0 (no keys in trie)",
+                action=len,
+                args=[trie],
+                expected=0
+            ),
+            # Try to delete 'a' a second time
+            TestSpec(
+                name="[TGT_TDID24] trie.__delitem__('a') (tried to redelete 'a' from trie)",
+                action=trie.__delitem__,
+                args=['a'],
+                exception=TrieKeyError,
+                exception_tag=ErrorTag.REMOVAL_KEY_NOT_FOUND
+            )
+        ]
+        run_tests_list(self, tests)
+
+        # test using 'del <key>' instead of trie.__delitem__(<key>)
+        def _helper_for_del(trie: GeneralizedTrie, key: str) -> None:
+            """Helper function to delete a key from a trie using 'del'."""
+            del trie[key]
+
+        id_a = trie.add("a")
+        id_abc = trie.add("abc")
+
+        tests = [
+            TestSpec(
+                name="[TGT_TDID25] 'abc' in trie (validate 'abc' in trie before deletion)",
+                action=lambda key: key in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=['abc'],
+                expected=True
+            ),
+            # delete 'abc'
+            TestSpec(
+                name="[TGT_TDID26] del trie['abc'] (deletes 'abc' from trie)",
+                action=_helper_for_del,  # pyright: ignore[reportUnknownLambdaType]
+                args=[trie, 'abc'],
+                expected=None
+            ),
+            TestSpec(
+                name="[TGT_TDID27] 'abc' not in trie (validate 'abc' not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=['abc'],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TDID28] id_abc not in trie (validate id_abc not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=[id_abc],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TDID29] 'a' in trie (validate 'a' in trie before deletion)",
+                action=lambda key: key in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=['a'],
+                expected=True
+            ),
+            # delete 'a' using del trie[id_a]
+            TestSpec(
+                name="[TGT_TDID30] del trie[id_a] (deletes 'a' from trie)",
+                action=_helper_for_del,
+                args=[trie, id_a],
+                expected=None
+            ),
+            TestSpec(
+                name="[TGT_TDID31] 'a' not in trie (validate 'a' not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=['a'],
+                expected=True
+            ),
+            TestSpec(
+                name="[TGT_TDID32] id_a not in trie (validate id_a not in trie after deletion)",
+                action=lambda key: key not in trie,  # pyright: ignore[reportUnknownLambdaType]
+                args=[id_a],
+                expected=True
             ),
         ]
         run_tests_list(self, tests)

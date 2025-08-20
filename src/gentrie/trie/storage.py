@@ -113,6 +113,10 @@ class TrieStorageMixin:
                 msg="key is not a valid `GeneralizedKey`",
                 tag=ErrorTag.STORE_ENTRY_INVALID_GENERALIZED_KEY)
 
+        # convert potentially mutable types of Sequences to immutable types
+        if not isinstance(key, (str, tuple, bytes, frozenset)):
+            key = tuple(key)
+
         # Traverse the trie to find the insertion point for the key,
         # creating nodes as necessary.
         current_node = self
@@ -138,6 +142,9 @@ class TrieStorageMixin:
                 tag=ErrorTag.STORE_ENTRY_DUPLICATE_KEY)
 
         # Assign a new trie id for the node and set the value
+        # If the key is not already an immutable builtin Sequence type, the
+        # key is converted to a tuple to reduce its vulnerability
+        # to changes before being stored.
         self._ident_counter += 1
         new_ident = TrieId(self._ident_counter)
         current_node.ident = new_ident

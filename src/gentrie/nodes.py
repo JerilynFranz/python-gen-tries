@@ -24,6 +24,7 @@ class Node:  # pylint: disable=too-few-public-methods
         parent (Optional[GeneralizedTrie | Node): Reference to the parent node.
         children (dict[TrieKeyToken, Node]): Dictionary of child nodes.
     """
+    __slots__ = ('ident', 'token', 'value', 'parent', 'children')
 
     def __init__(self, token: TrieKeyToken, parent: "GeneralizedTrie | Node", value: Optional[Any] = None) -> None:
         self.ident: Optional[TrieId] = None

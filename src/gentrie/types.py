@@ -46,7 +46,7 @@ class TrieEntry(NamedTuple):
         if not isinstance(other, TrieEntry):
             return False
         return self.ident == other.ident and tuple(self.key) == tuple(
-            other.key)
+            other.key) and self.value == other.value
 
     def __hash__(self) -> int:
-        return hash((self.ident, tuple(self.key)))
+        return hash((self.ident, tuple(self.key), self.value))  # pyright: ignore[reportUnknownArgumentType]
