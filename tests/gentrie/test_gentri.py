@@ -6,7 +6,7 @@
 import unittest
 from collections.abc import Iterable
 from textwrap import dedent
-from typing import Any, Callable
+from typing import Any
 
 import pytest
 
