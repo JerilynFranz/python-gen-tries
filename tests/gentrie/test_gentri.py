@@ -1564,6 +1564,14 @@ class TestGeneralizedTrie(unittest.TestCase):
         The test includes multiple scenarios with different string lengths
         and ensures that the output matches the expected format."""
         trie = GeneralizedTrie()
+        found: str = dedent(str(trie))
+        expected: str = dedent("""\
+        {
+          trie number = 0
+          trie index = dict_keys([])
+        }""")
+        self.assertEqual(found, expected, msg='[TSTR001] str(trie)')
+
         test_string = 'a'
         self.assertIsInstance(test_string, TrieKeyToken)
         self.assertIsInstance(test_string, Iterable)
@@ -1582,7 +1590,7 @@ class TestGeneralizedTrie(unittest.TestCase):
           }
           trie index = dict_keys([TrieId(1)])
         }""")
-        self.assertEqual(found, expected, msg='[TSTR001] str(trie)')
+        self.assertEqual(found, expected, msg='[TSTR002] str(trie)')
 
         trie = GeneralizedTrie()
         test_string = 'ab'
@@ -1606,7 +1614,7 @@ class TestGeneralizedTrie(unittest.TestCase):
           }
           trie index = dict_keys([TrieId(1)])
         }""")
-        self.assertEqual(found, expected, msg='[TSTR002] str(trie))')
+        self.assertEqual(found, expected, msg='[TSTR003] str(trie))')
 
         trie = GeneralizedTrie()
         test_string = 'abc'
@@ -1636,7 +1644,7 @@ class TestGeneralizedTrie(unittest.TestCase):
           }
           trie index = dict_keys([TrieId(1)])
         }""")
-        self.assertEqual(found, expected, msg='[TSTR003] str(trie))')
+        self.assertEqual(found, expected, msg='[TSTR004] str(trie))')
 
     @pytest.mark.order(after=['test_create_trie', 'test_add', 'test_remove'])
     @pytest.mark.dependency(name='test_getitem_dunder', depends=['test_create_trie', 'test_add', 'test_remove'])
