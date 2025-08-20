@@ -103,6 +103,10 @@ filterwarnings = ["ignore:cannot collect test class 'TestSpec':UserWarning"]
 
 [tool.coverage.run]
 branch = true
+omit = [
+    'test_plan.py',
+    'tests/testspec.py'
+]
 
 [tool.coverage.report]
 # Regexes for lines to exclude from consideration
