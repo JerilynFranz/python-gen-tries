@@ -2421,7 +2421,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 args=['a'],
                 expected=True
             ),
-            # delete 'a' using id_a
+            # delete 'a' using del trie[id_a]
             TestSpec(
                 name="[TGT_TDID30] del trie[id_a] (deletes 'a' from trie)",
                 action=_helper_for_del,
