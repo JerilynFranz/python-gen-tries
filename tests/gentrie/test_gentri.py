@@ -1553,7 +1553,9 @@ class TestGeneralizedTrie(unittest.TestCase):
         self.assertNotEqual(id1, id2)
         self.assertTrue(key in trie)
 
-    def test_str(self) -> None:
+    @pytest.mark.order(after=['test_create_trie', 'test_add'])
+    @pytest.mark.dependency(name='test_trie_str', depends=['test_create_trie', 'test_add'])
+    def test_trie_str(self) -> None:
         """Test the string representation of GeneralizedTrie.
 
         This test checks the output of the __str__ method of GeneralizedTrie
@@ -2277,8 +2279,7 @@ class TestGeneralizedTrie(unittest.TestCase):
         with self.subTest(msg="[TITER001] for entry in trie:"):
             expect_ids_list: list[TrieId] = []
             found_ids_list: list[TrieId] = []
-            for entry in trie:
-                found_ids_list.append(entry)
+            found_ids_list.extend([ident for ident in trie])  # pylint: ignore=[unnecessary-comprehension]
             self.assertEqual(found_ids_list, expect_ids_list)
 
         with self.subTest(msg="[TITER002] trie.add('abcdef')"):
