@@ -350,7 +350,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                         }
                     },
                     'trie_index': [TrieId(1)],
-                    'trie_entries': {TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'ape'], value=None)"}
+                    'trie_entries': {TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'ape'), value=None)"}
                 }
             ),
 
@@ -394,8 +394,8 @@ class TestGeneralizedTrie(unittest.TestCase):
                     },
                     'trie_index': [TrieId(1), TrieId(2)],
                     'trie_entries': {
-                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'ape'], value=None)",
-                        TrieId(2): "TrieEntry(ident=TrieId(2), key=['tree', 'value'], value=None)"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'ape'), value=None)",
+                        TrieId(2): "TrieEntry(ident=TrieId(2), key=('tree', 'value'), value=None)"
                     }
                 }
             ),
@@ -542,7 +542,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                     },
                     'trie_index': [TrieId(1)],
                     'trie_entries': {
-                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'cheetah'], value='feline')"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'cheetah'), value='feline')"
                     }
                 },
             ),
@@ -593,13 +593,13 @@ class TestGeneralizedTrie(unittest.TestCase):
                     },
                     'trie_index': [TrieId(1)],
                     'trie_entries': {
-                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'cheetah'], value='feline')"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'cheetah'), value='feline')"
                     }
                 },
             ),
             # Add the same key with a DIFFERENT value (default of None) and validate we get a DuplicateKeyError
             TestSpec(
-                name="[TA022] trie.add(['tree', 'value', 'cheetah'])",
+                name="[TA023] trie.add(['tree', 'value', 'cheetah'])",
                 action=trie.add,
                 args=[["tree", "value", "cheetah"]],
                 exception=DuplicateKeyError,
@@ -610,7 +610,7 @@ class TestGeneralizedTrie(unittest.TestCase):
             # Validate that the trie is unchanged after attempting to add the same key with a different value of None
             # (this is to test that the trie has not changed the trie despite throwing an error)
             TestSpec(
-                name="[TA023] trie[1].value == 'feline' (_as_dict() check, no change after DuplicateKeyError)",
+                name="[TA024] trie[1].value == 'feline' (_as_dict() check, no change after DuplicateKeyError)",
                 action=trie._as_dict,  # type: ignore[reportUnknownMemberType]
                 expected={
                     'ident': None,
@@ -641,13 +641,13 @@ class TestGeneralizedTrie(unittest.TestCase):
                     },
                     'trie_index': [TrieId(1)],
                     'trie_entries': {
-                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'cheetah'], value='feline')"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'cheetah'), value='feline')"
                     }
                 },
             ),
             # Add the same key with a DIFFERENT value (explictly specified) and validate we get a DuplicateKeyError
             TestSpec(
-                name="[TA024] trie.add(['tree', 'value', 'cheetah'], 'canide)",
+                name="[TA025] trie.add(['tree', 'value', 'cheetah'], 'canide)",
                 action=trie.add,
                 args=[["tree", "value", "cheetah"], "canide"],
                 exception=DuplicateKeyError,
@@ -709,7 +709,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                         }
                     },
                     'trie_index': [TrieId(1)],
-                    'trie_entries': {TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'ape'], value=None)"}
+                    'trie_entries': {TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'ape'), value=None)"}
                 }
             ),
 
@@ -753,8 +753,8 @@ class TestGeneralizedTrie(unittest.TestCase):
                     },
                     'trie_index': [TrieId(1), TrieId(2)],
                     'trie_entries': {
-                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'ape'], value=None)",
-                        TrieId(2): "TrieEntry(ident=TrieId(2), key=['tree', 'value'], value=None)"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'ape'), value=None)",
+                        TrieId(2): "TrieEntry(ident=TrieId(2), key=('tree', 'value'), value=None)"
                     }
                 }
             ),
@@ -898,7 +898,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                     },
                     'trie_index': [TrieId(1)],
                     'trie_entries': {
-                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'cheetah'], value='feline')"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'cheetah'), value='feline')"
                     }
                 },
             ),
@@ -944,7 +944,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                     },
                     'trie_index': [TrieId(1)],
                     'trie_entries': {
-                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'cheetah'], value='feline')"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'cheetah'), value='feline')"
                     }
                 },
             ),
@@ -989,7 +989,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                     },
                     'trie_index': [TrieId(1)],
                     'trie_entries': {
-                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'cheetah'], value=None)"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'cheetah'), value=None)"
                     }
                 },
             ),
@@ -1033,7 +1033,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                     },
                     'trie_index': [TrieId(1)],
                     'trie_entries': {
-                        TrieId(1): "TrieEntry(ident=TrieId(1), key=['tree', 'value', 'cheetah'], value='canide')"
+                        TrieId(1): "TrieEntry(ident=TrieId(1), key=('tree', 'value', 'cheetah'), value='canide')"
                     }
                 },
             ),
@@ -1121,14 +1121,14 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TGT_TP003] trie.prefixes(['tree', 'value', 'ape']) (exact key in trie)",
                 action=lambda key: list(trie.prefixes(key)),  # type: ignore[reportUnknownMemberType]
                 args=[['tree', 'value', 'ape']],
-                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+                expected=[TrieEntry(TrieId(1), ('tree', 'value', 'ape'))]
             ),
             TestSpec(
                 name=("[TGT_TP004] trie.prefixes(['tree', 'value', 'ape', 'grape']) "
                       "(NOT exact key in trie, but has other keys that are prefix)"),
                 action=lambda key: list(trie.prefixes(key)),  # type: ignore[reportUnknownMemberType]
                 args=[['tree', 'value', 'ape', 'grape']],
-                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+                expected=[TrieEntry(TrieId(1), ('tree', 'value', 'ape'))]
             ),
             TestSpec(
                 name=("[TGT_TP005] trie.prefixes(['tree', 'value']) "
@@ -1167,14 +1167,14 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name="[TGT_TPB003] trie.prefixed_by(['tree', 'value', 'ape']) (exact key in trie, no others)",
                 action=lambda key: list(trie.prefixed_by(key)),  # type: ignore[reportUnknownMemberType]
                 args=[['tree', 'value', 'ape']],
-                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+                expected=[TrieEntry(TrieId(1), ('tree', 'value', 'ape'))]
             ),
             TestSpec(
                 name=("[TGT_TPB004] trie.prefixed_by(['tree']) "
                       "(NOT exact key in trie, but prefixes other keys in the trie)"),
                 action=lambda key: list(trie.prefixed_by(key)),  # type: ignore[reportUnknownMemberType]
                 args=[['tree']],
-                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+                expected=[TrieEntry(TrieId(1), ('tree', 'value', 'ape'))]
             ),
             TestSpec(
                 name=("[TGT_TPB005] trie.prefixed_by(['tree', 'value', 'ape', 'grape']) "
@@ -1205,7 +1205,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 action=lambda key, depth: list(trie.prefixed_by(  # pyright: ignore[reportUnknownLambdaType]
                     key=key, depth=depth)),  # type: ignore[reportUnknownMemberType]
                 kwargs={'key': ['tree'], 'depth': 2},
-                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+                expected=[TrieEntry(TrieId(1), ('tree', 'value', 'ape'))]
             ),
             TestSpec(
                 name=("[TGT_TPB009] trie.prefixed_by(key=['tree'], depth=-1) "
@@ -1213,7 +1213,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 action=lambda key, depth: list(trie.prefixed_by(  # pyright: ignore[reportUnknownLambdaType]
                     key=key, depth=depth)),  # type: ignore[reportUnknownMemberType]
                 kwargs={'key': ['tree'], 'depth': -1},
-                expected=[TrieEntry(TrieId(1), ['tree', 'value', 'ape'])]
+                expected=[TrieEntry(TrieId(1), ('tree', 'value', 'ape'))]
             ),
             TestSpec(
                 name=("[TGT_TPB010] trie.prefixed_by(key=['tree'], depth=-2) "
@@ -1258,8 +1258,8 @@ class TestGeneralizedTrie(unittest.TestCase):
         id1 = trie.add(deep_key)
         self.assertEqual(id1, TrieId(1))
         self.assertTrue(deep_key in trie)
-        self.assertEqual(set(trie.prefixes(deep_key)), set([TrieEntry(TrieId(1), deep_key)]))
-        self.assertEqual(set(trie.prefixed_by(deep_key)), set([TrieEntry(TrieId(1), deep_key)]))
+        self.assertEqual(set(trie.prefixes(deep_key)), set([TrieEntry(TrieId(1), tuple(deep_key))]))
+        self.assertEqual(set(trie.prefixed_by(deep_key)), set([TrieEntry(TrieId(1), tuple(deep_key))]))
 
     @pytest.mark.order(after=['test_create_trie', 'test_add', 'test_trieid_class', 'test_contains_dunder'])
     @pytest.mark.dependency(
