@@ -15,7 +15,8 @@ import pytest
 from src.gentrie import (DuplicateKeyError, ErrorTag, GeneralizedTrie,
                          InvalidGeneralizedKeyError, TrieEntry, TrieId,
                          TrieKeyError, TrieKeyToken, TrieTypeError,
-                         TrieValueError, is_generalizedkey)
+                         TrieValueError, is_generalizedkey, is_triekeytoken,
+                         is_hashable)
 
 from ..testspec import TestSpec, run_tests_list
 
@@ -121,6 +122,110 @@ class TestGeneralizedTrie(unittest.TestCase):
                 expected=False,
             )
             for testcase in bad_types
+        ]
+        run_tests_list(self, tests)
+
+    @pytest.mark.order(after=['test_triekeytoken_supported_and_unsupported_builtin_types'])
+    @pytest.mark.dependency(
+        name='test_is_triekeytoken',
+        depends=['test_triekeytoken_supported_and_unsupported_builtin_types']
+    )
+    def test_is_triekeytoken(self) -> None:
+        """Test the is_triekeytoken function with various inputs.
+
+        This test checks that the is_triekeytoken function correctly identifies
+        valid and invalid trie key tokens."""
+        TEST_ID: int = 0
+        TEST_VALUE: int = 1
+        good_tokens: list[tuple[str, Any]] = [
+            ('TGT_TITKT001', 'a'),
+            ('TGT_TITKT002', str('ab')),
+            ('TGT_TITKT003', frozenset('abc')),
+            ('TGT_TITKT004', tuple(['a', 'b', 'c', 'd'])),
+            ('TGT_TITKT005', int(1)),
+            ('TGT_TITKT006', float(2.0)),
+            ('TGT_TITKT007', complex(3.0, 4.0)),
+            ('TGT_TITKT008', bytes(456)),
+        ]
+
+        tests: list[TestSpec] = [
+            TestSpec(
+                name=f"[{testcase[TEST_ID]}] is_triekeytoken({repr(testcase[TEST_VALUE])}) (True)",
+                action=is_triekeytoken,
+                args=[testcase[TEST_VALUE]],
+                expected=True,
+            )
+            for testcase in good_tokens
+        ]
+        run_tests_list(self, tests)
+
+        bad_tokens: list[tuple[str, Any]] = [
+            ('TGT_TITKT001', set('a')),
+            ('TGT_TITKT002', list(['a', 'b'])),
+            ('TGT_TITKT003', dict({'a': 1, 'b': 2, 'c': 3})),
+            ('TGT_TITKT004', set('abc')),
+        ]
+
+        tests = [
+            TestSpec(
+                name=f"[{testcase[TEST_ID]}] is_triekeytoken({repr(testcase[TEST_VALUE])}) (False)",
+                action=is_triekeytoken,
+                args=[testcase[TEST_VALUE]],
+                expected=False,
+            )
+            for testcase in bad_tokens
+        ]
+        run_tests_list(self, tests)
+
+    @pytest.mark.order(after=['test_triekeytoken_supported_and_unsupported_builtin_types'])
+    @pytest.mark.dependency(
+        name='test_is_hashable',
+        depends=['test_triekeytoken_supported_and_unsupported_builtin_types']
+    )
+    def test_is_hashable(self) -> None:
+        """Test the deprecated is_hashable function with various inputs.
+
+        This test checks that the is_hashable function correctly identifies
+        valid and invalid trie key tokens."""
+        TEST_ID: int = 0
+        TEST_VALUE: int = 1
+        good_tokens: list[tuple[str, Any]] = [
+            ('TGT_TIH001', 'a'),
+            ('TGT_TIH002', str('ab')),
+            ('TGT_TIHT003', frozenset('abc')),
+            ('TGT_TIHT004', tuple(['a', 'b', 'c', 'd'])),
+            ('TGT_TIHT005', int(1)),
+            ('TGT_TIHT006', float(2.0)),
+            ('TGT_TIHT007', complex(3.0, 4.0)),
+            ('TGT_TIHT008', bytes(456)),
+        ]
+
+        tests: list[TestSpec] = [
+            TestSpec(
+                name=f"[{testcase[TEST_ID]}] is_hashable({repr(testcase[TEST_VALUE])}) (True)",
+                action=is_hashable,
+                args=[testcase[TEST_VALUE]],
+                expected=True,
+            )
+            for testcase in good_tokens
+        ]
+        run_tests_list(self, tests)
+
+        bad_tokens: list[tuple[str, Any]] = [
+            ('TGT_TIHT001', set('a')),
+            ('TGT_TIHT002', list(['a', 'b'])),
+            ('TGT_TIHT003', dict({'a': 1, 'b': 2, 'c': 3})),
+            ('TGT_TIHT004', set('abc')),
+        ]
+
+        tests = [
+            TestSpec(
+                name=f"[{testcase[TEST_ID]}] is_hashable({repr(testcase[TEST_VALUE])}) (False)",
+                action=is_hashable,
+                args=[testcase[TEST_VALUE]],
+                expected=False,
+            )
+            for testcase in bad_tokens
         ]
         run_tests_list(self, tests)
 
