@@ -380,8 +380,8 @@ class TestGeneralizedTrie(unittest.TestCase):
         ]
         run_tests_list(self, tests)
 
-    @pytest.mark.order(after=['test_trieid_class', 'test_generalizedkey'])
-    @pytest.mark.dependency(name='test_trieid', depends=['test_trieid_class', 'test_generalizedkey'])
+    @pytest.mark.order(after=['test_trieid_class'])
+    @pytest.mark.dependency(name='test_trieid', depends=['test_trieid_class'])
     def test_trieentry(self) -> None:
         """Test the TrieEntry class.
         """
@@ -397,28 +397,40 @@ class TestGeneralizedTrie(unittest.TestCase):
                     isinstance(found, TrieEntry) and found.ident == id_1 and found.key == 'test' and found.value == 1),
             ),
             TestSpec(
-                name='[TGT_TTE002] Test TrieEntry equality vs non-TrieEntry',
+                name='[TGT_TTE002] Test TrieEntry equality vs non-TrieEntry (False)',
                 action=TrieEntry,
                 kwargs={'ident': id_1, 'key': 'test', 'value': 1},
-                validate_result=lambda found: (found != 1)  # pyright: ignore[reportUnknownLambdaType]
+                validate_result=lambda found: not (found == 1)  # pyright: ignore[reportUnknownLambdaType]
             ),
             TestSpec(
-                name='[TGT_TTE003] Test TrieEntry equality',
+                name='[TGT_TTE003] Test non-TrieEntry equality vs TrieEntry (False)',
+                action=TrieEntry,
+                kwargs={'ident': id_1, 'key': 'test', 'value': 1},
+                validate_result=lambda found: not (1 == found)  # pyright: ignore[reportUnknownLambdaType]
+            ),
+            TestSpec(
+                name='[TGT_TTE004] trie_entry.__eq__(<other>) (False)',
+                action=TrieEntry,
+                kwargs={'ident': id_1, 'key': 'test', 'value': 1},
+                validate_result=lambda found: not found.__eq__(1)  # noqa: E501  # pyright: ignore[reportUnknownLambdaType, reportUnknownMemberType]
+            ),
+            TestSpec(
+                name='[TGT_TTE005] Test TrieEntry equality',
                 action=lambda: TrieEntry(id_1, "test", 1) == TrieEntry(id_1, "test", 1),
                 expected=True,
             ),
             TestSpec(
-                name='[TGT_TTE004] Test TrieEntry inequality (ident)',
+                name='[TGT_TTE006] Test TrieEntry inequality (ident)',
                 action=lambda: TrieEntry(id_1, "test", 1) == TrieEntry(id_2, "test", 1),
                 expected=False,
             ),
             TestSpec(
-                name='[TGT_TTE005] Test TrieEntry inequality (key)',
+                name='[TGT_TTE007] Test TrieEntry inequality (key)',
                 action=lambda: TrieEntry(id_1, "test", 1) == TrieEntry(id_1, "other", 1),
                 expected=False,
             ),
             TestSpec(
-                name='[TGT_TTE006] Test TrieEntry inequality (value)',
+                name='[TGT_TTE008] Test TrieEntry inequality (value)',
                 action=lambda: TrieEntry(id_1, "test", 1) == TrieEntry(id_1, "test", 2),
                 expected=False,
             ),
