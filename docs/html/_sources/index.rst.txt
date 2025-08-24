@@ -22,4 +22,5 @@ Contents
 
    usage
    reference
+   benchmarks
    gentrie
