@@ -5,6 +5,8 @@ This section provides detailed information about the API of **gen-trie**.
 It includes descriptions of the main classes, methods, and attributes
 available in the library.
 
+.. toctree::
+
 .. index::
     single: gentrie; GeneralizedTrie
     single: gentrie; API Reference

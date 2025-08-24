@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+
+<html :class="{'dark': darkMode === 'dark' || (darkMode === 'system' &amp;&amp; window.matchMedia('(prefers-color-scheme: dark)').matches)}" class="scroll-smooth" data-content_root="./" lang="en" x-data="{ darkMode: localStorage.getItem('darkMode') || localStorage.setItem('darkMode', 'system'), activeSection: '' }" x-init="$watch('darkMode', val =&gt; localStorage.setItem('darkMode', val))">
+<head>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta charset="utf-8"/>
+<meta content="white" media="(prefers-color-scheme: light)" name="theme-color"/>
+<meta content="black" media="(prefers-color-scheme: dark)" name="theme-color"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Benchmarks | gen-tries 0.9.4 documentation</title>
+<meta content="Benchmarks | gen-tries 0.9.4 documentation" property="og:title"/>
+<meta content="Benchmarks | gen-tries 0.9.4 documentation" name="twitter:title"/>
+<link href="_static/pygments.css?v=c309799c" rel="stylesheet" type="text/css"/>
+<link href="_static/theme.css?v=42baaae4" rel="stylesheet" type="text/css"/>
+<link href="search.html" rel="search" title="Search"/>
+<link href="genindex.html" rel="index" title="Index"/>
+<link href="gentrie.html" rel="next" title="gentrie package"/>
+<link href="reference.html" rel="prev" title="API Reference"/>
+<script>
+    <!-- Prevent Flash of wrong theme -->
+      const userPreference = localStorage.getItem('darkMode');
+      let mode;
+      if (userPreference === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        mode = 'dark';
+        document.documentElement.classList.add('dark');
+      } else {
+        mode = 'light';
+      }
+      if (!userPreference) {localStorage.setItem('darkMode', mode)}
+    </script>
+</head>
+<body :class="{ 'overflow-hidden': showSidebar }" class="min-h-screen font-sans antialiased bg-background text-foreground" x-data="{ showSidebar: false, showScrollTop: false }">
+<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm md:hidden" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
+      Skip to content
+    </a><header class="sticky top-0 z-40 w-full border-b shadow-sm border-border supports-backdrop-blur:bg-background/60 bg-background/95 backdrop-blur"><div class="container flex items-center h-14">
+<div class="hidden mr-4 md:flex">
+<a class="flex items-center mr-6" href="index.html"><span class="hidden font-bold sm:inline-block text-clip whitespace-nowrap">gen-tries 0.9.4 documentation</span>
+</a></div><button @click="showSidebar = true" class="inline-flex items-center justify-center h-10 px-0 py-2 mr-2 text-base font-medium transition-colors rounded-md hover:text-accent-foreground hover:bg-transparent md:hidden" type="button">
+<svg aria-hidden="true" fill="currentColor" height="24" viewbox="0 96 960 960" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M152.587 825.087q-19.152 0-32.326-13.174t-13.174-32.326q0-19.152 13.174-32.326t32.326-13.174h440q19.152 0 32.326 13.174t13.174 32.326q0 19.152-13.174 32.326t-32.326 13.174h-440Zm0-203.587q-19.152 0-32.326-13.174T107.087 576q0-19.152 13.174-32.326t32.326-13.174h320q19.152 0 32.326 13.174T518.087 576q0 19.152-13.174 32.326T472.587 621.5h-320Zm0-203.587q-19.152 0-32.326-13.174t-13.174-32.326q0-19.152 13.174-32.326t32.326-13.174h440q19.152 0 32.326 13.174t13.174 32.326q0 19.152-13.174 32.326t-32.326 13.174h-440ZM708.913 576l112.174 112.174q12.674 12.674 12.674 31.826t-12.674 31.826Q808.413 764.5 789.261 764.5t-31.826-12.674l-144-144Q600 594.391 600 576t13.435-31.826l144-144q12.674-12.674 31.826-12.674t31.826 12.674q12.674 12.674 12.674 31.826t-12.674 31.826L708.913 576Z"></path>
+</svg>
+<span class="sr-only">Toggle navigation menu</span>
+</button>
+<div class="flex items-center justify-between flex-1 space-x-2 sm:space-x-4 md:justify-end">
+<div class="flex-1 w-full md:w-auto md:flex-none"><form @keydown.k.window.meta="$refs.search.focus()" action="search.html" class="relative flex items-center group" id="searchbox" method="get">
+<input aria-label="Search the docs" class="inline-flex items-center font-medium transition-colors bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background border border-input hover:bg-accent focus:bg-accent hover:text-accent-foreground focus:text-accent-foreground hover:placeholder-accent-foreground py-2 px-4 relative h-9 w-full justify-start rounded-[0.5rem] text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64" id="search-input" name="q" placeholder="Search ..." type="search" x-ref="search"/>
+<kbd class="pointer-events-none absolute right-1.5 top-2 hidden h-5 select-none text-muted-foreground items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex group-hover:bg-accent group-hover:text-accent-foreground">
+<span class="text-xs">⌘</span>
+    K
+  </kbd>
+</form>
+</div>
+<nav class="flex items-center space-x-1">
+<button @click="darkMode = darkMode === 'light' ? 'dark' : 'light'" aria-label="Color theme switcher" class="relative inline-flex items-center justify-center px-0 text-sm font-medium transition-colors rounded-md hover:bg-accent hover:text-accent-foreground h-9 w-9" type="button">
+<svg class="absolute transition-all scale-100 rotate-0 dark:-rotate-90 dark:scale-0" fill="currentColor" height="24" viewbox="0 96 960 960" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M480 685q45.456 0 77.228-31.772Q589 621.456 589 576q0-45.456-31.772-77.228Q525.456 467 480 467q-45.456 0-77.228 31.772Q371 530.544 371 576q0 45.456 31.772 77.228Q434.544 685 480 685Zm0 91q-83 0-141.5-58.5T280 576q0-83 58.5-141.5T480 376q83 0 141.5 58.5T680 576q0 83-58.5 141.5T480 776ZM80 621.5q-19.152 0-32.326-13.174T34.5 576q0-19.152 13.174-32.326T80 530.5h80q19.152 0 32.326 13.174T205.5 576q0 19.152-13.174 32.326T160 621.5H80Zm720 0q-19.152 0-32.326-13.174T754.5 576q0-19.152 13.174-32.326T800 530.5h80q19.152 0 32.326 13.174T925.5 576q0 19.152-13.174 32.326T880 621.5h-80Zm-320-320q-19.152 0-32.326-13.174T434.5 256v-80q0-19.152 13.174-32.326T480 130.5q19.152 0 32.326 13.174T525.5 176v80q0 19.152-13.174 32.326T480 301.5Zm0 720q-19.152 0-32.326-13.17Q434.5 995.152 434.5 976v-80q0-19.152 13.174-32.326T480 850.5q19.152 0 32.326 13.174T525.5 896v80q0 19.152-13.174 32.33-13.174 13.17-32.326 13.17ZM222.174 382.065l-43-42Q165.5 327.391 166 308.239t13.174-33.065q13.435-13.674 32.587-13.674t32.065 13.674l42.239 43q12.674 13.435 12.555 31.706-.12 18.272-12.555 31.946-12.674 13.674-31.445 13.413-18.772-.261-32.446-13.174Zm494 494.761-42.239-43q-12.674-13.435-12.674-32.087t12.674-31.565Q686.609 756.5 705.38 757q18.772.5 32.446 13.174l43 41.761Q794.5 824.609 794 843.761t-13.174 33.065Q767.391 890.5 748.239 890.5t-32.065-13.674Zm-42-494.761Q660.5 369.391 661 350.62q.5-18.772 13.174-32.446l41.761-43Q728.609 261.5 747.761 262t33.065 13.174q13.674 13.435 13.674 32.587t-13.674 32.065l-43 42.239q-13.435 12.674-31.706 12.555-18.272-.12-31.946-12.555Zm-495 494.761Q165.5 863.391 165.5 844.239t13.674-32.065l43-42.239q13.435-12.674 32.087-12.674t31.565 12.674Q299.5 782.609 299 801.38q-.5 18.772-13.174 32.446l-41.761 43Q231.391 890.5 212.239 890t-33.065-13.174ZM480 576Z"></path>
+</svg>
+<svg class="absolute transition-all scale-0 rotate-90 dark:rotate-0 dark:scale-100" fill="currentColor" height="24" viewbox="0 96 960 960" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M480 936q-151 0-255.5-104.5T120 576q0-138 90-239.5T440 218q25-3 39 18t-1 44q-17 26-25.5 55t-8.5 61q0 90 63 153t153 63q31 0 61.5-9t54.5-25q21-14 43-1.5t19 39.5q-14 138-117.5 229T480 936Zm0-80q88 0 158-48.5T740 681q-20 5-40 8t-40 3q-123 0-209.5-86.5T364 396q0-20 3-40t8-40q-78 32-126.5 102T200 576q0 116 82 198t198 82Zm-10-270Z"></path>
+</svg>
+</button>
+</nav>
+</div>
+</div>
+</header>
+<div class="flex-1"><div class="container flex-1 items-start md:grid md:grid-cols-[220px_minmax(0,1fr)] md:gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-10"><aside :aria-hidden="!showSidebar" :class="{ 'translate-x-0': showSidebar }" class="fixed inset-y-0 left-0 md:top-14 z-50 md:z-30 bg-background md:bg-transparent transition-all duration-100 -translate-x-full md:translate-x-0 ml-0 p-6 md:p-0 md:-ml-2 md:h-[calc(100vh-3.5rem)] w-5/6 md:w-full shrink-0 overflow-y-auto border-r border-border md:sticky" id="left-sidebar">
+<a class="!justify-start text-sm md:!hidden bg-background" href="index.html"><span class="font-bold text-clip whitespace-nowrap">gen-tries 0.9.4 documentation</span>
+</a>
+<div class="relative overflow-hidden md:overflow-auto my-4 md:my-0 h-[calc(100vh-8rem)] md:h-auto">
+<div class="overflow-y-auto h-full w-full relative pr-6"><nav class="table w-full min-w-full my-6 lg:my-8">
+<ul class="current">
+<li class="toctree-l1" x-data="{ expanded: $el.classList.contains('current') ? true : false }"><a :class="{ 'expanded' : expanded }" @click="expanded = !expanded" class="reference internal expandable" href="usage.html">Using gen-trie<button @click.prevent.stop="expanded = !expanded" type="button"><span class="sr-only"></span><svg fill="currentColor" height="18px" stroke="none" viewbox="0 0 24 24" width="18px" xmlns="http://www.w3.org/2000/svg"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg></button></a><ul class="simple" x-show="expanded">
+</ul>
+</li>
+<li class="toctree-l1" x-data="{ expanded: $el.classList.contains('current') ? true : false }"><a :class="{ 'expanded' : expanded }" @click="expanded = !expanded" class="reference internal expandable" href="reference.html">API Reference<button @click.prevent.stop="expanded = !expanded" type="button"><span class="sr-only"></span><svg fill="currentColor" height="18px" stroke="none" viewbox="0 0 24 24" width="18px" xmlns="http://www.w3.org/2000/svg"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg></button></a><ul class="simple" x-show="expanded">
+</ul>
+</li>
+<li class="toctree-l1 current" x-data="{ expanded: $el.classList.contains('current') ? true : false }"><a :class="{ 'expanded' : expanded }" @click="expanded = !expanded" class="current reference internal expandable" href="#">Benchmarks<button @click.prevent.stop="expanded = !expanded" type="button"><span class="sr-only"></span><svg fill="currentColor" height="18px" stroke="none" viewbox="0 0 24 24" width="18px" xmlns="http://www.w3.org/2000/svg"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg></button></a><ul class="simple" x-show="expanded">
+</ul>
+</li>
+<li class="toctree-l1" x-data="{ expanded: $el.classList.contains('current') ? true : false }"><a :class="{ 'expanded' : expanded }" @click="expanded = !expanded" class="reference internal expandable" href="gentrie.html">gentrie package<button @click.prevent.stop="expanded = !expanded" type="button"><span class="sr-only"></span><svg fill="currentColor" height="18px" stroke="none" viewbox="0 0 24 24" width="18px" xmlns="http://www.w3.org/2000/svg"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg></button></a><ul x-show="expanded">
+<li class="toctree-l2"><a class="reference internal" href="gentrie.trie.html">gentrie.trie package</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+<button @click="showSidebar = false" class="absolute md:hidden right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100" type="button">
+<svg class="h-4 w-4" fill="currentColor" height="24" stroke="none" viewbox="0 96 960 960" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M480 632 284 828q-11 11-28 11t-28-11q-11-11-11-28t11-28l196-196-196-196q-11-11-11-28t11-28q11-11 28-11t28 11l196 196 196-196q11-11 28-11t28 11q11 11 11 28t-11 28L536 576l196 196q11 11 11 28t-11 28q-11 11-28 11t-28-11L480 632Z"></path>
+</svg>
+</button>
+</aside>
+<main class="relative py-6 lg:gap-10 lg:py-8 xl:grid xl:grid-cols-[1fr_300px]">
+<div class="w-full min-w-0 mx-auto">
+<nav aria-label="breadcrumbs" class="flex items-center mb-4 space-x-1 text-sm text-muted-foreground">
+<a class="overflow-hidden text-ellipsis whitespace-nowrap hover:text-foreground" href="index.html">
+<span class="hidden md:inline">gen-tries 0.9.4 documentation</span>
+<svg aria-label="Home" class="md:hidden" fill="currentColor" height="18" stroke="none" viewbox="0 96 960 960" width="18" xmlns="http://www.w3.org/2000/svg">
+<path d="M240 856h120V616h240v240h120V496L480 316 240 496v360Zm-80 80V456l320-240 320 240v480H520V696h-80v240H160Zm320-350Z"></path>
+</svg>
+</a>
+<div class="mr-1">/</div><span aria-current="page" class="font-medium text-foreground overflow-hidden text-ellipsis whitespace-nowrap">Benchmarks</span>
+</nav>
+<div id="content" role="main">
+<section id="benchmarks">
+<h1>Benchmarks<a class="headerlink" href="#benchmarks" title="Link to this heading">¶</a></h1>
+
+<p>These are benchmark results for the <cite>gen_tries</cite> library, focusing on
+various operations such as building tries, checking key existence,
+prefix matching, and updating tries.</p>
+<section id="platform">
+<h2>Platform<a class="headerlink" href="#platform" title="Link to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#platform'">¶</a></h2>
+<section id="hardware">
+<h3>Hardware<a class="headerlink" href="#hardware" title="Link to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#hardware'">¶</a></h3>
+<p>Mac Studio, Apple M2 Ultra, 24-Core CPU (approx 3.5 GHz), 128GB RAM</p>
+</section>
+<section id="python-version">
+<h3>Python Version<a class="headerlink" href="#python-version" title="Link to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#python-version'">¶</a></h3>
+<p>Python 3.13.7</p>
+</section>
+<section id="benchmark-configuration">
+<h3>Benchmark Configuration<a class="headerlink" href="#benchmark-configuration" title="Link to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#benchmark-configuration'">¶</a></h3>
+<ul class="simple">
+<li><p><strong>gen-tries Version</strong>: 0.9.4</p></li>
+<li><p><strong>Single Threaded</strong></p></li>
+<li><p><strong>Symbol Set</strong>: ‘0123’</p></li>
+<li><p><strong>Key Generation</strong>: All possible combinations of symbols up to a certain length, starting with all ‘0’s and incrementing the last symbol until all combinations were generated.</p></li>
+<li><p><strong>Trie Depths</strong>: 2 to 9</p></li>
+<li><p><strong>Runtime Validation</strong>: Enabled and Disabled</p></li>
+<li><p><strong>Benchmarking Tool</strong>: pytest-benchmark</p></li>
+<li><p><strong>Benchmarking Code</strong>: bench/benchmark_performance.py</p></li>
+</ul>
+</section>
+<section id="running-the-benchmarks">
+<h3>Running the Benchmarks<a class="headerlink" href="#running-the-benchmarks" title="Link to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#running-the-benchmarks'">¶</a></h3>
+<p>To run all benchmarks with pytest-benchmark:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><code><span id="line-1"><span class="nb">cd</span><span class="w"> </span>bench
+</span><span id="line-2">pytest<span class="w"> </span>bench_performance.py<span class="w"> </span><span class="se">\</span>
+</span><span id="line-3"><span class="w">    </span>--benchmark-sort<span class="o">=</span>name<span class="w"> </span><span class="se">\</span>
+</span><span id="line-4"><span class="w">    </span>--benchmark-group-by<span class="o">=</span>func<span class="w"> </span><span class="se">\</span>
+</span><span id="line-5"><span class="w">    </span>--benchmark-histogram<span class="o">=</span>histogram/benchmark<span class="w"> </span><span class="se">\</span>
+</span><span id="line-6"><span class="w">    </span>--benchmark-time-unit<span class="o">=</span>ns
+</span></code></pre></div>
+</div>
+</section>
+<section id="id1">
+<h3>Benchmark Configuration<a class="headerlink" href="#id1" title="Link to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#id1'">¶</a></h3>
+<p>Benchmarks are configured with:</p>
+<ul class="simple">
+<li><p><strong>min_rounds</strong>: 100</p></li>
+<li><p><strong>min_time</strong>: 1s</p></li>
+<li><p><strong>max_time</strong>: 10s</p></li>
+<li><p><strong>timer</strong>: perf_counter_ns</p></li>
+</ul>
+<p>See the source for details.</p>
+</section>
+<section id="what-is-measured">
+<h3>What is Measured<a class="headerlink" href="#what-is-measured" title="Link to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#what-is-measured'">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Add</strong>: Time to add keys to the trie</p></li>
+<li><p><strong>Update</strong>: Time to update existing keys</p></li>
+<li><p><strong>Lookup</strong>: Time to check key presence (hit/miss)</p></li>
+<li><p><strong>Remove</strong>: Time to remove keys</p></li>
+<li><p><strong>Traversal</strong>: Time for <cite>prefixes()</cite> and <cite>prefixed_by()</cite></p></li>
+</ul>
+</section>
+<section id="interpreting-results">
+<h3>Interpreting Results<a class="headerlink" href="#interpreting-results" title="Link to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#interpreting-results'">¶</a></h3>
+<ul class="simple">
+<li><p><strong>ops</strong>: Operations per second (higher is better)</p></li>
+<li><p><strong>Scaling</strong>: As trie depth increases, expect some slowdown; large jumps may indicate inefficiency.</p></li>
+</ul>
+</section>
+<section id="advanced-usage">
+<h3>Advanced Usage<a class="headerlink" href="#advanced-usage" title="Link to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#advanced-usage'">¶</a></h3>
+<ul class="simple">
+<li><p>Compare runs: <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">...</span> <span class="pre">--benchmark-compare=previous.json</span></code></p></li>
+<li><p>Export results: <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">...</span> <span class="pre">--benchmark-json=results.json</span></code></p></li>
+<li><p>View histograms: <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">...</span> <span class="pre">--benchmark-histogram=histogram/benchmark</span></code></p></li>
+</ul>
+</section>
+<section id="discussion">
+<h3>Discussion<a class="headerlink" href="#discussion" title="Link to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#discussion'">¶</a></h3>
+<p>The benchmarks are designed to evaluate performance across different trie
+depths and configurations.</p>
+<p>Comparison of runtime validation settings reveals that disabling runtime validation
+can lead to small performance improvements in some scenarios, particularly for deeper
+tries. However, the performance gains are often minimal and may not justify the trade-offs
+in terms of safety and correctness. Runtime validation helps catch errors and ensures
+correctness by validating the structure and content of the trie during operations.</p>
+<p>Turning it off may be appropriate in extremely performance-critical applications where the data is
+well-defined and unlikely to change, allowing for optimizations that bypass some of the safety checks.</p>
+<p><strong>HOWEVER</strong>, it is crucial to thoroughly test and validate the trie implementation in such
+scenarios to avoid potential issues. Absolutely NO assumptions should be made about
+the data or its structure. The behavior of the trie with invalid data is undefined and may lead to
+catastrophic failures.</p>
+<p>In Summary: If you choose to disable runtime validation, do so with extreme caution and only after
+thorough testing. The performance increase is relatively small, and the risks may outweigh the benefits.</p>
+<p>For the tests, a symbol set of ‘0123’ was used and keys were generated by creating
+all possible combinations of these symbols up to a certain length starting
+with all ‘0’s and incrementing the last symbol until all combinations were generated.</p>
+<p>So for a trie depth of 3, the keys would be ‘000’, ‘001’, ‘002’, …, ‘333’. Thus
+covering all possible keys of length 3. This approach ensures a comprehensive
+evaluation of the trie performance across different key patterns and depths and has a
+branching factor (4) that allows for efficient exploration of the search space to
+a substantial depth (9).</p>
+<p>Depth 1 is generally omitted from the benchmarks due to its limited key space and minimal impact on performance.</p>
+</section>
+<section id="building-trie-using-add">
+<h3>Building trie using add()<a class="headerlink" href="#building-trie-using-add" title="Link to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#building-trie-using-add'">¶</a></h3>
+<p>Table shows thousands of operations per second (Kops/sec) for different trie depths and
+runtime key validation settings while building the trie using the add() method
+using strings as keys. Trie Depth is equivalent to the number of symbols in each key
+being added to the trie.</p>
+<p>The operations being measured are the individual add() method calls adding keys to the trie.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Trie Depth</p></th>
+<th class="head"><p>Runtime Validation</p></th>
+<th class="head"><p>Kops / sec</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>False</p></td>
+<td><p>266.7</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>True</p></td>
+<td><p>266.7</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>False</p></td>
+<td><p>609.5</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>True</p></td>
+<td><p>587.2</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>False</p></td>
+<td><p>612.4</p></td>
+</tr>
+<tr class="row-odd"><td><p>4</p></td>
+<td><p>True</p></td>
+<td><p>587.2</p></td>
+</tr>
+<tr class="row-even"><td><p>5</p></td>
+<td><p>False</p></td>
+<td><p>644.8</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>True</p></td>
+<td><p>612.4</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>False</p></td>
+<td><p>634.4</p></td>
+</tr>
+<tr class="row-odd"><td><p>6</p></td>
+<td><p>True</p></td>
+<td><p>601.8</p></td>
+</tr>
+<tr class="row-even"><td><p>7</p></td>
+<td><p>False</p></td>
+<td><p>618.5</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>True</p></td>
+<td><p>591.6</p></td>
+</tr>
+<tr class="row-even"><td><p>8</p></td>
+<td><p>False</p></td>
+<td><p>622.9</p></td>
+</tr>
+<tr class="row-odd"><td><p>8</p></td>
+<td><p>True</p></td>
+<td><p>600.3</p></td>
+</tr>
+<tr class="row-even"><td><p>9</p></td>
+<td><p>False</p></td>
+<td><p>602.6</p></td>
+</tr>
+<tr class="row-odd"><td><p>9</p></td>
+<td><p>True</p></td>
+<td><p>584.5</p></td>
+</tr>
+</tbody>
+</table>
+<img alt="_images/build_trie_with_add.png" class="align-center" src="_images/build_trie_with_add.png"/>
+</section>
+<section id="building-trie-using-update">
+<h3>Building trie using update()<a class="headerlink" href="#building-trie-using-update" title="Link to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#building-trie-using-update'">¶</a></h3>
+<p>This is the same as above but using the update() method to build the trie instead of add()</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Trie Depth</p></th>
+<th class="head"><p>Runtime Validation</p></th>
+<th class="head"><p>Kops / sec</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>False</p></td>
+<td><p>400.0</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>True</p></td>
+<td><p>444.4</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>False</p></td>
+<td><p>547.0</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>True</p></td>
+<td><p>561.4</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>False</p></td>
+<td><p>651.4</p></td>
+</tr>
+<tr class="row-odd"><td><p>4</p></td>
+<td><p>True</p></td>
+<td><p>635.2</p></td>
+</tr>
+<tr class="row-even"><td><p>5</p></td>
+<td><p>False</p></td>
+<td><p>592.6</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>True</p></td>
+<td><p>635.2</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>False</p></td>
+<td><p>599.2</p></td>
+</tr>
+<tr class="row-odd"><td><p>6</p></td>
+<td><p>True</p></td>
+<td><p>600.5</p></td>
+</tr>
+<tr class="row-even"><td><p>7</p></td>
+<td><p>False</p></td>
+<td><p>602.3</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>True</p></td>
+<td><p>585.9</p></td>
+</tr>
+<tr class="row-even"><td><p>8</p></td>
+<td><p>False</p></td>
+<td><p>608.8</p></td>
+</tr>
+<tr class="row-odd"><td><p>8</p></td>
+<td><p>True</p></td>
+<td><p>588.8</p></td>
+</tr>
+<tr class="row-even"><td><p>9</p></td>
+<td><p>False</p></td>
+<td><p>598.1</p></td>
+</tr>
+<tr class="row-odd"><td><p>9</p></td>
+<td><p>True</p></td>
+<td><p>573.8</p></td>
+</tr>
+</tbody>
+</table>
+<img alt="_images/build_trie_with_update.png" class="align-center" src="_images/build_trie_with_update.png"/>
+</section>
+<section id="key-in-trie">
+<h3>key in trie<a class="headerlink" href="#key-in-trie" title="Link to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#key-in-trie'">¶</a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Key Depth</p></th>
+<th class="head"><p>Runtime Validation</p></th>
+<th class="head"><p>Kops / sec</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>False</p></td>
+<td><p>4327.1</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>True</p></td>
+<td><p>3388.7</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>False</p></td>
+<td><p>3617.9</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>True</p></td>
+<td><p>2959.5</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>False</p></td>
+<td><p>3167.6</p></td>
+</tr>
+<tr class="row-odd"><td><p>4</p></td>
+<td><p>True</p></td>
+<td><p>2657.5</p></td>
+</tr>
+<tr class="row-even"><td><p>5</p></td>
+<td><p>False</p></td>
+<td><p>2834.5</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>True</p></td>
+<td><p>2399.2</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>False</p></td>
+<td><p>2555.6</p></td>
+</tr>
+<tr class="row-odd"><td><p>6</p></td>
+<td><p>True</p></td>
+<td><p>2193.9</p></td>
+</tr>
+<tr class="row-even"><td><p>7</p></td>
+<td><p>False</p></td>
+<td><p>2344.7</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>True</p></td>
+<td><p>2045.4</p></td>
+</tr>
+<tr class="row-even"><td><p>8</p></td>
+<td><p>False</p></td>
+<td><p>2156.1</p></td>
+</tr>
+<tr class="row-odd"><td><p>8</p></td>
+<td><p>True</p></td>
+<td><p>1736.1</p></td>
+</tr>
+<tr class="row-even"><td><p>9</p></td>
+<td><p>False</p></td>
+<td><p>1946.3</p></td>
+</tr>
+<tr class="row-odd"><td><p>9</p></td>
+<td><p>True</p></td>
+<td><p>1690.6</p></td>
+</tr>
+</tbody>
+</table>
+<img alt="_images/key_in_trie.png" class="align-center" src="_images/key_in_trie.png"/>
+</section>
+<section id="key-not-in-trie">
+<h3>key not in trie<a class="headerlink" href="#key-not-in-trie" title="Link to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#key-not-in-trie'">¶</a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Key Depth</p></th>
+<th class="head"><p>Runtime Validation</p></th>
+<th class="head"><p>Kops / sec</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>False</p></td>
+<td><p>5243.8</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>True</p></td>
+<td><p>3636.4</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>False</p></td>
+<td><p>4024.1</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>True</p></td>
+<td><p>3200.0</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>False</p></td>
+<td><p>3403.7</p></td>
+</tr>
+<tr class="row-odd"><td><p>4</p></td>
+<td><p>True</p></td>
+<td><p>2849.0</p></td>
+</tr>
+<tr class="row-even"><td><p>5</p></td>
+<td><p>False</p></td>
+<td><p>3027.6</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>True</p></td>
+<td><p>2548.4</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>False</p></td>
+<td><p>2642.7</p></td>
+</tr>
+<tr class="row-odd"><td><p>6</p></td>
+<td><p>True</p></td>
+<td><p>2325.0</p></td>
+</tr>
+<tr class="row-even"><td><p>7</p></td>
+<td><p>False</p></td>
+<td><p>2403.3</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>True</p></td>
+<td><p>2143.2</p></td>
+</tr>
+<tr class="row-even"><td><p>8</p></td>
+<td><p>False</p></td>
+<td><p>2268.6</p></td>
+</tr>
+<tr class="row-odd"><td><p>8</p></td>
+<td><p>True</p></td>
+<td><p>1992.0</p></td>
+</tr>
+<tr class="row-even"><td><p>9</p></td>
+<td><p>False</p></td>
+<td><p>2072.1</p></td>
+</tr>
+<tr class="row-odd"><td><p>9</p></td>
+<td><p>True</p></td>
+<td><p>1806.7</p></td>
+</tr>
+</tbody>
+</table>
+<img alt="_images/key_not_in_trie.png" class="align-center" src="_images/key_not_in_trie.png"/>
+</section>
+<section id="get">
+<h3>get()<a class="headerlink" href="#get" title="Link to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#get'">¶</a></h3>
+<p>The get() operation retrieves the value (the TrieEntry)associated with a key in the trie.</p>
+<p>This benchmark measures the performance of the get() operation for existing keys
+at various depths in the trie, with and without runtime validation enabled.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Key Depth</p></th>
+<th class="head"><p>Runtime Validation</p></th>
+<th class="head"><p>Kops / sec</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>False</p></td>
+<td><p>1460.3</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>True</p></td>
+<td><p>1460.3</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>False</p></td>
+<td><p>2103.8</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>True</p></td>
+<td><p>1852.3</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>False</p></td>
+<td><p>2299.3</p></td>
+</tr>
+<tr class="row-odd"><td><p>4</p></td>
+<td><p>True</p></td>
+<td><p>1992.7</p></td>
+</tr>
+<tr class="row-even"><td><p>5</p></td>
+<td><p>False</p></td>
+<td><p>2151.9</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>True</p></td>
+<td><p>1929.5</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>False</p></td>
+<td><p>1987.7</p></td>
+</tr>
+<tr class="row-odd"><td><p>6</p></td>
+<td><p>True</p></td>
+<td><p>1778.5</p></td>
+</tr>
+<tr class="row-even"><td><p>7</p></td>
+<td><p>False</p></td>
+<td><p>1881.2</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>True</p></td>
+<td><p>1667.6</p></td>
+</tr>
+<tr class="row-even"><td><p>8</p></td>
+<td><p>False</p></td>
+<td><p>1698.2</p></td>
+</tr>
+<tr class="row-odd"><td><p>8</p></td>
+<td><p>True</p></td>
+<td><p>1552.3</p></td>
+</tr>
+<tr class="row-even"><td><p>9</p></td>
+<td><p>False</p></td>
+<td><p>1640.2</p></td>
+</tr>
+<tr class="row-odd"><td><p>9</p></td>
+<td><p>True</p></td>
+<td><p>1495.8</p></td>
+</tr>
+</tbody>
+</table>
+<img alt="_images/get_kops_per_second_by_key_depth_and_runtime_validation.png" class="align-center" src="_images/get_kops_per_second_by_key_depth_and_runtime_validation.png"/>
+</section>
+<section id="update">
+<h3>update()<a class="headerlink" href="#update" title="Link to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#update'">¶</a></h3>
+<p>This benchmark measures the performance of updating values for existing keys in the trie.</p>
+<p>The results show the number of values updated per second (Kops) for different key depths
+and runtime validation settings.</p>
+<img alt="_images/update_kops_per_second_by_key_depth_and_runtime_validation.png" class="align-center" src="_images/update_kops_per_second_by_key_depth_and_runtime_validation.png"/>
+</section>
+<section id="remove">
+<h3>remove()<a class="headerlink" href="#remove" title="Link to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#remove'">¶</a></h3>
+<p>This benchmark is designed as a ‘semi-worst-case’ scenario for the remove() operation.</p>
+<p>By generating only keys at the maximum depth and then removing them,
+we can observe the performance impact on the trie structure as intermediate
+nodes are frequently removed all the way to the root node (requiring the most work).</p>
+<p>A true worst case scenario for the remove() operation would involve a degenerate trie,
+where all keys share the same prefix, effectively behaving like a linked list. While this
+is not the primary focus of the benchmark, it is worth noting that such a structure would
+exhibit significantly different performance characteristics than typical trie use cases.</p>
+<p>In practice, the performance impact of the remove() operation is usually mitigated by the
+structure of the trie and the distribution of keys within it. A degenerate trie is an edge case and
+is not representative of typical usage patterns (and probably indicative of a poorly chosen data structure
+for the task at hand).</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Key Depth</p></th>
+<th class="head"><p>Runtime Validation</p></th>
+<th class="head"><p>Kops / sec</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>False</p></td>
+<td><p>533.3</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>True</p></td>
+<td><p>457.1</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>False</p></td>
+<td><p>820.5</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>True</p></td>
+<td><p>633.7</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>False</p></td>
+<td><p>870.7</p></td>
+</tr>
+<tr class="row-odd"><td><p>4</p></td>
+<td><p>True</p></td>
+<td><p>795.0</p></td>
+</tr>
+<tr class="row-even"><td><p>5</p></td>
+<td><p>False</p></td>
+<td><p>819.2</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>True</p></td>
+<td><p>782.3</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>False</p></td>
+<td><p>836.8</p></td>
+</tr>
+<tr class="row-odd"><td><p>6</p></td>
+<td><p>True</p></td>
+<td><p>751.1</p></td>
+</tr>
+<tr class="row-even"><td><p>7</p></td>
+<td><p>False</p></td>
+<td><p>807.7</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>True</p></td>
+<td><p>727.4</p></td>
+</tr>
+<tr class="row-even"><td><p>8</p></td>
+<td><p>False</p></td>
+<td><p>780.4</p></td>
+</tr>
+<tr class="row-odd"><td><p>8</p></td>
+<td><p>True</p></td>
+<td><p>709.3</p></td>
+</tr>
+<tr class="row-even"><td><p>9</p></td>
+<td><p>False</p></td>
+<td><p>749.9</p></td>
+</tr>
+<tr class="row-odd"><td><p>9</p></td>
+<td><p>True</p></td>
+<td><p>685.8</p></td>
+</tr>
+</tbody>
+</table>
+<img alt="_images/remove_kops_per_second_vs_key_depth_and_runtime_validation.png" class="align-center" src="_images/remove_kops_per_second_vs_key_depth_and_runtime_validation.png"/>
+</section>
+<section id="prefixed-by">
+<h3>prefixed_by()<a class="headerlink" href="#prefixed-by" title="Link to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#prefixed-by'">¶</a></h3>
+<p>Performance of the <cite>prefixed_by()</cite> method is more complex due to the nature of prefix matching.</p>
+<p>Rather than a simple hit/miss scenario, <cite>prefixed_by()</cite> can return multiple, potentially
+thousands or more (!), matches depending on the prefix length, the search depth, and the
+number of keys present in the trie.</p>
+<p>For this test, a completely filled trie 7 levels deep is used using the same keys as before. Matches are done
+starting from key depths of 2 to 4 symbols to a search depth of 1 to 3 symbols from that starting point.</p>
+<p>A search for the prefix “01” (a key depth of 2) with a search depth of 1 would match the keys
+<cite>“01”</cite>, <cite>“010”</cite>, <cite>“011”</cite>, <cite>“012”</cite> and <cite>“013”</cite> (5 keys).</p>
+<p>The number of matches increases exponentially with the search depth in the completely filled trie.
+In this case, a search depth of 2 would match 21 keys (the key itself, 4 at the first level below it,
+and 16 more at the second level). A search depth of 3 would match 85 keys (1 + 4 + 16 + 64).</p>
+<p>At lower levels of a trie, the number of matches can be smaller due to there not being as many keys
+because of reaching the maximum depth of the trie, so the performance impact of returning multiple
+matches is less pronounced (it effectively limits the search depth). In this benchmark, we made sure
+that the trie is fully populated at all levels up to the maximum depth being searched (4 + 3) to avoid
+that issue.</p>
+<p>As can be seen, while the performance impact of looking up keys is slightly more pronounced at higher
+key depths, the performance impact of returning multiple matches is <em>far</em> more significant as the search
+depth increases, as the number of potential matches grows exponentially.</p>
+<p>Turning off runtime validation has a noticeable positive effect on performance, especially at higher search
+depths, but is not as significant as the impact of returning multiple matches.</p>
+<p>Note that the performance numbers here are for returning all matches as a list,
+rather than stopping at the first match found. This is done to provide a more comprehensive
+view of the performance characteristics of the <cite>prefixed_by()</cite> method.</p>
+<p>Note that although, for example, a search depth of 3 from a key depth of 4 in a trie of depth 7
+has a Kops/sec of 77.8 (Runtime Validation == False) or 85.5 (Runtime Validation == True),
+it is returning 85 matches each time and so the number of prefixed keys matched per second
+is actually 85 times higher (6.6 Mkeys/sec or 7.3 Mkeys/sec respectively).</p>
+<p>Real world performance will vary based on the specific use case, data distribution, and other factors.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Search Depth</p></th>
+<th class="head"><p>Key Depth</p></th>
+<th class="head"><p>Trie Depth</p></th>
+<th class="head"><p>Returned Matches</p></th>
+<th class="head"><p>Runtime Validation</p></th>
+<th class="head"><p>Kops / sec</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>7</p></td>
+<td><p>5</p></td>
+<td><p>False</p></td>
+<td><p>902.5</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>7</p></td>
+<td><p>5</p></td>
+<td><p>True</p></td>
+<td><p>825.8</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>3</p></td>
+<td><p>7</p></td>
+<td><p>5</p></td>
+<td><p>False</p></td>
+<td><p>883.4</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>3</p></td>
+<td><p>7</p></td>
+<td><p>5</p></td>
+<td><p>True</p></td>
+<td><p>824.4</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>4</p></td>
+<td><p>7</p></td>
+<td><p>5</p></td>
+<td><p>False</p></td>
+<td><p>873.4</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>4</p></td>
+<td><p>7</p></td>
+<td><p>5</p></td>
+<td><p>True</p></td>
+<td><p>834.0</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>2</p></td>
+<td><p>7</p></td>
+<td><p>21</p></td>
+<td><p>False</p></td>
+<td><p>308.5</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>2</p></td>
+<td><p>7</p></td>
+<td><p>21</p></td>
+<td><p>True</p></td>
+<td><p>303.1</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>3</p></td>
+<td><p>7</p></td>
+<td><p>21</p></td>
+<td><p>False</p></td>
+<td><p>316.8</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>3</p></td>
+<td><p>7</p></td>
+<td><p>21</p></td>
+<td><p>True</p></td>
+<td><p>304.2</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>4</p></td>
+<td><p>7</p></td>
+<td><p>21</p></td>
+<td><p>False</p></td>
+<td><p>307.3</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>4</p></td>
+<td><p>7</p></td>
+<td><p>21</p></td>
+<td><p>True</p></td>
+<td><p>300.6</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>2</p></td>
+<td><p>7</p></td>
+<td><p>85</p></td>
+<td><p>False</p></td>
+<td><p>86.1</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>2</p></td>
+<td><p>7</p></td>
+<td><p>85</p></td>
+<td><p>True</p></td>
+<td><p>84.9</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>3</p></td>
+<td><p>7</p></td>
+<td><p>85</p></td>
+<td><p>False</p></td>
+<td><p>85.8</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>3</p></td>
+<td><p>7</p></td>
+<td><p>85</p></td>
+<td><p>True</p></td>
+<td><p>83.4</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>4</p></td>
+<td><p>7</p></td>
+<td><p>85</p></td>
+<td><p>False</p></td>
+<td><p>77.8</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>4</p></td>
+<td><p>7</p></td>
+<td><p>85</p></td>
+<td><p>True</p></td>
+<td><p>85.5</p></td>
+</tr>
+</tbody>
+</table>
+<img alt="_images/prefixed_by_average_kops_per_second_by_runtime_validation.png" class="align-center" src="_images/prefixed_by_average_kops_per_second_by_runtime_validation.png"/>
+<img alt="_images/prefixed_by_search_depth_vs_matched_keys_per_second.png" class="align-center" src="_images/prefixed_by_search_depth_vs_matched_keys_per_second.png"/>
+</section>
+<section id="prefixes">
+<h3>prefixes()<a class="headerlink" href="#prefixes" title="Link to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#prefixes'">¶</a></h3>
+<p>prefixes() performance is generally better than prefixed_by() as it stops searching as soon as it finds a match
+and only returns the match and its parent keys. As the number of matches is limited to a maximum of the key depth,
+and key depth generally grows logarithmically (for non-degenerate tries), the performance impact is <em>far</em>
+less pronounced at greater key depths.</p>
+<p>A fully populated trie with a fanout of 4 and a depth 9 contains 349524 nodes - but prefixes() will never
+return more than 9 matches for it. With a fanout of 32, the number of nodes in a fully populated 9 level trie
+increases exponentially (to more than 36 trillion keys), but the maximum number of prefixes() matches
+returned remains unchanged at 9.</p>
+<p>The exception here is degenerate tries (tries where all keys share the same prefix). In these cases, the number of
+returned prefixes() matches can be much larger, as the trie may effectively behave like a linked list.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Key Depth</p></th>
+<th class="head"><p>Returned Matches</p></th>
+<th class="head"><p>Runtime Validation</p></th>
+<th class="head"><p>Kops / sec</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>3</p></td>
+<td><p>False</p></td>
+<td><p>1927.9</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>3</p></td>
+<td><p>True</p></td>
+<td><p>1693.5</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>4</p></td>
+<td><p>False</p></td>
+<td><p>1722.7</p></td>
+</tr>
+<tr class="row-odd"><td><p>4</p></td>
+<td><p>4</p></td>
+<td><p>True</p></td>
+<td><p>1545.5</p></td>
+</tr>
+<tr class="row-even"><td><p>5</p></td>
+<td><p>5</p></td>
+<td><p>False</p></td>
+<td><p>1503.1</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>5</p></td>
+<td><p>True</p></td>
+<td><p>1379.9</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>6</p></td>
+<td><p>False</p></td>
+<td><p>1248.9</p></td>
+</tr>
+<tr class="row-odd"><td><p>6</p></td>
+<td><p>6</p></td>
+<td><p>True</p></td>
+<td><p>1226.5</p></td>
+</tr>
+<tr class="row-even"><td><p>7</p></td>
+<td><p>7</p></td>
+<td><p>False</p></td>
+<td><p>1231.5</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>7</p></td>
+<td><p>True</p></td>
+<td><p>1135.4</p></td>
+</tr>
+<tr class="row-even"><td><p>8</p></td>
+<td><p>8</p></td>
+<td><p>False</p></td>
+<td><p>1098.0</p></td>
+</tr>
+<tr class="row-odd"><td><p>8</p></td>
+<td><p>8</p></td>
+<td><p>True</p></td>
+<td><p>993.4</p></td>
+</tr>
+<tr class="row-even"><td><p>9</p></td>
+<td><p>9</p></td>
+<td><p>False</p></td>
+<td><p>966.9</p></td>
+</tr>
+<tr class="row-odd"><td><p>9</p></td>
+<td><p>9</p></td>
+<td><p>True</p></td>
+<td><p>947.1</p></td>
+</tr>
+</tbody>
+</table>
+<img alt="_images/prefixes_kops_per_second_by_key_depth_and_runtime_validation.png" class="align-center" src="_images/prefixes_kops_per_second_by_key_depth_and_runtime_validation.png"/>
+</section>
+</section>
+</section>
+</div></div><aside class="hidden text-sm xl:block" id="right-sidebar">
+<div class="sticky top-16 -mt-10 max-h-[calc(100vh-5rem)] overflow-y-auto pt-6 space-y-2"><p class="font-medium">On this page</p>
+<ul>
+<li><a :data-current="activeSection === '#platform'" class="reference internal" href="#platform">Platform</a><ul>
+<li><a :data-current="activeSection === '#hardware'" class="reference internal" href="#hardware">Hardware</a></li>
+<li><a :data-current="activeSection === '#python-version'" class="reference internal" href="#python-version">Python Version</a></li>
+<li><a :data-current="activeSection === '#benchmark-configuration'" class="reference internal" href="#benchmark-configuration">Benchmark Configuration</a></li>
+<li><a :data-current="activeSection === '#running-the-benchmarks'" class="reference internal" href="#running-the-benchmarks">Running the Benchmarks</a></li>
+<li><a :data-current="activeSection === '#id1'" class="reference internal" href="#id1">Benchmark Configuration</a></li>
+<li><a :data-current="activeSection === '#what-is-measured'" class="reference internal" href="#what-is-measured">What is Measured</a></li>
+<li><a :data-current="activeSection === '#interpreting-results'" class="reference internal" href="#interpreting-results">Interpreting Results</a></li>
+<li><a :data-current="activeSection === '#advanced-usage'" class="reference internal" href="#advanced-usage">Advanced Usage</a></li>
+<li><a :data-current="activeSection === '#discussion'" class="reference internal" href="#discussion">Discussion</a></li>
+<li><a :data-current="activeSection === '#building-trie-using-add'" class="reference internal" href="#building-trie-using-add">Building trie using add()</a></li>
+<li><a :data-current="activeSection === '#building-trie-using-update'" class="reference internal" href="#building-trie-using-update">Building trie using update()</a></li>
+<li><a :data-current="activeSection === '#key-in-trie'" class="reference internal" href="#key-in-trie">key in trie</a></li>
+<li><a :data-current="activeSection === '#key-not-in-trie'" class="reference internal" href="#key-not-in-trie">key not in trie</a></li>
+<li><a :data-current="activeSection === '#get'" class="reference internal" href="#get">get()</a></li>
+<li><a :data-current="activeSection === '#update'" class="reference internal" href="#update">update()</a></li>
+<li><a :data-current="activeSection === '#remove'" class="reference internal" href="#remove">remove()</a></li>
+<li><a :data-current="activeSection === '#prefixed-by'" class="reference internal" href="#prefixed-by">prefixed_by()</a></li>
+<li><a :data-current="activeSection === '#prefixes'" class="reference internal" href="#prefixes">prefixes()</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</aside>
+</main>
+</div>
+</div><footer class="py-6 border-t border-border md:py-0">
+<div class="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
+<div class="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
+<p class="text-sm leading-loose text-center text-muted-foreground md:text-left">© 2025, Jerilyn Franz Built with <a class="font-medium underline underline-offset-4" href="https://www.sphinx-doc.org" rel="noreferrer">Sphinx 8.1.3</a></p>
+</div>
+</div>
+</footer>
+</div>
+<script src="_static/documentation_options.js?v=c5ca06ca"></script>
+<script src="_static/doctools.js?v=9bcbadda"></script>
+<script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+<script defer="defer" src="_static/theme.js?v=073f68d9"></script>
+</body>
+</html>

@@ -5,6 +5,9 @@ Using gen-trie
 .. _gentrie-installation:
 
 
+.. toctree::
+   :maxdepth: 4
+
 .. index::
 
 ------------

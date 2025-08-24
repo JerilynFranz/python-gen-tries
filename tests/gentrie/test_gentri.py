@@ -400,19 +400,19 @@ class TestGeneralizedTrie(unittest.TestCase):
                 name='[TGT_TTE002] Test TrieEntry equality vs non-TrieEntry (False)',
                 action=TrieEntry,
                 kwargs={'ident': id_1, 'key': 'test', 'value': 1},
-                validate_result=lambda found: not (found == 1)  # pyright: ignore[reportUnknownLambdaType]
+                validate_result=lambda found: not found == 1  # pyright: ignore[reportUnknownLambdaType]
             ),
             TestSpec(
                 name='[TGT_TTE003] Test non-TrieEntry equality vs TrieEntry (False)',
                 action=TrieEntry,
                 kwargs={'ident': id_1, 'key': 'test', 'value': 1},
-                validate_result=lambda found: not (1 == found)  # pyright: ignore[reportUnknownLambdaType]
+                validate_result=lambda found: not 1 == found  # pyright: ignore[reportUnknownLambdaType]
             ),
             TestSpec(
                 name='[TGT_TTE004] trie_entry.__eq__(<other>) (False)',
                 action=TrieEntry,
                 kwargs={'ident': id_1, 'key': 'test', 'value': 1},
-                validate_result=lambda found: not found.__eq__(1)  # noqa: E501  # pyright: ignore[reportUnknownLambdaType, reportUnknownMemberType]
+                validate_result=lambda found: not found.__eq__(1)  # pyright: ignore # pylint: disable=unnecessary-dunder-call # noqa: E501
             ),
             TestSpec(
                 name='[TGT_TTE005] Test TrieEntry equality',
@@ -1553,7 +1553,9 @@ class TestGeneralizedTrie(unittest.TestCase):
         self.assertNotEqual(id1, id2)
         self.assertTrue(key in trie)
 
-    def test_str(self) -> None:
+    @pytest.mark.order(after=['test_create_trie', 'test_add'])
+    @pytest.mark.dependency(name='test_trie_str', depends=['test_create_trie', 'test_add'])
+    def test_trie_str(self) -> None:
         """Test the string representation of GeneralizedTrie.
 
         This test checks the output of the __str__ method of GeneralizedTrie
@@ -1564,6 +1566,14 @@ class TestGeneralizedTrie(unittest.TestCase):
         The test includes multiple scenarios with different string lengths
         and ensures that the output matches the expected format."""
         trie = GeneralizedTrie()
+        found: str = dedent(str(trie))
+        expected: str = dedent("""\
+        {
+          trie number = 0
+          trie index = dict_keys([])
+        }""")
+        self.assertEqual(found, expected, msg='[TSTR001] str(trie)')
+
         test_string = 'a'
         self.assertIsInstance(test_string, TrieKeyToken)
         self.assertIsInstance(test_string, Iterable)
@@ -1582,7 +1592,7 @@ class TestGeneralizedTrie(unittest.TestCase):
           }
           trie index = dict_keys([TrieId(1)])
         }""")
-        self.assertEqual(found, expected, msg='[TSTR001] str(trie)')
+        self.assertEqual(found, expected, msg='[TSTR002] str(trie)')
 
         trie = GeneralizedTrie()
         test_string = 'ab'
@@ -1606,7 +1616,7 @@ class TestGeneralizedTrie(unittest.TestCase):
           }
           trie index = dict_keys([TrieId(1)])
         }""")
-        self.assertEqual(found, expected, msg='[TSTR002] str(trie))')
+        self.assertEqual(found, expected, msg='[TSTR003] str(trie))')
 
         trie = GeneralizedTrie()
         test_string = 'abc'
@@ -1636,7 +1646,7 @@ class TestGeneralizedTrie(unittest.TestCase):
           }
           trie index = dict_keys([TrieId(1)])
         }""")
-        self.assertEqual(found, expected, msg='[TSTR003] str(trie))')
+        self.assertEqual(found, expected, msg='[TSTR004] str(trie))')
 
     @pytest.mark.order(after=['test_create_trie', 'test_add', 'test_remove'])
     @pytest.mark.dependency(name='test_getitem_dunder', depends=['test_create_trie', 'test_add', 'test_remove'])
@@ -2269,8 +2279,7 @@ class TestGeneralizedTrie(unittest.TestCase):
         with self.subTest(msg="[TITER001] for entry in trie:"):
             expect_ids_list: list[TrieId] = []
             found_ids_list: list[TrieId] = []
-            for entry in trie:
-                found_ids_list.append(entry)
+            found_ids_list.extend([ident for ident in trie])  # pylint: disable=unnecessary-comprehension
             self.assertEqual(found_ids_list, expect_ids_list)
 
         with self.subTest(msg="[TITER002] trie.add('abcdef')"):

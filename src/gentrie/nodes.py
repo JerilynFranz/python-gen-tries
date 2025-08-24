@@ -38,14 +38,12 @@ class Node:  # pylint: disable=too-few-public-methods
 
         The output IS NOT executable code but more in the nature of debug and testing support."""
         output: list[str] = ["{"]
-        if self.parent is None:
-            output.append("  parent = None")
+
+        from .trie import GeneralizedTrie  # pylint: disable=import-outside-toplevel
+        if isinstance(self.parent, None | GeneralizedTrie):
+            output.append("  parent = root node")
         else:
-            from .trie import GeneralizedTrie  # pylint: disable=import-outside-toplevel
-            if isinstance(self.parent, GeneralizedTrie):
-                output.append("  parent = root node")
-            else:
-                output.append(f"  parent = {repr(self.parent.token)}")
+            output.append(f"  parent = {repr(self.parent.token)}")  # pyright: ignore[reportOptionalMemberAccess]
         output.append(f"  node token = {repr(self.token)}")
         if self.ident:
             output.append(f"  trie id = {self.ident}")
