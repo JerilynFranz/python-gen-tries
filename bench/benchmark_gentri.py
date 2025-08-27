@@ -190,13 +190,24 @@ class BenchIteration:
 
 @dataclass(kw_only=True)
 class BenchOperationsPerSecond:
-    '''Container for the operations per second statistics of a benchmark.'''
+    '''Container for the operations per second statistics of a benchmark.
+    
+    Attributes:
+        average (float): The average operations per second.
+        median (float): The median operations per second.
+        minimum (float): The minimum operations per second.
+        maximum (float): The maximum operations per second.
+        standard_deviation (float): The standard deviation of operations per second.
+        relative_standard_deviation (float): The relative standard deviation of operations per second.
+        percentiles (dict[int, float]): Percentiles of operations per second.
+    '''
     average: float = 0.0
     median: float = 0.0
     minimum: float = 0.0
     maximum: float = 0.0
     standard_deviation: float = 0.0
     relative_standard_deviation: float = 0.0
+    percentiles: dict[int, float] = field(default_factory=dict[int, float])
 
 
 @dataclass(kw_only=True)
@@ -314,7 +325,7 @@ class BenchCase:
             f'{"":^8s}'
             f' | {"":^6s}'
             f' | {"Elapsed":^7s}'
-            f' | {"KOps/Second (avg/median/min/max/std dev)":^52s}'
+            f' | {"KOps/Second (avg/median/min/max/5th/95th/std dev)":^74s}'
             f' | {"":^6s}'
             f' | { "Runtime":^10s}'
             f' | {"":^15s}'
@@ -327,6 +338,8 @@ class BenchCase:
             f' | {"median":^8s}'
             f' | {"min":^8s}'
             f' | {"max":^8s}'
+            f' | {"5th":^8s}'
+            f' | {"95th":^8s}'
             f' | {"std dev":^8s}'
             f' | {"rsd%":^6s}'
             f' | { "Validate":^10s}'
@@ -345,6 +358,8 @@ class BenchCase:
                 f' | {result.ops_per_second.median / 1000:8.1f}'
                 f' | {result.ops_per_second.minimum / 1000:8.1f}'
                 f' | {result.ops_per_second.maximum / 1000:8.1f}'
+                f' | {result.ops_per_second.percentiles[5] / 1000:8.1f}'
+                f' | {result.ops_per_second.percentiles[95] / 1000:8.1f}'
                 f' | {result.ops_per_second.standard_deviation / 1000:8.1f}'
                 f' | {result.ops_per_second.relative_standard_deviation:5.1f}%'
                 f' | {str(result.runtime_validation):^10s}'
@@ -434,7 +449,9 @@ class BenchmarkRunner():
 
         average_ops = statistics.mean(iter.ops_per_second for iter in benchmark_results.iterations)
         median_ops = statistics.median(iter.ops_per_second for iter in benchmark_results.iterations)
-        standard_deviation = statistics.stdev(iter.ops_per_second for iter in benchmark_results.iterations)
+        standard_deviation: float = 0.0
+        if len(benchmark_results.iterations) > 1:
+            standard_deviation = statistics.stdev(iter.ops_per_second for iter in benchmark_results.iterations)
         benchmark_results.ops_per_second = BenchOperationsPerSecond(
             average=average_ops,
             median=median_ops,
@@ -443,6 +460,15 @@ class BenchmarkRunner():
             standard_deviation=standard_deviation,
             relative_standard_deviation=standard_deviation / average_ops * 100 if average_ops else 0
         )
+
+        # Calculate percentiles if we have enough data points
+        for percentile in [5, 10, 25, 50, 75, 90, 95]:
+            if len(benchmark_results.iterations) > 1:
+                benchmark_results.ops_per_second.percentiles[percentile] = statistics.quantiles(
+                    [iter.ops_per_second for iter in benchmark_results.iterations],
+                    n=100)[percentile - 1]
+            else:
+                benchmark_results.ops_per_second.percentiles[percentile] = float('nan')
         return benchmark_results
 
 
@@ -725,8 +751,7 @@ def benchmark_id_in_trie(
         A list of BenchResults containing the benchmark results.
     '''
     trie: GeneralizedTrie = test_tries[mark]
-    test_keys: list[TrieId] = list(
-        [trie_id for trie_id in trie.keys()])  # pyright: ignore[reportAssignmentType]]
+    test_keys: list[TrieId] = list(trie.keys())  # pyright: ignore[reportAssignmentType]]
     trie.runtime_validation = runtime_validation
 
     def action_to_benchmark():

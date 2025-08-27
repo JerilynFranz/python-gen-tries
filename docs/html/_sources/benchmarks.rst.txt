@@ -9,11 +9,12 @@ These are benchmark results for the `gen_tries` library, focusing on
 various operations such as building tries, checking key existence,
 prefix matching, and updating tries.
 
-.. index::
 
 --------
 Platform
 --------
+
+.. index:: platform
 
 Hardware
 --------
@@ -121,6 +122,79 @@ branching factor (4) that allows for efficient exploration of the search space t
 a substantial depth (9).
 
 Depth 1 is generally omitted from the benchmarks due to its limited key space and minimal impact on performance.
+
+The tests themselves are 'micro-benchmarks' designed to measure specific operations in isolation.
+They measure the performance of the **SPECIFIC** call being tested and do not include the overhead taken
+by other operations or the overall process.
+
+This means that it measures the performance of something like 'trie.add(key)' or
+'key in trie' in isolation, not including any overhead from say a containing 'for' loop or
+other operations.
+
+It is measuring the performance of code that looks like this:
+
+.. code-block:: python
+    :linenos:
+
+    from gentrie import GeneralizedTrie
+
+    trie = GeneralizedTrie()
+    trie['example_key'] = 'example_value'
+    trie['different_key'] = 'different_value'
+    trie['yet_another_key'] = 'yet_another_value'
+
+
+NOT code that looks like
+
+.. code-block:: python
+    :linenos:
+
+    from gentrie import GeneralizedTrie
+
+    trie = GeneralizedTrie()
+    data = [('example_key', 'example_value'),
+            ('different_key', 'different_value'),
+            ('yet_another_key', 'yet_another_value')]
+    for key, value in data:
+        trie[key] = value
+
+The reason for this is that the overhead of the loop and other operations are implementation
+details that cannot be easily separated from the operation being measured, and so would skew
+the results by including unrelated overhead from code NOT being targeted for measurement. 
+
+The `for` loop in the above example would add significant overhead that would skew the results for
+the specific operation being measured. The hash assignment (`__setitem__`) method in this case.
+
+As such, the benchmarks focus on specific operations in isolation to provide a clearer picture of
+performance BUT tend to over-estimate real-world performance due to the extremely controlled
+nature of the tests (which are designed to eliminate as many variables as possible).
+
+In practice, the performance characteristics of a trie may vary significantly based on the
+specific use case, data distribution, and access patterns. As such, while synthetic benchmarks
+provide valuable insights, they should be interpreted with caution and supplemented with
+real-world testing whenever possible.
+
+--------------------
+Synthetic Benchmarks
+--------------------
+
+The following benchmarks were conducted using synthetically generated keys.
+
+Synthetic keys were created by generating all possible combinations of the symbols
+'0123' for a specific depth (length) of keys. This approach ensures a comprehensive
+evaluation of the trie performance across different key patterns and depths - and has a
+branching factor (4) that allows for efficient exploration of the search space to
+a substantial depth (9).
+
+This allows for a thorough examination of the trie’s performance characteristics
+across various scenarios.
+
+However, it is important to note that synthetic benchmarks may not fully capture
+real-world performance characteristics, as they do not account for factors such as
+data distribution, key collisions, and other complexities that may arise in
+practical applications. It is designed to provide a controlled environment for
+evaluating the trie implementation's baseline performance characteristics that is not
+influenced by quirks of real-world data patterns.
 
 Building trie using add()
 --------------------------------
@@ -455,3 +529,57 @@ Key Depth  Returned Matches  Runtime Validation  Kops / sec
 
 .. image:: _static/benchmarks/prefixes_kops_per_second_by_key_depth_and_runtime_validation.png
     :align: center
+
+------------------
+Organic Benchmarks
+------------------
+
+Organic benchmarks use real-world data to evaluate trie performance in practical scenarios.
+
+For example, measuring the time it takes create a trie populated
+by a large dataset of English words from a list using a `for` loop.
+
+As such, they provide a more realistic assessment of trie performance in typical use cases.
+
+Creating a Trie Of English Words
+----------------------------------------------------
+
+The following benchmarks were conducted on a trie populated by a list of 274137 English words.
+
+It is functionally equivalent to benchmarking the performance of this code:
+
+.. code-block:: python
+    :linenos:
+
+    from typing import Sequence
+
+    from gentrie import GeneralizedTrie
+
+    def create_dictionary(words: Sequence[str], runtime_validation: bool) -> GeneralizedTrie:
+        trie = GeneralizedTrie(runtime_validation=runtime_validation)
+        for word in words:
+            trie.update(word)
+        return trie
+
+As can be seen, the performance impact of runtime validation is minimal in this scenario
+- it has less than a 1% impact on net performance.
+
+==========  ==================  ================
+Word Count  Runtime Validation  KWords Per Second
+=========  ===================  ================
+274137     False                234.7
+274137     True                 236.4
+=========  ===================  ================
+
+Micro-benchmark of the update() method for the same real-world dataset
+This shows performance of *just the update() calls*
+rather than benchmarking the entire process.
+
+The loop in the organic benchmark adds 
+
+==========  ==================  ================
+Word Count  Runtime Validation  KWords Per Second
+=========  ===================  ================
+274137     False                576.6
+274137     True                 566.8
+=========  ===================  ================
