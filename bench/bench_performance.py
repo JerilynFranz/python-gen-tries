@@ -23,6 +23,7 @@ See the documentation for pytest-benchmark at https://pytest-benchmark.readthedo
 for more information on how to use it.
 '''
 import gc
+import gzip
 import itertools
 import time
 from typing import Any, Optional, Sequence
@@ -164,6 +165,72 @@ def generate_fully_populated_trie(max_depth: int, value: Optional[Any] = None) -
 TEST_FULLY_POPULATED_TRIES: dict[int, GeneralizedTrie] = {}
 for gen_depth in TEST_DEPTHS:
     TEST_FULLY_POPULATED_TRIES[gen_depth] = generate_fully_populated_trie(max_depth=gen_depth)
+
+
+def english_words():
+    """Imports English words from a gzipped text file.
+
+    The file contains a bit over 278 thousand words in English
+    (one per line).
+    """
+    words_file = Path(__file__).parent.joinpath("english_words.txt.gz")
+    return list(map(str.rstrip, gzip.open(words_file, "rt")))
+
+
+TEST_ENGLISH_WORDS: list[str] = english_words()
+TEST_ENGLISH_WORDS_TRIE: GeneralizedTrie = generate_test_trie_from_data(TEST_ENGLISH_WORDS, None)
+
+
+@pytest.mark.benchmark(warmup=True,
+                       min_rounds=10,
+                       min_time=1,
+                       max_time=10,
+                       timer=time.perf_counter_ns)
+@pytest.mark.parametrize('runtime_validation', [False, True])
+def test_organic_build_with_update_from_english_words_list(
+       benchmark,  # pyright: ignore[reportUnknownParameterType, reportMissingParameterType]
+       runtime_validation: bool):
+    '''Benchmark the adding of a list of english words to the trie using update()
+
+    This test checks the performance of adding keys from a list of english words to the trie.
+    '''
+    def helper_create_dictionary(words: Sequence[str], runtime_validation: bool) -> GeneralizedTrie:
+        trie = GeneralizedTrie(runtime_validation=runtime_validation)
+        for word in words:
+            trie[word] = None
+        return trie
+
+    gc.collect()
+    benchmark.extra_info['number_of_words'] = len(TEST_ENGLISH_WORDS)  # pyright: ignore[reportUnknownMemberType]
+    benchmark(helper_create_dictionary,
+              words=TEST_ENGLISH_WORDS,
+              runtime_validation=runtime_validation)
+
+
+@pytest.mark.benchmark(**BENCHMARK_CONFIG)
+@pytest.mark.parametrize('runtime_validation', [False, True])
+def test_microbenchmarking_update_for_build_from_english_words_list(
+       benchmark,  # pyright: ignore[reportUnknownParameterType, reportMissingParameterType]
+       runtime_validation: bool):
+    '''Benchmark the adding of keys to the trie using update()
+
+    This test checks the performance of adding keys to the trie using update()
+    with a list of English words but in a micro-benchmarking context (isolating
+    the update() calls for performance testing rather than benchmarking the entire
+    process).
+    '''
+    benchmark_trie: GeneralizedTrie = GeneralizedTrie(runtime_validation=runtime_validation)
+    key_iter = iter(TEST_ENGLISH_WORDS)
+
+    def setup():
+        return (), {'key': next(key_iter)}  # Will crash when exhausted
+    rounds = len(TEST_ENGLISH_WORDS)  # Rounds limited to prevent exhaustion
+
+    gc.collect()
+    benchmark.pedantic(benchmark_trie.update,  # pyright: ignore[reportUnknownMemberType]
+                       setup=setup,
+                       rounds=rounds,
+                       iterations=1)
 
 
 @pytest.mark.benchmark(**BENCHMARK_CONFIG)
