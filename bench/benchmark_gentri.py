@@ -1405,13 +1405,13 @@ def get_benchmark_cases() -> list[BenchCase]:
             kwargs_variations={
                 'runtime_validation': [False, True],
                 'test_trie': [TEST_FULLY_POPULATED_TRIES[9]],
-                'test_keys': [TEST_DATA[4]],
+                'test_keys': [TEST_DATA[5]],
                 'iterations': [DEFAULT_ITERATIONS],
                 'mark': [1, 2, 3],
             },
         ),
     ]
-    return benchmark_cases_list[-1:]
+    return benchmark_cases_list
 
 
 def run_benchmarks():
