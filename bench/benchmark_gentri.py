@@ -25,7 +25,7 @@ from gentrie import GeneralizedTrie, GeneralizedKey, TrieId  # noqa: E402
 # A minimum of 3 iterations is required to allow statistical analysis
 MIN_MEASURED_ITERATIONS: int = 3
 
-DEFAULT_ITERATIONS: int = 10
+DEFAULT_ITERATIONS: int = 20
 DEFAULT_TIMER = time.perf_counter_ns
 
 SYMBOLS: str = '0123'  # Define the symbols for the trie
@@ -55,7 +55,11 @@ for gen_depth in TEST_MARKS:
     TEST_DATA[gen_depth] = generate_test_data(gen_depth, SYMBOLS, max_keys=max_keys_for_depth)
 
 
-def generate_test_trie(depth: int, symbols: str, max_keys: int, value: Optional[Any] = None) -> GeneralizedTrie:
+def generate_test_trie(depth: int,
+                       symbols: str,
+                       max_keys: int,
+                       value: Optional[Any] = None,
+                       runtime_validation: bool = True) -> GeneralizedTrie:
     '''Generate a test Generalized Trie for the given depth and symbols.
 
     Args:
@@ -63,25 +67,35 @@ def generate_test_trie(depth: int, symbols: str, max_keys: int, value: Optional[
         symbols (str): The symbols to use in the trie.
         max_keys (int): The maximum number of keys to generate.
         value (Optional[Any]): The value to assign to each key in the trie.
+        runtime_validation (bool): Whether to enable runtime validation on the returned trie. (default: True)
+
+    Returns:
+        GeneralizedTrie: The generated trie with the specified keys and values.
     '''
-    test_data = generate_test_data(depth, symbols, max_keys)
-    trie = GeneralizedTrie(runtime_validation=False)
-
-    for key in test_data:
-        trie[key] = value
-    return trie
+    return generate_test_trie_from_data(
+        data=generate_test_data(depth, symbols, max_keys),
+        value=value,
+        runtime_validation=runtime_validation)
 
 
-def generate_test_trie_from_data(data: Sequence[GeneralizedKey], value: Optional[Any] = None) -> GeneralizedTrie:
+def generate_test_trie_from_data(
+        data: Sequence[GeneralizedKey],
+        value: Optional[Any] = None,
+        runtime_validation: bool = True) -> GeneralizedTrie:
     '''Generate a test Generalized Trie from the passed Sequence of GeneralizedKey.
 
     Args:
         data (Sequence[GeneralizedKey]): The sequence of keys to insert into the trie.
         value (Optional[Any]): The value to assign to each key in the trie.
+        runtime_validation (bool): Whether to enable runtime validation on the returned trie. (default: True)
+
+    Returns:
+        GeneralizedTrie: The generated trie with the specified keys and values.
     '''
     trie = GeneralizedTrie(runtime_validation=False)
     for key in data:
         trie[key] = value
+    trie.runtime_validation = runtime_validation
     return trie
 
 
@@ -191,7 +205,7 @@ class BenchIteration:
 @dataclass(kw_only=True)
 class BenchOperationsPerSecond:
     '''Container for the operations per second statistics of a benchmark.
-    
+
     Attributes:
         average (float): The average operations per second.
         median (float): The median operations per second.
@@ -243,8 +257,8 @@ class BenchCase:
         mark (int | str | None): The identifying mark for the benchmark case.
         description (str): A brief description of the benchmark case.
         action (Callable[..., Any]): The action to perform for the benchmark.
-        min_time (float): The minimum time for the benchmark in seconds.
-        max_time (float): The maximum time for the benchmark in seconds.
+        min_time (float): The minimum time for the benchmark in seconds. (default: 5.0)
+        max_time (float): The maximum time for the benchmark in seconds. (default: 20.0)
         kwargs_variations (dict[str, list[Any]]): Variations of keyword arguments for the benchmark.
         runner (Optional[Callable[..., Any]]): A custom runner for the benchmark.
         verbose (bool): Whether to enable verbose output.
@@ -255,7 +269,7 @@ class BenchCase:
     description: str
     action: Callable[..., Any]
     min_time: float = 5.0  # seconds
-    max_time: float = 10.0  # seconds
+    max_time: float = 20.0  # seconds
     kwargs_variations: dict[str, list[Any]] = field(default_factory=dict[str, list[Any]])
     runner: Optional[Callable[..., Any]] = None
     verbose: bool = False
@@ -383,7 +397,10 @@ class BenchmarkRunner():
             min_time: float,
             max_time: float,
             runtime_validation: bool,
-            iterations: int) -> BenchResults:
+            iterations: int,
+            setup: Optional[Callable[..., Any]] = None,
+            teardown: Optional[Callable[..., Any]] = None,
+            ) -> BenchResults:
         """Run a generic benchmark using the specified action and test data for rounds.
 
         This function will execute the benchmark for the given action and
@@ -409,6 +426,8 @@ class BenchmarkRunner():
             max_time (float): The maximum time for the benchmark in seconds.
             runtime_validation (bool): Whether to perform runtime validation.
             iterations (int): The number of iterations to run.
+            setup (Optional[Callable[..., Any]]): A setup function to run before each iteration.
+            teardown (Optional[Callable[..., Any]]): A teardown function to run after each iteration.
         """
         benchmark_results = BenchResults(
             group=group,
@@ -432,10 +451,16 @@ class BenchmarkRunner():
             iteration_result = BenchIteration()
             iteration_result.elapsed_ns = 0
 
+            if isinstance(setup, Callable):
+                setup()
+
             # Timer for benchmarked code
             timer_start: int = DEFAULT_TIMER()
             action()
             timer_end: int = DEFAULT_TIMER()
+
+            if isinstance(teardown, Callable):
+                teardown()
 
             if iteration_pass == 1:
                 # Warmup iteration, not included in final stats
@@ -674,6 +699,196 @@ def benchmark_updating_trie(
     )
 
 
+def benchmark_remove_key_from_trie(
+        group: BenchGroup,
+        name: str,
+        mark: int | str,
+        description: str,
+        min_time: float,
+        max_time: float,
+        runtime_validation: bool,
+        test_data: dict[str | int, Sequence[GeneralizedKey]],
+        iterations: int) -> BenchResults:
+    '''Benchmark remove() operations on keys in an existing trie.
+
+    This is effectively a benchmark of code like this where all test keys
+    are already in the trie and updated to the same value.
+
+    ```
+    for key in test_keys:
+        trie.remove(key)
+    ```
+    Args:
+        name (str): The name of the benchmark case.
+        group (BenchGroup): The reporting group to which the benchmark case belongs.
+        mark (int | str): The identifying mark for the benchmark case.
+        description (str): A brief description of the benchmark case.
+        min_time (float): The minimum time for the benchmark in seconds.
+        max_time (float): The maximum time for the benchmark in seconds.
+        runtime_validation (bool): Whether to enable runtime validation.
+        test_data (dict[str | int, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
+        iterations (int): The number of iterations to run the benchmark.
+
+    Returns:
+        A list of BenchResults containing the benchmark results.
+    '''
+
+    test_keys = test_data[mark]
+    trie: GeneralizedTrie = GeneralizedTrie(runtime_validation=runtime_validation)
+
+    def setup():
+        "Setup the trie with test keys. clear() first for safety."
+        trie.clear()
+        for key in test_keys:
+            trie.update(key, None)
+
+    def action_to_benchmark():
+        "Remove all test keys from the trie."
+        for key in test_keys:
+            trie.remove(key)
+
+    return BenchmarkRunner.default_runner(
+        action=action_to_benchmark,
+        n=len(test_keys),
+        group=group,
+        name=name,
+        mark=mark,
+        description=description,
+        min_time=min_time,
+        max_time=max_time,
+        runtime_validation=runtime_validation,
+        iterations=iterations,
+        setup=setup
+    )
+
+
+def benchmark_del_key_from_trie(
+        group: BenchGroup,
+        name: str,
+        mark: int | str,
+        description: str,
+        min_time: float,
+        max_time: float,
+        runtime_validation: bool,
+        test_data: dict[str | int, Sequence[GeneralizedKey]],
+        iterations: int) -> BenchResults:
+    '''Benchmark "del trie[<key>] operations on keys in an existing trie.
+
+    This is effectively a benchmark of code like this where all test keys
+    are already in the trie.
+
+    ```
+    for key in test_keys:
+        del trie[key]
+    ```
+    Args:
+        name (str): The name of the benchmark case.
+        group (BenchGroup): The reporting group to which the benchmark case belongs.
+        mark (int | str): The identifying mark for the benchmark case.
+        description (str): A brief description of the benchmark case.
+        min_time (float): The minimum time for the benchmark in seconds.
+        max_time (float): The maximum time for the benchmark in seconds.
+        runtime_validation (bool): Whether to enable runtime validation.
+        test_data (dict[str | int, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
+        iterations (int): The number of iterations to run the benchmark.
+
+    Returns:
+        A list of BenchResults containing the benchmark results.
+    '''
+    test_keys: Sequence[GeneralizedKey] = test_data[mark]
+    trie: GeneralizedTrie = GeneralizedTrie(runtime_validation=runtime_validation)
+
+    def setup():
+        "Setup the trie with test keys."
+        trie.clear()
+        for key in test_keys:
+            trie.update(key, None)
+
+    def action_to_benchmark():
+        "Remove all test keys from the trie using del operator"
+        for key in test_keys:
+            del trie[key]
+
+    return BenchmarkRunner.default_runner(
+        action=action_to_benchmark,
+        n=len(test_keys),
+        group=group,
+        name=name,
+        mark=mark,
+        description=description,
+        min_time=min_time,
+        max_time=max_time,
+        runtime_validation=runtime_validation,
+        iterations=iterations,
+        setup=setup
+    )
+
+
+def benchmark_del_id_from_trie(
+        group: BenchGroup,
+        name: str,
+        mark: int | str,
+        description: str,
+        min_time: float,
+        max_time: float,
+        runtime_validation: bool,
+        test_data: dict[str | int, Sequence[GeneralizedKey]],
+        iterations: int) -> BenchResults:
+    '''Benchmark "del trie[<key>] operations on keys in an existing trie.
+
+    This is effectively a benchmark of code like this where all test keys
+    are already in the trie.
+
+    ```
+    for key in test_keys:
+        del trie[key]
+    ```
+    Args:
+        name (str): The name of the benchmark case.
+        group (BenchGroup): The reporting group to which the benchmark case belongs.
+        mark (int | str): The identifying mark for the benchmark case.
+        description (str): A brief description of the benchmark case.
+        min_time (float): The minimum time for the benchmark in seconds.
+        max_time (float): The maximum time for the benchmark in seconds.
+        runtime_validation (bool): Whether to enable runtime validation.
+        test_data (dict[str | int, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
+        iterations (int): The number of iterations to run the benchmark.
+
+    Returns:
+        A list of BenchResults containing the benchmark results.
+    '''
+    test_keys: Sequence[GeneralizedKey] = test_data[mark]
+    test_ids: list[TrieId] = []
+    trie: GeneralizedTrie = GeneralizedTrie(runtime_validation=runtime_validation)
+
+    def setup():
+        "Setup the trie with test keys. clear() first for safety."
+        trie.clear()
+        for key in test_keys:
+            trie.update(key, None)
+        test_ids.clear()
+        test_ids.extend(trie.keys())
+
+    def action_to_benchmark():
+        "Remove all test keys from the trie."
+        for trie_id in test_ids:
+            del trie[trie_id]
+
+    return BenchmarkRunner.default_runner(
+        action=action_to_benchmark,
+        n=len(test_keys),
+        group=group,
+        name=name,
+        mark=mark,
+        description=description,
+        min_time=min_time,
+        max_time=max_time,
+        runtime_validation=runtime_validation,
+        iterations=iterations,
+        setup=setup
+    )
+
+
 def benchmark_key_in_trie(
         group: BenchGroup,
         name: str,
@@ -793,28 +1008,49 @@ def get_benchmark_cases() -> list[BenchCase]:
             id='synthetic-building-trie-add()',
             name='Synthetic building trie using add()',
             description=('Building a trie using synthetic data and the add() method '
-                         '(trie.add(key, value))'),
+                         '(trie.add(<key>, <value>))'),
             mark_label='Depth'
         ),
         BenchGroup(
             id='synthetic-building-trie-update()',
             name='Synthetic building trie using update()',
             description=('Building a trie using synthetic data and the update() method '
-                         '(trie.update(key, value))'),
+                         '(trie.update(<key>, <value>))'),
             mark_label='Depth'
         ),
         BenchGroup(
             id='synthetic-building-trie-assign',
             name='Synthetic building trie using assignment',
             description=('Building a trie using synthetic data and '
-                         'assignment (trie[key] = value)'),
+                         'assignment (trie[<key>] = <value>)'),
             mark_label='Depth'
         ),
         BenchGroup(
             id='synthetic-updating-trie-update()',
             name='Synthetic updating trie',
             description=('Updating a trie using synthetic data and the update() method '
-                         '(trie.update(key, value))'),
+                         '(trie.update(<key>, <value>))'),
+            mark_label='Depth'
+        ),
+        BenchGroup(
+            id='synthetic-trie-remove()-key',
+            name='Synthetic removing keys from trie',
+            description=('Deleting keys using synthetic data and the remove() method '
+                         '(trie.remove(<key>))'),
+            mark_label='Depth'
+        ),
+        BenchGroup(
+            id='synthetic-trie-del-key',
+            name='Synthetic deleting keys using "del trie[<key>]"',
+            description=('Deleting keys using synthetic data and the del operator '
+                         '(del trie[<key>])'),
+            mark_label='Depth'
+        ),
+        BenchGroup(
+            id='synthetic-trie-del-id',
+            name='Synthetic deleting keys using "del trie[<TrieId>]"',
+            description=('Deleting keys using synthetic data and the del operator '
+                         '(del trie[<TrieId>])'),
             mark_label='Depth'
         ),
         BenchGroup(
@@ -926,8 +1162,44 @@ def get_benchmark_cases() -> list[BenchCase]:
                 'mark': TEST_MARKS,
             }
         ),
+        BenchCase(
+            name='Deleting keys with remove() method (runtime validation: {runtime_validation})',
+            group=benchmark_groups['synthetic-trie-remove()-key'],
+            description='Deleting keys with the remove() method',
+            action=benchmark_remove_key_from_trie,
+            kwargs_variations={
+                'runtime_validation': [False, True],
+                'test_data': [TEST_DATA],
+                'iterations': [DEFAULT_ITERATIONS],
+                'mark': TEST_MARKS,
+            },
+        ),
+        BenchCase(
+            name='Deleting keys using "del trie[<key>] (runtime validation: {runtime_validation})',
+            group=benchmark_groups['synthetic-trie-del-key'],
+            description='Deleting keys using "del trie[<key>]',
+            action=benchmark_del_key_from_trie,
+            kwargs_variations={
+                'runtime_validation': [False, True],
+                'test_data': [TEST_DATA],
+                'iterations': [DEFAULT_ITERATIONS],
+                'mark': TEST_MARKS,
+            },
+        ),
+        BenchCase(
+            name='Deleting keys using "del trie[<TrieId>] (runtime validation: {runtime_validation})',
+            group=benchmark_groups['synthetic-trie-del-id'],
+            description='Deleting keys using "del trie[<TrieId>]',
+            action=benchmark_del_id_from_trie,
+            kwargs_variations={
+                'runtime_validation': [False, True],
+                'test_data': [TEST_DATA],
+                'iterations': [DEFAULT_ITERATIONS],
+                'mark': TEST_MARKS,
+            },
+        ),
     ]
-    return benchmark_cases_list
+    return benchmark_cases_list[-1:]
 
 
 def run_benchmarks():
