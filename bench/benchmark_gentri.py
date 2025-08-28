@@ -303,7 +303,8 @@ class BenchCase:
                 'mark': self.mark,
                 'description': self.description,
                 'min_time': self.min_time,
-                'max_time': self.max_time
+                'max_time': self.max_time,
+                'verbose': self.verbose
             }
             # merge the generated kwargs (this allows overriding BenchCase attributes
             # such as the mark with variations)
@@ -400,6 +401,7 @@ class BenchmarkRunner():
             iterations: int,
             setup: Optional[Callable[..., Any]] = None,
             teardown: Optional[Callable[..., Any]] = None,
+            verbose: bool = False
             ) -> BenchResults:
         """Run a generic benchmark using the specified action and test data for rounds.
 
@@ -428,6 +430,7 @@ class BenchmarkRunner():
             iterations (int): The number of iterations to run.
             setup (Optional[Callable[..., Any]]): A setup function to run before each iteration.
             teardown (Optional[Callable[..., Any]]): A teardown function to run after each iteration.
+            verbose (bool): Whether to print verbose output. (default = False)
         """
         benchmark_results = BenchResults(
             group=group,
@@ -471,6 +474,8 @@ class BenchmarkRunner():
             benchmark_results.total_elapsed_ns += iteration_result.elapsed_ns
             benchmark_results.iterations.append(iteration_result)
             wall_time = DEFAULT_TIMER()
+            if verbose and iteration_pass == 2:
+                print(f"Iteration {iteration_pass}: {benchmark_results}")
 
         average_ops = statistics.mean(iter.ops_per_second for iter in benchmark_results.iterations)
         median_ops = statistics.median(iter.ops_per_second for iter in benchmark_results.iterations)
@@ -506,7 +511,8 @@ def benchmark_build_with_add(
         max_time: float,
         runtime_validation: bool,
         test_data: dict[int | str, Sequence[GeneralizedKey]],
-        iterations: int) -> BenchResults:
+        iterations: int,
+        verbose: bool = False) -> BenchResults:
     '''Benchmark the addition of keys to the trie.
 
     Args:
@@ -519,6 +525,7 @@ def benchmark_build_with_add(
         runtime_validation (bool): Whether to enable runtime validation.
         test_data (dict[int | str, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
         iterations (int): The number of iterations to run the benchmark.
+        verbose (bool): Whether to print verbose output. (default = False)
 
     Returns (BenchResults):
         The results of the benchmark.
@@ -540,7 +547,8 @@ def benchmark_build_with_add(
         min_time=min_time,
         max_time=max_time,
         runtime_validation=runtime_validation,
-        iterations=iterations
+        iterations=iterations,
+        verbose=verbose
     )
 
 
@@ -553,7 +561,8 @@ def benchmark_build_with_assign(
         max_time: float,
         runtime_validation: bool,
         test_data: dict[int | str, Sequence[GeneralizedKey]],
-        iterations: int) -> BenchResults:
+        iterations: int,
+        verbose: bool = False) -> BenchResults:
     '''Benchmark the assignment of keys to the trie.
 
     Args:
@@ -566,6 +575,7 @@ def benchmark_build_with_assign(
         runtime_validation (bool): Whether to enable runtime validation.
         test_data (dict[int | str, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
         iterations (int): The number of iterations to run the benchmark.
+        verbose (bool): Whether to print verbose output. (default = False)
 
     Returns (BenchResults):
         The results of the benchmark.
@@ -587,7 +597,8 @@ def benchmark_build_with_assign(
         min_time=min_time,
         max_time=max_time,
         runtime_validation=runtime_validation,
-        iterations=iterations
+        iterations=iterations,
+        verbose=verbose
     )
 
 
@@ -600,7 +611,8 @@ def benchmark_build_with_update(
         max_time: float,
         runtime_validation: bool,
         test_data: dict[int | str, Sequence[GeneralizedKey]],
-        iterations: int) -> BenchResults:
+        iterations: int,
+        verbose: bool = False) -> BenchResults:
     '''Benchmark the building of a trie using update().
 
     Args:
@@ -613,6 +625,7 @@ def benchmark_build_with_update(
         runtime_validation (bool): Whether to enable runtime validation.
         test_data (dict[int | str, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
         iterations (int): The number of iterations to run the benchmark.
+        verbose (bool): Whether to print verbose output. (default = False)
 
     Returns (BenchResults):
         The results of the benchmark.
@@ -634,7 +647,8 @@ def benchmark_build_with_update(
         min_time=min_time,
         max_time=max_time,
         runtime_validation=runtime_validation,
-        iterations=iterations
+        iterations=iterations,
+        verbose=verbose
     )
 
 
@@ -647,7 +661,8 @@ def benchmark_updating_trie(
         max_time: float,
         runtime_validation: bool,
         test_data: dict[str | int, Sequence[GeneralizedKey]],
-        iterations: int) -> BenchResults:
+        iterations: int,
+        verbose: bool = False) -> BenchResults:
     '''Benchmark update() operations on keys in an existing trie.
 
     This is effectively a benchmark of code like this where all test keys
@@ -667,6 +682,7 @@ def benchmark_updating_trie(
         runtime_validation (bool): Whether to enable runtime validation.
         test_data (dict[str | int, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
         iterations (int): The number of iterations to run the benchmark.
+        verbose (bool): Whether to print verbose output. (default = False)
 
     Returns:
         A list of BenchResults containing the benchmark results.
@@ -695,7 +711,8 @@ def benchmark_updating_trie(
         min_time=min_time,
         max_time=max_time,
         runtime_validation=runtime_validation,
-        iterations=iterations
+        iterations=iterations,
+        verbose=verbose
     )
 
 
@@ -708,7 +725,8 @@ def benchmark_remove_key_from_trie(
         max_time: float,
         runtime_validation: bool,
         test_data: dict[str | int, Sequence[GeneralizedKey]],
-        iterations: int) -> BenchResults:
+        iterations: int,
+        verbose: bool = False) -> BenchResults:
     '''Benchmark remove() operations on keys in an existing trie.
 
     This is effectively a benchmark of code like this where all test keys
@@ -728,6 +746,7 @@ def benchmark_remove_key_from_trie(
         runtime_validation (bool): Whether to enable runtime validation.
         test_data (dict[str | int, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
         iterations (int): The number of iterations to run the benchmark.
+        verbose (bool): Whether to print verbose output. (default = False)
 
     Returns:
         A list of BenchResults containing the benchmark results.
@@ -758,7 +777,8 @@ def benchmark_remove_key_from_trie(
         max_time=max_time,
         runtime_validation=runtime_validation,
         iterations=iterations,
-        setup=setup
+        setup=setup,
+        verbose=verbose
     )
 
 
@@ -771,7 +791,8 @@ def benchmark_del_key_from_trie(
         max_time: float,
         runtime_validation: bool,
         test_data: dict[str | int, Sequence[GeneralizedKey]],
-        iterations: int) -> BenchResults:
+        iterations: int,
+        verbose: bool = False) -> BenchResults:
     '''Benchmark "del trie[<key>] operations on keys in an existing trie.
 
     This is effectively a benchmark of code like this where all test keys
@@ -791,6 +812,7 @@ def benchmark_del_key_from_trie(
         runtime_validation (bool): Whether to enable runtime validation.
         test_data (dict[str | int, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
         iterations (int): The number of iterations to run the benchmark.
+        verbose (bool): Whether to print verbose output. (default = False)
 
     Returns:
         A list of BenchResults containing the benchmark results.
@@ -820,7 +842,8 @@ def benchmark_del_key_from_trie(
         max_time=max_time,
         runtime_validation=runtime_validation,
         iterations=iterations,
-        setup=setup
+        setup=setup,
+        verbose=verbose
     )
 
 
@@ -833,7 +856,8 @@ def benchmark_del_id_from_trie(
         max_time: float,
         runtime_validation: bool,
         test_data: dict[str | int, Sequence[GeneralizedKey]],
-        iterations: int) -> BenchResults:
+        iterations: int,
+        verbose: bool = False) -> BenchResults:
     '''Benchmark "del trie[<key>] operations on keys in an existing trie.
 
     This is effectively a benchmark of code like this where all test keys
@@ -853,6 +877,7 @@ def benchmark_del_id_from_trie(
         runtime_validation (bool): Whether to enable runtime validation.
         test_data (dict[str | int, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
         iterations (int): The number of iterations to run the benchmark.
+        verbose (bool): Whether to print verbose output. (default = False)
 
     Returns:
         A list of BenchResults containing the benchmark results.
@@ -885,7 +910,8 @@ def benchmark_del_id_from_trie(
         max_time=max_time,
         runtime_validation=runtime_validation,
         iterations=iterations,
-        setup=setup
+        setup=setup,
+        verbose=verbose
     )
 
 
@@ -899,7 +925,8 @@ def benchmark_key_in_trie(
         runtime_validation: bool,
         test_tries: dict[int | str, GeneralizedTrie],
         test_data: dict[int | str, list[GeneralizedKey]],
-        iterations: int) -> BenchResults:
+        iterations: int,
+        verbose: bool = False) -> BenchResults:
     '''Benchmark '<key> in <trie>' operations.
 
     Args:
@@ -913,6 +940,7 @@ def benchmark_key_in_trie(
         test_tries (dict[int | str, GeneralizedTrie]): The test data to use for the benchmark.
         test_data (dict[int | str, list[GeneralizedKey]]): The test keys to use for the benchmark.
         iterations (int): The number of iterations to run the benchmark.
+        verbose (bool): Whether to print verbose output. (default = False)
 
     Returns:
         A list of BenchResults containing the benchmark results.
@@ -935,7 +963,8 @@ def benchmark_key_in_trie(
         min_time=min_time,
         max_time=max_time,
         runtime_validation=runtime_validation,
-        iterations=iterations
+        iterations=iterations,
+        verbose=verbose
     )
 
 
@@ -948,7 +977,8 @@ def benchmark_id_in_trie(
         max_time: float,
         runtime_validation: bool,
         test_tries: dict[int | str, GeneralizedTrie],
-        iterations: int) -> BenchResults:
+        iterations: int,
+        verbose: bool = False) -> BenchResults:
     '''Benchmark '<TrieId> in trie' operations.
 
     Args:
@@ -961,6 +991,7 @@ def benchmark_id_in_trie(
         runtime_validation (bool): Whether to enable runtime validation.
         test_data (GeneralizedTrie): The test data to use for the benchmark.
         iterations (int): The number of iterations to run the benchmark.
+        verbose (bool): Whether to print verbose output. (default = False)
 
     Returns:
         A list of BenchResults containing the benchmark results.
@@ -983,8 +1014,86 @@ def benchmark_id_in_trie(
         min_time=min_time,
         max_time=max_time,
         runtime_validation=runtime_validation,
-        iterations=iterations
+        iterations=iterations,
+        verbose=verbose
     )
+
+
+def benchmark_trie_prefixes_key(
+        group: BenchGroup,
+        name: str,
+        mark: int | str,
+        description: str,
+        min_time: float,
+        max_time: float,
+        runtime_validation: bool,
+        test_tries: dict[str | int, GeneralizedTrie],
+        test_data: dict[str | int, Sequence[GeneralizedKey]],
+        iterations: int,
+        verbose: bool = False) -> BenchResults:
+    '''Benchmark trie prefixes() method.
+
+    This test checks the performance of the prefixes() method on fully populated tries.
+    Because the potential number of matching keys in the trie increases exponentially with depth
+    and the full runtime of a prefix search is dominated by the sheer number of keys found,
+    this test aims to measure the impact of this growth on the performance of the prefixes() method.
+
+    Because prefixes() returns a Generator, we need to exhaust it to measure its performance.
+    This is done by converting the generator to a list.
+    ```
+    for key in test_keys:
+        _ = list(trie.prefixes(key))
+    ```
+    Args:
+        name (str): The name of the benchmark case.
+        group (BenchGroup): The reporting group to which the benchmark case belongs.
+        mark (int | str): The identifying mark for the benchmark case.
+        description (str): A brief description of the benchmark case.
+        min_time (float): The minimum time for the benchmark in seconds.
+        max_time (float): The maximum time for the benchmark in seconds.
+        runtime_validation (bool): Whether to enable runtime validation.
+        test_trie (dict[str | int, GeneralizedTrie]): The test tries to use for the benchmark.
+        test_data (dict[str | int, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
+        iterations (int): The number of iterations to run the benchmark.
+        verbose (bool): Whether to print verbose output. (default = False)
+
+    Returns:
+        A list of BenchResults containing the benchmark results.
+    '''
+    # Build the prefix tree - built here because we are modifying it
+    # and don't want to modify the pre-generated test tries
+    test_keys = test_data[mark]
+    trie = test_tries[mark]
+    trie.runtime_validation = runtime_validation
+    n: int = len(test_keys)  # n here is used to compute ops/second
+
+    def action_to_benchmark():
+        nonlocal n
+        running_n: int = 0
+        for key in test_keys:
+            running_n += len(list(trie.prefixes(key)))
+        n = running_n // len(test_keys)  # Average number of prefixes per key
+
+    result = BenchmarkRunner.default_runner(
+        action=action_to_benchmark,
+        n=n,  # n is updated in action_to_benchmark
+        group=group,
+        name=name,
+        mark=mark,
+        description=description,
+        min_time=min_time,
+        max_time=max_time,
+        runtime_validation=runtime_validation,
+        iterations=iterations,
+        verbose=verbose
+    )
+    # n here is the average number of keys found per prefix tested
+    # This reflects the mutiple keys found per prefixes() search.
+    # By changing it after the benchmark is run, we ensure that the ops/second
+    # measurement is accurate but still reflects the actual workload in
+    # the stats.
+    result.n = n
+    return result
 
 
 def get_benchmark_cases() -> list[BenchCase]:
@@ -1066,7 +1175,13 @@ def get_benchmark_cases() -> list[BenchCase]:
             name='English Dictionary "<key> in trie"',
             description='"<key> in trie" operation for words from the English dictionary',
             mark_label='Data Set'
-        )
+        ),
+        BenchGroup(
+            id='synthetic-trie-prefixes(<key>)',
+            name='Synthetic trie.prefixes(<key>)',
+            description=('Finding keys using trie.prefixes(<key>) method'),
+            mark_label='Depth'
+        ),
     ]
 
     benchmark_groups: dict[str, BenchGroup] = {}
@@ -1193,6 +1308,19 @@ def get_benchmark_cases() -> list[BenchCase]:
             action=benchmark_del_id_from_trie,
             kwargs_variations={
                 'runtime_validation': [False, True],
+                'test_data': [TEST_DATA],
+                'iterations': [DEFAULT_ITERATIONS],
+                'mark': TEST_MARKS,
+            },
+        ),
+        BenchCase(
+            name='Finding keys with prefixes(<key>) method (runtime validation: {runtime_validation})',
+            group=benchmark_groups['synthetic-trie-prefixes(<key>)'],
+            description='Finding keys using trie.prefixes(<key>) in fully populated tries',
+            action=benchmark_trie_prefixes_key,
+            kwargs_variations={
+                'runtime_validation': [False, True],
+                'test_tries': [TEST_FULLY_POPULATED_TRIES],
                 'test_data': [TEST_DATA],
                 'iterations': [DEFAULT_ITERATIONS],
                 'mark': TEST_MARKS,
