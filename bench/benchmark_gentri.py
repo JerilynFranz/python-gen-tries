@@ -1034,12 +1034,16 @@ def benchmark_trie_prefixes_key(
     '''Benchmark trie prefixes() method.
 
     This test checks the performance of the prefixes() method on fully populated tries.
-    Because the potential number of matching keys in the trie increases exponentially with depth
-    and the full runtime of a prefix search is dominated by the sheer number of keys found,
-    this test aims to measure the impact of this growth on the performance of the prefixes() method.
+    Because the potential number of matching keys in the trie increases linearly with depth
+    and the full runtime of a prefix search is dominated by the number of keys found,
+    this test aims to measure the impact of this growth on the performance of the
+    prefixes() method.
 
     Because prefixes() returns a Generator, we need to exhaust it to measure its performance.
     This is done by converting the generator to a list.
+
+    Interpreting performance here is tricky because the number of keys found per prefix can vary
+    significantly and they can have a large impact on the overall measurement.
     ```
     for key in test_keys:
         _ = list(trie.prefixes(key))
@@ -1060,23 +1064,18 @@ def benchmark_trie_prefixes_key(
     Returns:
         A list of BenchResults containing the benchmark results.
     '''
-    # Build the prefix tree - built here because we are modifying it
-    # and don't want to modify the pre-generated test tries
     test_keys = test_data[mark]
     trie = test_tries[mark]
     trie.runtime_validation = runtime_validation
-    n: int = len(test_keys)  # n here is used to compute ops/second
+    n: int = len(test_keys)
 
     def action_to_benchmark():
-        nonlocal n
-        running_n: int = 0
         for key in test_keys:
-            running_n += len(list(trie.prefixes(key)))
-        n = running_n // len(test_keys)  # Average number of prefixes per key
+            _ = list(trie.prefixes(key))
 
-    result = BenchmarkRunner.default_runner(
+    return BenchmarkRunner.default_runner(
         action=action_to_benchmark,
-        n=n,  # n is updated in action_to_benchmark
+        n=n,
         group=group,
         name=name,
         mark=mark,
@@ -1087,13 +1086,78 @@ def benchmark_trie_prefixes_key(
         iterations=iterations,
         verbose=verbose
     )
-    # n here is the average number of keys found per prefix tested
-    # This reflects the mutiple keys found per prefixes() search.
-    # By changing it after the benchmark is run, we ensure that the ops/second
-    # measurement is accurate but still reflects the actual workload in
-    # the stats.
-    result.n = n
-    return result
+
+
+def benchmark_trie_prefixed_by_key(
+        group: BenchGroup,
+        name: str,
+        mark: int | str,
+        description: str,
+        min_time: float,
+        max_time: float,
+        runtime_validation: bool,
+        test_trie: GeneralizedTrie,
+        test_keys: Sequence[GeneralizedKey],
+        iterations: int,
+        verbose: bool = False) -> BenchResults:
+    '''Benchmark trie prefixes_by() method.
+
+    This test checks the performance of the prefixed_by() method on fully populated tries
+    at various search depths.
+
+    Because the potential number of matching keys in the trie increases exponentially with depth
+    and the full runtime of a prefix search is dominated by the sheer number of keys found,
+    this test aims to measure the impact of this growth on the performance of the prefixes() method.
+
+    Because prefixed_by() returns a Generator, we need to exhaust it to measure its performance.
+    This is done by converting the generator to a list.
+
+    Interpreting performance here is tricky because the number of keys found per prefix can vary
+    significantly by depth and they can have a large impact on the overall measurement.
+    ```
+    for key in test_keys:
+        _ = list(trie.prefixed_by(key, depth))
+    ```
+    Args:
+        name (str): The name of the benchmark case.
+        group (BenchGroup): The reporting group to which the benchmark case belongs.
+        mark (int | str): The identifying mark for the benchmark case.
+        description (str): A brief description of the benchmark case.
+        min_time (float): The minimum time for the benchmark in seconds.
+        max_time (float): The maximum time for the benchmark in seconds.
+        runtime_validation (bool): Whether to enable runtime validation.
+        test_trie (GeneralizedTrie): The test trie to use for the benchmark.
+        test_keys (Sequence[GeneralizedKey]): The target keys to use for the benchmark.
+        iterations (int): The number of iterations to run the benchmark.
+        verbose (bool): Whether to print verbose output. (default = False)
+
+    Returns:
+        A list of BenchResults containing the benchmark results.
+    '''
+    trie = test_trie
+    if not isinstance(mark, int):
+        raise TypeError(f"Expected 'mark' to be int, got {type(mark).__name__}")
+    search_depth = mark
+    trie.runtime_validation = runtime_validation
+    n: int = len(test_keys)
+
+    def action_to_benchmark():
+        for key in test_keys:
+            _ = list(trie.prefixed_by(key, search_depth))
+
+    return BenchmarkRunner.default_runner(
+        action=action_to_benchmark,
+        n=n,
+        group=group,
+        name=name,
+        mark=mark,
+        description=description,
+        min_time=min_time,
+        max_time=max_time,
+        runtime_validation=runtime_validation,
+        iterations=iterations,
+        verbose=verbose
+    )
 
 
 def get_benchmark_cases() -> list[BenchCase]:
@@ -1181,6 +1245,12 @@ def get_benchmark_cases() -> list[BenchCase]:
             name='Synthetic trie.prefixes(<key>)',
             description=('Finding keys using trie.prefixes(<key>) method'),
             mark_label='Depth'
+        ),
+        BenchGroup(
+            id='synthetic-trie-prefixed_by(<key>, <search_depth>)',
+            name='Synthetic trie.prefixed_by(<key>, <search_depth>)',
+            description=('Finding keys using trie.prefixed_by(<key>, <search_depth>) method'),
+            mark_label='Search Depth'
         ),
     ]
 
@@ -1324,6 +1394,20 @@ def get_benchmark_cases() -> list[BenchCase]:
                 'test_data': [TEST_DATA],
                 'iterations': [DEFAULT_ITERATIONS],
                 'mark': TEST_MARKS,
+            },
+        ),
+        BenchCase(
+            name=('Finding keys with prefixed_by(<key>, <search_depth) method '
+                  '(runtime validation: {runtime_validation})'),
+            group=benchmark_groups['synthetic-trie-prefixed_by(<key>, <search_depth>)'],
+            description='Finding keys using trie.prefixed(<key>, <search_depth>) in fully populated tries',
+            action=benchmark_trie_prefixed_by_key,
+            kwargs_variations={
+                'runtime_validation': [False, True],
+                'test_trie': [TEST_FULLY_POPULATED_TRIES[9]],
+                'test_keys': [TEST_DATA[4]],
+                'iterations': [DEFAULT_ITERATIONS],
+                'mark': [1, 2, 3],
             },
         ),
     ]
