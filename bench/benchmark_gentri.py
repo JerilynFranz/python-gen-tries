@@ -1020,8 +1020,7 @@ def benchmark_id_in_trie(
         A list of BenchResults containing the benchmark results.
     '''
     trie: GeneralizedTrie = test_tries[mark]
-    test_keys: list[TrieId] = list(trie.keys())  # pyright: ignore[reportAssignmentType]]
-    trie.runtime_validation = runtime_validation
+    test_keys: list[TrieId] = list(trie.keys())
 
     def action_to_benchmark():
         for key in test_keys:
