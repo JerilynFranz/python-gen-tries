@@ -374,6 +374,7 @@ class BenchCase:
 
         table = Table(title=self.group.name,
                       show_header=True,
+                      title_style='bold green1',
                       header_style='bold magenta')
         table.add_column('N', justify='center')
         table.add_column('Iterations', justify='center')
@@ -1201,35 +1202,35 @@ def get_benchmark_cases() -> list[BenchCase]:
         ),
         BenchGroup(
             id='synthetic-building-trie-add()',
-            name='Synthetic building trie using add()',
+            name='Synthetic building trie using trie.add(<key>, <value>)',
             description=('Building a trie using synthetic data and the add() method '
                          '(trie.add(<key>, <value>))'),
             mark_label='Depth'
         ),
         BenchGroup(
             id='synthetic-building-trie-update()',
-            name='Synthetic building trie using update()',
+            name='Synthetic building trie using trie.update(<key>, <value>)',
             description=('Building a trie using synthetic data and the update() method '
                          '(trie.update(<key>, <value>))'),
             mark_label='Depth'
         ),
         BenchGroup(
             id='synthetic-building-trie-assign',
-            name='Synthetic building trie using assignment',
+            name='Synthetic building trie using trie[<key>] = <value>',
             description=('Building a trie using synthetic data and '
                          'assignment (trie[<key>] = <value>)'),
             mark_label='Depth'
         ),
         BenchGroup(
             id='synthetic-updating-trie-update()',
-            name='Synthetic updating trie',
+            name='Synthetic updating trie using trie.update(<key>, <value>)',
             description=('Updating a trie using synthetic data and the update() method '
                          '(trie.update(<key>, <value>))'),
             mark_label='Depth'
         ),
         BenchGroup(
             id='synthetic-trie-remove()-key',
-            name='Synthetic removing keys from trie',
+            name='Synthetic removing keys from trie using trie.remove(<key>)',
             description=('Deleting keys using synthetic data and the remove() method '
                          '(trie.remove(<key>))'),
             mark_label='Depth'
