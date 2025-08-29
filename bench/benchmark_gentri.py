@@ -14,13 +14,13 @@ import gzip
 import itertools
 from pathlib import Path
 import statistics
-import sys
 import time
 from typing import Any, Callable, NamedTuple, Optional, Sequence
 
+from rich.console import Console
+from rich.table import Table
 
-sys.path.insert(0, str(Path('../src').resolve()))
-from gentrie import GeneralizedTrie, GeneralizedKey, TrieId  # noqa: E402
+from gentrie import GeneralizedTrie, GeneralizedKey, TrieId
 
 # A minimum of 3 iterations is required to allow statistical analysis
 MIN_MEASURED_ITERATIONS: int = 3
@@ -207,7 +207,7 @@ class BenchOperationsPerSecond:
     '''Container for the operations per second statistics of a benchmark.
 
     Attributes:
-        average (float): The average operations per second.
+        mean (float): The mean operations per second.
         median (float): The median operations per second.
         minimum (float): The minimum operations per second.
         maximum (float): The maximum operations per second.
@@ -215,7 +215,7 @@ class BenchOperationsPerSecond:
         relative_standard_deviation (float): The relative standard deviation of operations per second.
         percentiles (dict[int, float]): Percentiles of operations per second.
     '''
-    average: float = 0.0
+    mean: float = 0.0
     median: float = 0.0
     minimum: float = 0.0
     maximum: float = 0.0
@@ -318,70 +318,92 @@ class BenchCase:
             collected_results.append(results)
         self.results = collected_results
 
-    def results_as_text_table(self) -> str:
-        """
-        Returns benchmark results in a text table format if available.
+    def _scale_for(self, numbers: list[float], base_unit: str) -> tuple[str, float]:
+        """Scale a list of numbers by a given factor.
 
-        This method will format the benchmark results into a human-readable text table.
-        If the tests have not yet been run, it will indicate that no results are available.
+        Args:
+            numbers: A list of numbers to scale.
+            base_unit: The base unit to use for scaling.
 
         Returns:
-            A string representation of the benchmark results in a printable text table format
-            or an indication that no results are available.
+            A tuple containing the scaled unit and the scaling factor.
         """
-        if not self.results:
-            return "No benchmark results available."
+        min_n: float = min(numbers)
+        unit: str = ''
+        scale: float = 1.0
+        if min_n >= 1e9:
+            unit, scale = 'G' + base_unit, 1e-9
+        elif min_n >= 1e6:
+            unit, scale = 'M' + base_unit, 1e-6
+        elif min_n >= 1e3:
+            unit, scale = 'K' + base_unit, 1e-3
+        elif min_n >= 1e0:
+            unit, scale = base_unit, 1.0
+        elif min_n >= 1e-3:
+            unit, scale = 'm' + base_unit, 1e3
+        elif min_n >= 1e-6:
+            unit, scale = 'μ' + base_unit, 1e6
+        elif min_n >= 1e-9:
+            unit, scale = 'n' + base_unit, 1e9
+        return unit, scale
 
-        output_text_lines: list[str] = []
-        output_text_lines.append(f'{self.group.name}\n')
-        output_text_lines.append(f'{self.group.description}\n')
+    def results_as_rich_table(self) -> Table:
+        """Returns benchmark results in a rich table format if available.
+        """
+        mean_unit, mean_scale = self._scale_for(
+            numbers=[result.ops_per_second.mean for result in self.results],
+            base_unit='Ops')
+        median_unit, median_scale = self._scale_for(
+            numbers=[result.ops_per_second.median for result in self.results],
+            base_unit='Ops')
+        min_unit, min_scale = self._scale_for(
+            numbers=[result.ops_per_second.minimum for result in self.results],
+            base_unit='Ops')
+        max_unit, max_scale = self._scale_for(
+            numbers=[result.ops_per_second.maximum for result in self.results],
+            base_unit='Ops')
+        p5_unit, p5_scale = self._scale_for(
+            numbers=[result.ops_per_second.percentiles[5] for result in self.results],
+            base_unit='Ops')
+        p95_unit, p95_scale = self._scale_for(
+            numbers=[result.ops_per_second.percentiles[95] for result in self.results],
+            base_unit='Ops')
+        stddev_unit, stddev_scale = self._scale_for(
+            numbers=[result.ops_per_second.standard_deviation for result in self.results],
+            base_unit='Ops')
 
-        header_line0: str = (
-            f'{"":^8s}'
-            f' | {"":^6s}'
-            f' | {"Elapsed":^7s}'
-            f' | {"KOps/Second (avg/median/min/max/5th/95th/std dev)":^74s}'
-            f' | {"":^6s}'
-            f' | { "Runtime":^10s}'
-            f' | {"":^15s}'
-        )
-        header_line1: str = (
-            f'{"N":^8s}'
-            f' | {"Iter":^6s}'
-            f' | {"seconds":^7s}'
-            f' | {"avg":^8s}'
-            f' | {"median":^8s}'
-            f' | {"min":^8s}'
-            f' | {"max":^8s}'
-            f' | {"5th":^8s}'
-            f' | {"95th":^8s}'
-            f' | {"std dev":^8s}'
-            f' | {"rsd%":^6s}'
-            f' | { "Validate":^10s}'
-            f' | {self.group.mark_label:^15s}'
-        )
-        output_text_lines.append('=' * max(len(header_line0), len(header_line1)))
-        output_text_lines.append(header_line0)
-        output_text_lines.append(header_line1)
-        output_text_lines.append('-' * max(len(header_line0), len(header_line1)))
+        table = Table(title=self.group.name,
+                      show_header=True,
+                      header_style='bold magenta')
+        table.add_column('N', justify='center')
+        table.add_column('Iterations', justify='center')
+        table.add_column('Elapsed Seconds', justify='center', max_width=7)
+        table.add_column(f'mean {mean_unit}', justify='center', vertical='bottom', overflow='fold')
+        table.add_column(f'median {median_unit}', justify='center', vertical='bottom', overflow='fold')
+        table.add_column(f'min {min_unit}', justify='center', vertical='bottom', overflow='fold')
+        table.add_column(f'max {max_unit}', justify='center', vertical='bottom', overflow='fold')
+        table.add_column(f'5th {p5_unit}', justify='center', vertical='bottom', overflow='fold')
+        table.add_column(f'95th {p95_unit}', justify='center', vertical='bottom', overflow='fold')
+        table.add_column(f'std dev {stddev_unit}', justify='center', vertical='bottom', overflow='fold')
+        table.add_column('rsd%', justify='center', vertical='bottom', overflow='fold')
+        table.add_column('Runtime Validate', justify='center', vertical='bottom', overflow='fold', max_width=9)
+        table.add_column(self.group.mark_label, justify='center', vertical='bottom', overflow='fold')
         for result in self.results:
-            output_text_lines.append(
-                f'{result.n:>8d}'
-                f' |{len(result.iterations):>7d}'
-                f' |  {result.total_elapsed_ns/1e9:>5.2f} '
-                f' | {result.ops_per_second.average / 1000:8.1f}'
-                f' | {result.ops_per_second.median / 1000:8.1f}'
-                f' | {result.ops_per_second.minimum / 1000:8.1f}'
-                f' | {result.ops_per_second.maximum / 1000:8.1f}'
-                f' | {result.ops_per_second.percentiles[5] / 1000:8.1f}'
-                f' | {result.ops_per_second.percentiles[95] / 1000:8.1f}'
-                f' | {result.ops_per_second.standard_deviation / 1000:8.1f}'
-                f' | {result.ops_per_second.relative_standard_deviation:5.1f}%'
-                f' | {str(result.runtime_validation):^10s}'
-                f' | {str(result.mark):^15s}'
-            )
-        output_text_lines.append('')
-        return '\n'.join(output_text_lines)
+            table.add_row(
+                f'{result.n:>6d}',
+                f'{len(result.iterations):>6d}',
+                f'{result.total_elapsed_ns / 1e9:>4.2f}',
+                f'{result.ops_per_second.mean * mean_scale:>6.2f}',
+                f'{result.ops_per_second.median * median_scale:>6.2f}',
+                f'{result.ops_per_second.minimum * min_scale:>6.2f}',
+                f'{result.ops_per_second.maximum * max_scale:>6.2f}',
+                f'{result.ops_per_second.percentiles[5] * p5_scale:>6.2f}',
+                f'{result.ops_per_second.percentiles[95] * p95_scale:>6.2f}',
+                f'{result.ops_per_second.standard_deviation * stddev_scale:>6.2f}',
+                f'{result.ops_per_second.relative_standard_deviation:>3.2f}%',
+                f'{result.runtime_validation!s}',
+                f'{result.mark!s}')
+        return table
 
 
 class BenchmarkRunner():
@@ -477,18 +499,18 @@ class BenchmarkRunner():
             if verbose and iteration_pass == 2:
                 print(f"Iteration {iteration_pass}: {benchmark_results}")
 
-        average_ops = statistics.mean(iter.ops_per_second for iter in benchmark_results.iterations)
+        mean_ops = statistics.mean(iter.ops_per_second for iter in benchmark_results.iterations)
         median_ops = statistics.median(iter.ops_per_second for iter in benchmark_results.iterations)
         standard_deviation: float = 0.0
         if len(benchmark_results.iterations) > 1:
             standard_deviation = statistics.stdev(iter.ops_per_second for iter in benchmark_results.iterations)
         benchmark_results.ops_per_second = BenchOperationsPerSecond(
-            average=average_ops,
+            mean=mean_ops,
             median=median_ops,
             minimum=min(iter.ops_per_second for iter in benchmark_results.iterations),
             maximum=max(iter.ops_per_second for iter in benchmark_results.iterations),
             standard_deviation=standard_deviation,
-            relative_standard_deviation=standard_deviation / average_ops * 100 if average_ops else 0
+            relative_standard_deviation=standard_deviation / mean_ops * 100 if mean_ops else 0
         )
 
         # Calculate percentiles if we have enough data points
@@ -1418,9 +1440,13 @@ def run_benchmarks():
     """Run the benchmark tests and print the results.
     """
     benchmark_cases: list[BenchCase] = get_benchmark_cases()
+    console = Console()
     for case in benchmark_cases:
         case.run()
-        print(case.results_as_text_table() + '\n')
+        if case.results:
+            console.print(case.results_as_rich_table())
+        else:
+            console.print('No results available')
 
 
 def main():

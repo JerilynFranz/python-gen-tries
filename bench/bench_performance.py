@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=wrong-import-position, too-many-instance-attributes, line-too-long
 # pylint: disable=too-many-positional-arguments, too-many-arguments, too-many-locals
+# pyright: reportUnnecessaryTypeIgnoreComment=warning
+
+# Note: pytest-benchmark does not expose proper typing hence the many type
+# ignores on lines related to benchmark and benchmark.info
 '''bench_performance.py
 
 Benchmark for the Generalized Trie implementation.
@@ -9,15 +13,6 @@ Benchmark for the Generalized Trie implementation.
 This script runs a series of tests to measure the performance of the Generalized Trie
 against a set of predefined test cases.
 
-Usage::
-
-```shell
-pytest benchmark_performance.py
-    pytest benchmark_performance.py --benchmark-sort=name \\
-        --benchmark-group-by=func \\
-        --benchmark-histogram='histogram/benchmark' \\
-        --benchmark-time-unit=ns
-```
 
 See the documentation for pytest-benchmark at https://pytest-benchmark.readthedocs.io/
 for more information on how to use it.
@@ -25,17 +20,14 @@ for more information on how to use it.
 import gc
 import gzip
 import itertools
-import time
-from typing import Any, Optional, Sequence
-
-
-import sys
 from pathlib import Path
-sys.path.insert(0, str(Path('../src').resolve()))
+import time
+import sys
+from typing import Any, cast, Optional, Sequence
 
-import pytest  # noqa: E402
+import pytest
 
-from gentrie import GeneralizedTrie, GeneralizedKey  # noqa: E402
+from gentrie import GeneralizedTrie, GeneralizedKey
 
 # More robust benchmark configuration
 BENCHMARK_CONFIG: dict[str, Any] = {
@@ -181,11 +173,7 @@ TEST_ENGLISH_WORDS: list[str] = english_words()
 TEST_ENGLISH_WORDS_TRIE: GeneralizedTrie = generate_test_trie_from_data(TEST_ENGLISH_WORDS, None)
 
 
-@pytest.mark.benchmark(warmup=True,
-                       min_rounds=10,
-                       min_time=1,
-                       max_time=10,
-                       timer=time.perf_counter_ns)
+@pytest.mark.benchmark(group="Build trie from English wordset using update()", **BENCHMARK_CONFIG)
 @pytest.mark.parametrize('runtime_validation', [False, True])
 def test_organic_build_with_update_from_english_words_list(
        benchmark,  # pyright: ignore[reportUnknownParameterType, reportMissingParameterType]
@@ -202,12 +190,15 @@ def test_organic_build_with_update_from_english_words_list(
 
     gc.collect()
     benchmark.extra_info['number_of_words'] = len(TEST_ENGLISH_WORDS)  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['runtime_validation'] = runtime_validation  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['average_word_length'] = (  # pyright: ignore[reportUnknownMemberType]
+        sum(len(word) for word in TEST_ENGLISH_WORDS) / len(TEST_ENGLISH_WORDS) if TEST_ENGLISH_WORDS else 0)
     benchmark(helper_create_dictionary,
               words=TEST_ENGLISH_WORDS,
               runtime_validation=runtime_validation)
 
 
-@pytest.mark.benchmark(**BENCHMARK_CONFIG)
+@pytest.mark.benchmark(group="Microbenchmark update() building trie from English words", **BENCHMARK_CONFIG)
 @pytest.mark.parametrize('runtime_validation', [False, True])
 def test_microbenchmarking_update_for_build_from_english_words_list(
        benchmark,  # pyright: ignore[reportUnknownParameterType, reportMissingParameterType]
@@ -227,13 +218,19 @@ def test_microbenchmarking_update_for_build_from_english_words_list(
     rounds = len(TEST_ENGLISH_WORDS)  # Rounds limited to prevent exhaustion
 
     gc.collect()
+    benchmark.extra_info['number_of_words'] = len(TEST_ENGLISH_WORDS)  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['runtime_validation'] = runtime_validation  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['average_word_length'] = (  # pyright: ignore[reportUnknownMemberType]
+        sum(len(word) for word in TEST_ENGLISH_WORDS) / len(TEST_ENGLISH_WORDS) if TEST_ENGLISH_WORDS else 0)
+
     benchmark.pedantic(benchmark_trie.update,  # pyright: ignore[reportUnknownMemberType]
                        setup=setup,
                        rounds=rounds,
                        iterations=1)
 
 
-@pytest.mark.benchmark(**BENCHMARK_CONFIG)
+@pytest.mark.benchmark(group="Microbenchmark update() building trie from synthetic data",
+                       **BENCHMARK_CONFIG)
 @pytest.mark.parametrize('runtime_validation', [False, True])
 @pytest.mark.parametrize('depth', TEST_DEPTHS)
 def test_build_with_update(
@@ -252,13 +249,19 @@ def test_build_with_update(
     rounds = len(TEST_DATA[depth])  # Rounds limited to prevent exhaustion
 
     gc.collect()
+    benchmark.extra_info['depth'] = depth  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['number_of_words'] = len(TEST_DATA[depth])  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['runtime_validation'] = runtime_validation  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['average_word_length'] = (  # pyright: ignore[reportUnknownMemberType]
+        sum(len(word) for word in TEST_DATA[depth]) / len(TEST_DATA[depth]) if TEST_DATA[depth] else 0)
     benchmark.pedantic(benchmark_trie.update,  # pyright: ignore[reportUnknownMemberType]
                        setup=setup,
                        rounds=rounds,
                        iterations=1)
 
 
-@pytest.mark.benchmark(**BENCHMARK_CONFIG)
+@pytest.mark.benchmark(group="Microbenchmark add() building trie from synthetic data",
+                       **BENCHMARK_CONFIG)
 @pytest.mark.parametrize('runtime_validation', [False, True])
 @pytest.mark.parametrize('depth', TEST_DEPTHS)
 def test_build_with_add(
@@ -277,13 +280,19 @@ def test_build_with_add(
     rounds = len(TEST_DATA[depth])
 
     gc.collect()
+    benchmark.extra_info['depth'] = depth  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['number_of_words'] = len(TEST_DATA[depth])  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['runtime_validation'] = runtime_validation  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['average_word_length'] = (  # pyright: ignore[reportUnknownMemberType]
+        sum(len(word) for word in TEST_DATA[depth]) / len(TEST_DATA[depth]) if TEST_DATA[depth] else 0)
     benchmark.pedantic(benchmark_trie.add,  # pyright: ignore[reportUnknownMemberType]
                        setup=setup,
                        rounds=rounds,
                        iterations=1)
 
 
-@pytest.mark.benchmark(**BENCHMARK_CONFIG)
+@pytest.mark.benchmark(group="Microbenchmark update() updating trie from synthetic data",
+                       **BENCHMARK_CONFIG)
 @pytest.mark.parametrize('runtime_validation', [False, True])
 @pytest.mark.parametrize('depth', TEST_DEPTHS)
 def test_updating_trie(
@@ -304,7 +313,8 @@ def test_updating_trie(
     benchmark(benchmark_trie.update, benchmark_key, benchmark_value)
 
 
-@pytest.mark.benchmark(**BENCHMARK_CONFIG)
+@pytest.mark.benchmark(group="Microbenchmark '__contains__()' method using synthetic data",
+                       **BENCHMARK_CONFIG)
 @pytest.mark.parametrize('runtime_validation', [False, True])
 @pytest.mark.parametrize('depth', TEST_DEPTHS)
 def test_key_in_trie(benchmark,  # pyright: ignore[reportUnknownParameterType, reportMissingParameterType]
@@ -318,10 +328,15 @@ def test_key_in_trie(benchmark,  # pyright: ignore[reportUnknownParameterType, r
     benchmark_key: str = TEST_DATA[depth][-1]  # Use the last key for benchmarking
     gc.collect()
     benchmark_trie.runtime_validation = runtime_validation
+    benchmark.extra_info['depth'] = depth  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['number_of_words'] = len(TEST_DATA[depth])  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['runtime_validation'] = runtime_validation  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['average_word_length'] = (  # pyright: ignore[reportUnknownMemberType]
+        sum(len(word) for word in TEST_DATA[depth]) / len(TEST_DATA[depth]) if TEST_DATA[depth] else 0)
     benchmark(benchmark_trie.__contains__, benchmark_key)
 
 
-@pytest.mark.benchmark(**BENCHMARK_CONFIG)
+@pytest.mark.benchmark(group="Microbenchmark __contains__() for missing keys using synthetic data", **BENCHMARK_CONFIG)
 @pytest.mark.parametrize('runtime_validation', [False, True])
 @pytest.mark.parametrize('depth', TEST_DEPTHS)
 def test_key_not_in_trie(benchmark,  # pyright: ignore[reportUnknownParameterType, reportMissingParameterType]
@@ -335,10 +350,15 @@ def test_key_not_in_trie(benchmark,  # pyright: ignore[reportUnknownParameterTyp
     benchmark_trie.runtime_validation = runtime_validation
 
     gc.collect()
-    benchmark(benchmark_trie.__contains__, missing_key)  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['depth'] = depth  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['number_of_words'] = len(TEST_DATA[depth])  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['runtime_validation'] = runtime_validation  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['average_word_length'] = (  # pyright: ignore[reportUnknownMemberType]
+        sum(len(word) for word in TEST_DATA[depth]) / len(TEST_DATA[depth]) if TEST_DATA[depth] else 0)
+    benchmark(benchmark_trie.__contains__, missing_key)
 
 
-@pytest.mark.benchmark(**BENCHMARK_CONFIG)
+@pytest.mark.benchmark(group="Microbenchmark remove() method using synthetic data", **BENCHMARK_CONFIG)
 @pytest.mark.parametrize('runtime_validation', [False, True])
 @pytest.mark.parametrize('depth', TEST_DEPTHS)
 def test_remove_key_from_trie(benchmark,  # pyright: ignore[reportUnknownParameterType, reportMissingParameterType]
@@ -360,12 +380,18 @@ def test_remove_key_from_trie(benchmark,  # pyright: ignore[reportUnknownParamet
     rounds = len(test_data)  # Rounds limited to prevent exhaustion
 
     gc.collect()
+    benchmark.extra_info['depth'] = depth  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['number_of_words'] = len(TEST_DATA[depth])  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['runtime_validation'] = runtime_validation  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['average_word_length'] = (  # pyright: ignore[reportUnknownMemberType]
+        sum(len(word) for word in test_data) / len(test_data) if test_data else 0)
     benchmark.pedantic(benchmark_trie.remove,  # pyright: ignore[reportUnknownMemberType]
                        setup=setup,
                        rounds=rounds)
 
 
-@pytest.mark.benchmark(**BENCHMARK_CONFIG)
+@pytest.mark.benchmark(group="Microbenchmark get() for trie from synthetic data",
+                       **BENCHMARK_CONFIG)
 @pytest.mark.parametrize('runtime_validation', [False, True])
 @pytest.mark.parametrize('depth', TEST_DEPTHS)
 def test_get(benchmark,  # pyright: ignore[reportUnknownParameterType, reportMissingParameterType]
@@ -385,12 +411,17 @@ def test_get(benchmark,  # pyright: ignore[reportUnknownParameterType, reportMis
     rounds = len(test_data)  # Rounds limited to prevent exhaustion
 
     gc.collect()
+    benchmark.extra_info['depth'] = depth  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['number_of_words'] = len(TEST_DATA[depth])  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['runtime_validation'] = runtime_validation  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['average_word_length'] = (  # pyright: ignore[reportUnknownMemberType]
+        sum(len(word) for word in test_data) / len(test_data) if test_data else 0)
     benchmark.pedantic(benchmark_trie.get,  # pyright: ignore[reportUnknownMemberType]
                        setup=setup,
                        rounds=rounds)
 
 
-@pytest.mark.benchmark(**BENCHMARK_CONFIG)
+@pytest.mark.benchmark(group="Microbenchmark prefixes() using synthetic data", **BENCHMARK_CONFIG)
 @pytest.mark.parametrize('runtime_validation', [False, True])
 @pytest.mark.parametrize('depth', [3, 4, 5, 6, 7, 8, 9])
 def test_prefixes(benchmark,  # pyright: ignore[reportMissingParameterType, reportUnknownParameterType]
@@ -399,9 +430,10 @@ def test_prefixes(benchmark,  # pyright: ignore[reportMissingParameterType, repo
     """Benchmark trie prefixes() method.
 
     This test checks the performance of the prefixes() method on fully populated tries.
-    Because the potential number of matching keys in the trie increases exponentially with depth
-    and the full runtime of a prefix search is dominated by the sheer number of keys found,
-    this test aims to measure the impact of this growth on the performance of the prefixes() method.
+    Because the potential number of matching keys in the trie increases linearly with depth
+    and the full runtime of a prefix search is dominated by the number of keys found,
+    this test aims to measure the impact of this growth on the performance of the prefixes()
+    method.
 
     Args:
         runtime_validation (bool): Whether to enable runtime validation.
@@ -419,13 +451,16 @@ def test_prefixes(benchmark,  # pyright: ignore[reportMissingParameterType, repo
     # which requires iteration to access all results.
     # This results in a list of all matched keys being created
     # with additional overhead vs the generator approach.
-    benchmark.extra_info[  # type: ignore
-        f'prefixes, key="{search_key}", number_of_matches, keys_in_trie'] = (
-            len(benchmark(helper_prefixes, trie, search_key)),  # pyright: ignore[reportUnknownArgumentType]
-            len(trie))
+
+    results: list[GeneralizedKey] = cast(list[GeneralizedKey], benchmark(helper_prefixes, trie, search_key))
+    benchmark.extra_info['number_of_matches_per_query'] = len(results)  # pyright: ignore
+    benchmark.extra_info['keys_in_trie'] = len(trie)  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['depth'] = depth  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['runtime_validation'] = runtime_validation  # pyright: ignore[reportUnknownMemberType]
 
 
-@pytest.mark.benchmark(**BENCHMARK_CONFIG)
+@pytest.mark.benchmark(group="Microbenchmark prefixed_by() using synthetic data",
+                       **BENCHMARK_CONFIG)
 @pytest.mark.parametrize('runtime_validation', [False, True])
 @pytest.mark.parametrize('trie_depth', [7])
 @pytest.mark.parametrize('key_depth', [2, 3, 4])  # Focus on manageable depths
@@ -463,8 +498,26 @@ def test_prefixed_by(benchmark,  # pyright: ignore[reportMissingParameterType, r
     # which requires iteration to access all results.
     # This results in a list of all matched keys being created
     # with additional overhead vs the generator approach.
-    benchmark.extra_info[  # type: ignore
-        f'prefixed_by, key="{search_key}", depth={search_depth}, number_of_matches, keys_in_trie'] = (
-            len(benchmark(helper_prefixed_by,  # pyright: ignore[reportUnknownArgumentType]
-                trie, search_key, search_depth)),
-            len(trie))
+    results: list[GeneralizedKey] = cast(list[GeneralizedKey],
+                                         benchmark(helper_prefixed_by, trie, search_key, search_depth))
+    benchmark.extra_info['number_of_matches_per_query'] = len(results)  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['keys_in_trie'] = len(trie)  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['trie_depth'] = trie_depth  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['search_depth'] = search_depth  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['key_depth'] = key_depth  # pyright: ignore[reportUnknownMemberType]
+    benchmark.extra_info['runtime_validation'] = runtime_validation  # pyright: ignore[reportUnknownMemberType]
+
+
+if __name__ == "__main__":
+    sys.exit(pytest.main([
+        __file__,
+        '--benchmark-columns=ops,rounds,iterations',
+        '--benchmark-sort=name',
+        '--benchmark-group-by=group',
+        '--benchmark-histogram=histogram/benchmark',
+        '--benchmark-time-unit=ns',
+        '--benchmark-timer=time.perf_counter_ns',
+        '--benchmark-save=gentri',
+        # '--benchmark-save-data'
+        ],
+        plugins=[]))
