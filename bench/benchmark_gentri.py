@@ -372,7 +372,7 @@ class BenchCase:
             numbers=[result.ops_per_second.standard_deviation for result in self.results],
             base_unit='Ops')
 
-        table = Table(title=self.group.name,
+        table = Table(title=(self.name + '\n\n' + self.description),
                       show_header=True,
                       title_style='bold green1',
                       header_style='bold magenta')
@@ -1282,9 +1282,9 @@ def get_benchmark_cases() -> list[BenchCase]:
 
     benchmark_cases_list: list[BenchCase] = [
         BenchCase(
-            name='<key> in trie (synthetic data, runtime validation: {runtime_validation})',
+            name='<key> in trie (Synthetic)',
             group=benchmark_groups['synthetic-key-in-trie'],
-            description='Existence check using "<key> in trie" and synthetic data',
+            description='Timing [yellow bold]<key> in trie[/yellow bold] with synthetic data',
             action=benchmark_key_in_trie,
             kwargs_variations={
                 'runtime_validation': [False, True],
@@ -1295,10 +1295,10 @@ def get_benchmark_cases() -> list[BenchCase]:
             }
         ),
         BenchCase(
-            name='<TrieId> in trie (English dictionary, runtime validation: {runtime_validation})',
+            name='<TrieId> in trie (English)',
             group=benchmark_groups['english-dictionary-id-in-trie'],
-            description=('Existence check using "<TrieId> in trie" '
-                         'and words from the English dictionary'),
+            description=(
+                'Timing [yellow bold]<TrieId> in trie[/yellow bold] with words from the English dictionary'),
             action=benchmark_id_in_trie,
             kwargs_variations={
                 'runtime_validation': [False, True],
@@ -1308,10 +1308,9 @@ def get_benchmark_cases() -> list[BenchCase]:
             }
         ),
         BenchCase(
-            name='<key> in trie (English dictionary, runtime validation: {runtime_validation})',
+            name='<key> in trie (English)',
             group=benchmark_groups['english-dictionary-key-in-trie'],
-            description=('Existence check using "<key> in trie" '
-                         'and words from the English dictionary'),
+            description=('Timing [yellow bold]<key> in trie[/yellow bold] with words from the English dictionary'),
             action=benchmark_key_in_trie,
             kwargs_variations={
                 'runtime_validation': [False, True],
@@ -1322,9 +1321,10 @@ def get_benchmark_cases() -> list[BenchCase]:
             }
         ),
         BenchCase(
-            name='trie build with add() (synthetic data, runtime validation: {runtime_validation})',
+            name='trie.add(<key>, <value>) (Synthetic)',
             group=benchmark_groups['synthetic-building-trie-add()'],
-            description='Building a trie using the add() method and synthetic data',
+            description=('Timing [yellow bold]trie.add(<key>, <value>)[/yellow bold] '
+                         'while building a newtrie with synthetic data'),
             action=benchmark_build_with_add,
             kwargs_variations={
                 'runtime_validation': [False, True],
@@ -1334,9 +1334,10 @@ def get_benchmark_cases() -> list[BenchCase]:
             }
         ),
         BenchCase(
-            name='trie build using update() method (synthetic data, runtime validation: {runtime_validation})',
+            name='trie.update(<key>, <value>) (Synthetic)',
             group=benchmark_groups['synthetic-building-trie-update()'],
-            description='Building a trie using the update() method and synthetic data',
+            description=('Timing [yellow bold]trie.update(<key>, <value>)[/yellow bold] '
+                         'while building a new trie with synthetic data'),
             action=benchmark_build_with_update,
             kwargs_variations={
                 'runtime_validation': [False, True],
@@ -1346,9 +1347,10 @@ def get_benchmark_cases() -> list[BenchCase]:
             }
         ),
         BenchCase(
-            name='trie build with trie[key] = key (synthetic data, runtime validation: {runtime_validation})',
+            name='trie[<key>] = <value> (Synthetic)',
             group=benchmark_groups['synthetic-building-trie-assign'],
-            description='Building a trie using "trie[<key>] = <value>" assignment and synthetic data',
+            description=('Timing [yellow bold]trie[<key>] = <value>[/yellow bold] '
+                         'while building a new trie with synthetic data'),
             action=benchmark_build_with_assign,
             kwargs_variations={
                 'runtime_validation': [False, True],
@@ -1358,9 +1360,10 @@ def get_benchmark_cases() -> list[BenchCase]:
             }
         ),
         BenchCase(
-            name='trie updating with update() method (runtime validation: {runtime_validation})',
+            name='trie.update(<key>, <value>) (Synthetic)',
             group=benchmark_groups['synthetic-updating-trie-update()'],
-            description='Updating a trie using the update() method',
+            description=('Timing [yellow bold]trie.update(<key>, <value>)[/yellow bold] '
+                         'while updating values for existing keys with synthetic data'),
             action=benchmark_updating_trie,
             kwargs_variations={
                 'runtime_validation': [False, True],
@@ -1370,9 +1373,10 @@ def get_benchmark_cases() -> list[BenchCase]:
             }
         ),
         BenchCase(
-            name='Deleting keys with remove() method (runtime validation: {runtime_validation})',
+            name='trie.remove(<key>) (Synthetic)',
             group=benchmark_groups['synthetic-trie-remove()-key'],
-            description='Deleting keys with the remove() method',
+            description=('Timing [yellow bold]trie.remove(<key>)[/yellow bold] '
+                         'while removing keys from a trie with synthetic data'),
             action=benchmark_remove_key_from_trie,
             kwargs_variations={
                 'runtime_validation': [False, True],
@@ -1382,9 +1386,10 @@ def get_benchmark_cases() -> list[BenchCase]:
             },
         ),
         BenchCase(
-            name='Deleting keys using "del trie[<key>] (runtime validation: {runtime_validation})',
+            name='del trie[<key>] (Synthetic)',
             group=benchmark_groups['synthetic-trie-del-key'],
-            description='Deleting keys using "del trie[<key>]',
+            description=('Timing [yellow bold]del trie[<key>][/yellow bold] '
+                         'while deleting keys from a trie with synthetic data'),
             action=benchmark_del_key_from_trie,
             kwargs_variations={
                 'runtime_validation': [False, True],
@@ -1394,9 +1399,10 @@ def get_benchmark_cases() -> list[BenchCase]:
             },
         ),
         BenchCase(
-            name='Deleting keys using "del trie[<TrieId>] (runtime validation: {runtime_validation})',
+            name='del trie[<TrieId>] (Synthetic)',
             group=benchmark_groups['synthetic-trie-del-id'],
-            description='Deleting keys using "del trie[<TrieId>]',
+            description=('Timing [yellow bold]del trie[<TrieId>][/yellow bold] '
+                         'while deleting keys from a trie with synthetic data'),
             action=benchmark_del_id_from_trie,
             kwargs_variations={
                 'runtime_validation': [False, True],
@@ -1406,9 +1412,10 @@ def get_benchmark_cases() -> list[BenchCase]:
             },
         ),
         BenchCase(
-            name='Finding keys with prefixes(<key>) method (runtime validation: {runtime_validation})',
+            name='trie.prefixes(<key>) (Synthetic)',
             group=benchmark_groups['synthetic-trie-prefixes(<key>)'],
-            description='Finding keys using trie.prefixes(<key>) in fully populated tries',
+            description=('Timing [yellow bold]trie.prefixes(<key>)[/yellow bold] '
+                         'while finding keys matching a specific prefix in a trie with synthetic data'),
             action=benchmark_trie_prefixes_key,
             kwargs_variations={
                 'runtime_validation': [False, True],
@@ -1419,10 +1426,10 @@ def get_benchmark_cases() -> list[BenchCase]:
             },
         ),
         BenchCase(
-            name=('Finding keys with prefixed_by(<key>, <search_depth) method '
-                  '(runtime validation: {runtime_validation})'),
+            name='trie.prefixed_by(<key>, <search_depth>) (Synthetic)',
             group=benchmark_groups['synthetic-trie-prefixed_by(<key>, <search_depth>)'],
-            description='Finding keys using trie.prefixed(<key>, <search_depth>) in fully populated tries',
+            description=('Timing [yellow bold]trie.prefixed_by(<key>, <search_depth>)[/yellow bold] '
+                         'in a fully populated trie'),
             action=benchmark_trie_prefixed_by_key,
             kwargs_variations={
                 'runtime_validation': [False, True],
