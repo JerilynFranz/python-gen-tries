@@ -8,6 +8,8 @@ against a set of predefined test cases.
 # pylint: disable=wrong-import-position, too-many-instance-attributes
 # pylint: disable=too-many-positional-arguments, too-many-arguments, too-many-locals
 
+from argparse import ArgumentParser, Namespace
+from functools import cache
 from dataclasses import dataclass, field
 import gc
 import gzip
@@ -22,18 +24,26 @@ from rich.table import Table
 
 from gentrie import GeneralizedTrie, GeneralizedKey, TrieId
 
-# A minimum of 3 iterations is required to allow statistical analysis
 MIN_MEASURED_ITERATIONS: int = 3
+"""Minimum number of iterations for statistical analysis."""
 
 DEFAULT_ITERATIONS: int = 20
+"""Default number of iterations for benchmarking."""
 
 DEFAULT_TIMER = time.perf_counter_ns
-DEFAULT_INTERVAL_SCALE: float = 1e-9
-DEFAULT_INTERVAL_UNIT: str = 'ns'
-DEFAULT_OPS_PER_INTERVAL_SCALE: float = 1.0
-DEFAULT_OPS_PER_INTERVAL_UNIT: str = 'Ops/s'
+"""Default timer function for benchmarking."""
 
-SYMBOLS: str = '0123'  # Define the symbols for the trie
+DEFAULT_INTERVAL_SCALE: float = 1e-9
+"""Default scaling factor for time intervals (nanoseconds -> seconds)."""
+
+DEFAULT_INTERVAL_UNIT: str = 'ns'
+"""Default unit for time intervals (nanoseconds)."""
+
+DEFAULT_OPS_PER_INTERVAL_SCALE: float = 1.0
+"""Default scaling factor for operations per interval (1.0 -> 1.0)."""
+
+DEFAULT_OPS_PER_INTERVAL_UNIT: str = 'Ops/s'
+"""Default unit for operations per interval (operations per second)."""
 
 
 def generate_test_data(depth: int, symbols: str, max_keys: int) -> list[str]:
@@ -50,14 +60,6 @@ def generate_test_data(depth: int, symbols: str, max_keys: int) -> list[str]:
         if len(test_data) >= max_keys:
             break
     return test_data
-
-
-TEST_DATA: dict[int, list[str]] = {}
-TEST_DEPTHS: list[int] = [3, 4, 5, 6, 7, 8, 9]  # Depths to test - 1 and 2 are omitted due to low key counts
-TEST_MAX_KEYS: int = len(SYMBOLS) ** max(TEST_DEPTHS)  # Limit to a manageable number of keys
-for gen_depth in TEST_DEPTHS:
-    max_keys_for_depth = len(SYMBOLS) ** gen_depth  # pylint: disable=invalid-name
-    TEST_DATA[gen_depth] = generate_test_data(gen_depth, SYMBOLS, max_keys=max_keys_for_depth)
 
 
 def generate_test_trie(depth: int,
@@ -104,12 +106,6 @@ def generate_test_trie_from_data(
     return trie
 
 
-# We generate the TEST_TRIES from the TEST_DATA for synchronization
-TEST_TRIES: dict[int, GeneralizedTrie] = {}
-for gen_depth in TEST_DEPTHS:
-    TEST_TRIES[gen_depth] = generate_test_trie_from_data(TEST_DATA[gen_depth], None)
-
-
 def generate_trie_with_missing_key_from_data(
         test_data: Sequence[GeneralizedKey], value: Optional[Any] = None) -> tuple[GeneralizedTrie, Any]:
     """Generate a GeneralizedTrie and a key that is not in the trie.
@@ -126,17 +122,14 @@ def generate_trie_with_missing_key_from_data(
     return trie, missing_key
 
 
-# We generate the TEST_MISSING_KEY_TRIES from the TEST_DATA for synchronization
-TEST_MISSING_KEY_TRIES: dict[int, tuple[GeneralizedTrie, str]] = {}
-for gen_depth in TEST_DEPTHS:
-    TEST_MISSING_KEY_TRIES[gen_depth] = generate_trie_with_missing_key_from_data(TEST_DATA[gen_depth], None)
-
-
-def generate_fully_populated_trie(max_depth: int, value: Optional[Any] = None) -> GeneralizedTrie:
+def generate_fully_populated_trie(test_data: dict[int, list[str]],
+                                  symbols: str,
+                                  max_depth: int,
+                                  value: Optional[Any] = None) -> GeneralizedTrie:
     '''Generate a fully populated Generalized Trie for the given max_depth.
 
     A fully populated trie contains all possible keys up to the specified depth.
-    It uses the pregenerated TEST_DATA as the source of truth for the keys for each depth
+    It uses the pregenerated test_data as the source of truth for the keys for each depth
     because it contains all the possible keys for the depth and symbol set.
 
     Args:
@@ -144,28 +137,24 @@ def generate_fully_populated_trie(max_depth: int, value: Optional[Any] = None) -
         value (Optional[Any], default=None): The value to assign to each key in the trie.
     '''
     trie = GeneralizedTrie(runtime_validation=False)
-    # Use precomputed TEST_DATA if available for performance
-    for depth, data in TEST_DATA.items():
+    # Use precomputed test_data if available for performance
+    for depth, data in test_data.items():
         if depth <= max_depth:
             for key in data:
                 trie[key] = value
 
-    # Generate any requested depths NOT included in TEST_DATA
+    # Generate any requested depths NOT included in test_data
     for depth in range(1, max_depth + 1):
-        if depth not in TEST_DATA:
+        if depth not in test_data:
             # Generate all possible keys for this depth
-            for key in generate_test_data(depth, SYMBOLS, len(SYMBOLS) ** depth):
+            for key in generate_test_data(depth, symbols, len(symbols) ** depth):
                 trie[key] = value
 
     return trie
 
 
-TEST_FULLY_POPULATED_TRIES: dict[int, GeneralizedTrie] = {}
-for gen_depth in TEST_DEPTHS:
-    TEST_FULLY_POPULATED_TRIES[gen_depth] = generate_fully_populated_trie(max_depth=gen_depth)
-
-
-def english_words():
+@cache
+def load_english_words():
     """Imports English words from a gzipped text file.
 
     The file contains a bit over 278 thousand words in English
@@ -173,18 +162,6 @@ def english_words():
     """
     words_file = Path(__file__).parent.joinpath("english_words.txt.gz")
     return list(map(str.rstrip, gzip.open(words_file, "rt")))
-
-
-ENGLISH_WORDS = english_words()
-TEST_ORGANIC_DATA: dict[str, list[str]] = {
-    'english': ENGLISH_WORDS
-}
-TEST_ORGANIC_TRIES: dict[str, GeneralizedTrie] = {
-    'english': generate_test_trie_from_data(ENGLISH_WORDS, None)
-}
-TEST_ORGANIC_MARKS: dict[str, int] = {
-    'english': max(len(word) for word in ENGLISH_WORDS)
-}
 
 
 @dataclass(kw_only=True)
@@ -917,7 +894,7 @@ def benchmark_trie_prefixes_key(benchmark: BenchmarkRunner) -> BenchResults:
     '''
     kwargs: dict[str, Any] = benchmark.kwargs
     depth = kwargs['depth']
-    test_keys: list[GeneralizedKey] = kwargs['test_keys'][depth]
+    test_keys: list[str] = kwargs['test_keys'][depth]
     trie: GeneralizedTrie = kwargs['test_tries'][depth]
     trie.runtime_validation = kwargs['runtime_validation']
 
@@ -968,13 +945,62 @@ def benchmark_trie_prefixed_by_key(benchmark: BenchmarkRunner) -> BenchResults:
     return benchmark.run(n=len(test_keys), action=action_to_benchmark)
 
 
+@cache
 def get_benchmark_cases() -> list[BenchCase]:
     """
     Define the benchmark cases to be run.
     """
+
+    symbols: str = '0123'  # Define the symbols for the trie
+
+    test_data: dict[int, list[str]] = {}
+    test_depths: list[int] = [3, 4, 5, 6, 7, 8, 9]  # Depths to test - 1 and 2 are omitted due to low key counts
+    for gen_depth in test_depths:
+        max_keys_for_depth = len(symbols) ** gen_depth  # pylint: disable=invalid-name
+        test_data[gen_depth] = generate_test_data(gen_depth, symbols, max_keys=max_keys_for_depth)
+
+    # We generate the test_tries from the test_data for synchronization
+    test_tries: dict[int, GeneralizedTrie] = {}
+    for gen_depth in test_depths:
+        test_tries[gen_depth] = generate_test_trie_from_data(test_data[gen_depth], None)
+
+    # We generate the test_missing_key_tries from the test_data for synchronization
+    test_missing_key_tries: dict[int, tuple[GeneralizedTrie, str]] = {}
+    for gen_depth in test_depths:
+        test_missing_key_tries[gen_depth] = generate_trie_with_missing_key_from_data(test_data[gen_depth], None)
+
+    test_fully_populated_tries: dict[int, GeneralizedTrie] = {}
+    for gen_depth in test_depths:
+        test_fully_populated_tries[gen_depth] = generate_fully_populated_trie(
+                                                    test_data=test_data,
+                                                    symbols=symbols,
+                                                    max_depth=gen_depth)
+
+    english_words = load_english_words()
+    test_organic_data: dict[str, list[str]] = {
+        'english': english_words
+    }
+    test_organic_tries: dict[str, GeneralizedTrie] = {
+        'english': generate_test_trie_from_data(english_words, None)
+    }
+
     benchmark_cases_list: list[BenchCase] = [
         BenchCase(
             group='synthetic-id-in-trie',
+            title='<TrieId> in trie (Synthetic)',
+            description='Timing [yellow bold]<TrieId> in trie[/yellow bold] with synthetic data',
+            action=benchmark_id_in_trie,
+            iterations=DEFAULT_ITERATIONS,
+            variation_cols={'dataset': 'Depth', 'runtime_validation': 'Runtime Validation'},
+            kwargs_variations={
+                'runtime_validation': [False, True],
+                'test_tries': [test_tries],
+                'test_data': [test_data],
+                'dataset': test_depths,
+            }
+        ),
+        BenchCase(
+            group='synthetic-key-in-trie',
             title='<key> in trie (Synthetic)',
             description='Timing [yellow bold]<key> in trie[/yellow bold] with synthetic data',
             action=benchmark_key_in_trie,
@@ -982,9 +1008,9 @@ def get_benchmark_cases() -> list[BenchCase]:
             variation_cols={'dataset': 'Depth', 'runtime_validation': 'Runtime Validation'},
             kwargs_variations={
                 'runtime_validation': [False, True],
-                'test_tries': [TEST_TRIES],
-                'test_data': [TEST_DATA],
-                'dataset': TEST_DEPTHS,
+                'test_tries': [test_tries],
+                'test_data': [test_data],
+                'dataset': test_depths,
             }
         ),
         BenchCase(
@@ -997,7 +1023,7 @@ def get_benchmark_cases() -> list[BenchCase]:
             variation_cols={'dataset': 'Dataset', 'runtime_validation': 'Runtime Validation'},
             kwargs_variations={
                 'runtime_validation': [False, True],
-                'test_tries': [TEST_ORGANIC_TRIES],
+                'test_tries': [test_organic_tries],
                 'dataset': ['english'],
             }
         ),
@@ -1010,13 +1036,13 @@ def get_benchmark_cases() -> list[BenchCase]:
             variation_cols={'dataset': 'Dataset', 'runtime_validation': 'Runtime Validation'},
             kwargs_variations={
                 'runtime_validation': [False, True],
-                'test_tries': [TEST_ORGANIC_TRIES],
-                'test_data': [TEST_ORGANIC_DATA],
+                'test_tries': [test_organic_tries],
+                'test_data': [test_organic_data],
                 'dataset': ['english'],
             }
         ),
         BenchCase(
-            group='synthetic-building-trie-add()',
+            group='synthetic-building-trie-add',
             title='trie.add(<key>, <value>) (Synthetic)',
             description=('Timing [yellow bold]trie.add(<key>, <value>)[/yellow bold] '
                          'while building a new trie with synthetic data'),
@@ -1025,12 +1051,12 @@ def get_benchmark_cases() -> list[BenchCase]:
             variation_cols={'depth': 'Depth', 'runtime_validation': 'Runtime Validation'},
             kwargs_variations={
                 'runtime_validation': [False, True],
-                'test_data': [TEST_DATA],
-                'depth': TEST_DEPTHS,
+                'test_data': [test_data],
+                'depth': test_depths,
             }
         ),
         BenchCase(
-            group='synthetic-building-trie-update()',
+            group='synthetic-building-trie-update',
             title='trie.update(<key>, <value>) (Synthetic)',
             description=('Timing [yellow bold]trie.update(<key>, <value>)[/yellow bold] '
                          'while building a new trie with synthetic data'),
@@ -1039,8 +1065,8 @@ def get_benchmark_cases() -> list[BenchCase]:
             variation_cols={'depth': 'Depth', 'runtime_validation': 'Runtime Validation'},
             kwargs_variations={
                 'runtime_validation': [False, True],
-                'test_data': [TEST_DATA],
-                'depth': TEST_DEPTHS,
+                'test_data': [test_data],
+                'depth': test_depths,
             }
         ),
         BenchCase(
@@ -1053,12 +1079,12 @@ def get_benchmark_cases() -> list[BenchCase]:
             variation_cols={'depth': 'Depth', 'runtime_validation': 'Runtime Validation'},
             kwargs_variations={
                 'runtime_validation': [False, True],
-                'test_data': [TEST_DATA],
-                'depth': TEST_DEPTHS,
+                'test_data': [test_data],
+                'depth': test_depths,
             }
         ),
         BenchCase(
-            group='synthetic-updating-trie-update()',
+            group='synthetic-updating-trie-update',
             title='trie.update(<key>, <value>) (Synthetic)',
             description=('Timing [yellow bold]trie.update(<key>, <value>)[/yellow bold] '
                          'while updating values for existing keys with synthetic data'),
@@ -1067,12 +1093,12 @@ def get_benchmark_cases() -> list[BenchCase]:
             variation_cols={'depth': 'Depth', 'runtime_validation': 'Runtime Validation'},
             kwargs_variations={
                 'runtime_validation': [False, True],
-                'test_data': [TEST_DATA],
-                'depth': TEST_DEPTHS,
+                'test_data': [test_data],
+                'depth': test_depths,
             }
         ),
         BenchCase(
-            group='synthetic-updating-trie-remove()',
+            group='synthetic-updating-trie-remove',
             title='trie.remove(<key>) (Synthetic)',
             description=('Timing [yellow bold]trie.remove(<key>)[/yellow bold] '
                          'while removing keys from a trie with synthetic data'),
@@ -1081,8 +1107,8 @@ def get_benchmark_cases() -> list[BenchCase]:
             iterations=DEFAULT_ITERATIONS,
             kwargs_variations={
                 'runtime_validation': [False, True],
-                'test_data': [TEST_DATA],
-                'depth': TEST_DEPTHS,
+                'test_data': [test_data],
+                'depth': test_depths,
             },
         ),
         BenchCase(
@@ -1095,8 +1121,8 @@ def get_benchmark_cases() -> list[BenchCase]:
             iterations=DEFAULT_ITERATIONS,
             kwargs_variations={
                 'runtime_validation': [False, True],
-                'test_data': [TEST_DATA],
-                'depth': TEST_DEPTHS,
+                'test_data': [test_data],
+                'depth': test_depths,
             },
         ),
         BenchCase(
@@ -1109,12 +1135,12 @@ def get_benchmark_cases() -> list[BenchCase]:
             iterations=DEFAULT_ITERATIONS,
             kwargs_variations={
                 'runtime_validation': [False, True],
-                'test_data': [TEST_DATA],
-                'depth': TEST_DEPTHS,
+                'test_data': [test_data],
+                'depth': test_depths,
             },
         ),
         BenchCase(
-            group='synthetic-trie-prefixes(<key>)',
+            group='synthetic-trie-prefixes',
             title='trie.prefixes(<key>) (Synthetic)',
             description=('Timing [yellow bold]trie.prefixes(<key>)[/yellow bold] '
                          'while finding keys matching a specific prefix in a trie with synthetic data'),
@@ -1123,13 +1149,13 @@ def get_benchmark_cases() -> list[BenchCase]:
             iterations=DEFAULT_ITERATIONS,
             kwargs_variations={
                 'runtime_validation': [False, True],
-                'test_tries': [TEST_FULLY_POPULATED_TRIES],
-                'test_data': [TEST_DATA],
-                'depth': TEST_DEPTHS,
+                'test_tries': [test_fully_populated_tries],
+                'test_keys': [test_data],
+                'depth': test_depths,
             },
         ),
         BenchCase(
-            group='synthetic-trie-prefixed_by(<key>, <search_depth>)',
+            group='synthetic-trie-prefixed_by',
             title='trie.prefixed_by(<key>, <search_depth>) (Synthetic)',
             description=('Timing [yellow bold]trie.prefixed_by(<key>, <search_depth>)[/yellow bold] '
                          'in a fully populated trie'),
@@ -1138,8 +1164,8 @@ def get_benchmark_cases() -> list[BenchCase]:
             iterations=DEFAULT_ITERATIONS,
             kwargs_variations={
                 'runtime_validation': [False, True],
-                'test_trie': [TEST_FULLY_POPULATED_TRIES[9]],
-                'test_keys': [TEST_DATA[5]],
+                'test_trie': [test_fully_populated_tries[9]],
+                'test_keys': [test_data[5]],
                 'search_depth': [1, 2, 3],
             },
         ),
@@ -1147,12 +1173,16 @@ def get_benchmark_cases() -> list[BenchCase]:
     return benchmark_cases_list
 
 
-def run_benchmarks():
+def run_benchmarks(verbose: bool = False, benchmarks: str = 'all'):
     """Run the benchmark tests and print the results.
     """
     benchmark_cases: list[BenchCase] = get_benchmark_cases()
+    for case in benchmark_cases:
+        case.verbose = verbose
     console = Console()
     for case in benchmark_cases:
+        if not (benchmarks == 'all' or case.group in benchmarks):
+            continue
         case.run()
         if case.results:
             console.print(case.results_as_rich_table())
@@ -1162,7 +1192,29 @@ def run_benchmarks():
 
 def main():
     """Main entry point for running benchmarks."""
-    run_benchmarks()
+    parser = ArgumentParser(description='Run GeneralizedTrie benchmarks.')
+    parser.add_argument('--output_dir', default='.', help='Output destination directory')
+    parser.add_argument('--verbose', action='store_true', help='Enable verbose output')
+    parser.add_argument('--list', action='store_true', help='List all available benchmarks')
+    parser.add_argument('--run', nargs="+", default='all', help='Run specific benchmarks')
+    parser.add_argument('--console', action='store_true', help='Enable console output')
+    parser.add_argument('--json', default='store_true', help='Enable JSON file output')
+    parser.add_argument('--tcsv', default='store_true', help='Enable tagged CSV output')
+    parser.add_argument('--ops', default='store_true', help='Enable operations per second output')
+    parser.add_argument('--timing', default='store_true', help='Enable operations timing output')
+
+    console = Console()
+    args: Namespace = parser.parse_args()
+    if args.verbose:
+        console.print('Verbose output enabled')
+
+    if args.list:
+        console.print('Available benchmarks:')
+        for case in get_benchmark_cases():
+            console.print('  - ', f'[green]{case.group:<40s}[/green]', f'{case.title}')
+        return
+
+    run_benchmarks(verbose=args.verbose, benchmarks=args.run)
 
 
 if __name__ == '__main__':
