@@ -15,7 +15,7 @@ import itertools
 from pathlib import Path
 import statistics
 import time
-from typing import Any, Callable, NamedTuple, Optional, Sequence
+from typing import Any, Callable, Optional, Sequence
 
 from rich.console import Console
 from rich.table import Table
@@ -53,9 +53,9 @@ def generate_test_data(depth: int, symbols: str, max_keys: int) -> list[str]:
 
 
 TEST_DATA: dict[int, list[str]] = {}
-TEST_MARKS: list[int] = [3, 4, 5, 6, 7, 8, 9]  # Marks to test - 1 and 2 are omitted due to low key counts
-TEST_MAX_KEYS: int = len(SYMBOLS) ** max(TEST_MARKS)  # Limit to a manageable number of keys
-for gen_depth in TEST_MARKS:
+TEST_DEPTHS: list[int] = [3, 4, 5, 6, 7, 8, 9]  # Depths to test - 1 and 2 are omitted due to low key counts
+TEST_MAX_KEYS: int = len(SYMBOLS) ** max(TEST_DEPTHS)  # Limit to a manageable number of keys
+for gen_depth in TEST_DEPTHS:
     max_keys_for_depth = len(SYMBOLS) ** gen_depth  # pylint: disable=invalid-name
     TEST_DATA[gen_depth] = generate_test_data(gen_depth, SYMBOLS, max_keys=max_keys_for_depth)
 
@@ -106,7 +106,7 @@ def generate_test_trie_from_data(
 
 # We generate the TEST_TRIES from the TEST_DATA for synchronization
 TEST_TRIES: dict[int, GeneralizedTrie] = {}
-for gen_depth in TEST_MARKS:
+for gen_depth in TEST_DEPTHS:
     TEST_TRIES[gen_depth] = generate_test_trie_from_data(TEST_DATA[gen_depth], None)
 
 
@@ -128,7 +128,7 @@ def generate_trie_with_missing_key_from_data(
 
 # We generate the TEST_MISSING_KEY_TRIES from the TEST_DATA for synchronization
 TEST_MISSING_KEY_TRIES: dict[int, tuple[GeneralizedTrie, str]] = {}
-for gen_depth in TEST_MARKS:
+for gen_depth in TEST_DEPTHS:
     TEST_MISSING_KEY_TRIES[gen_depth] = generate_trie_with_missing_key_from_data(TEST_DATA[gen_depth], None)
 
 
@@ -161,7 +161,7 @@ def generate_fully_populated_trie(max_depth: int, value: Optional[Any] = None) -
 
 
 TEST_FULLY_POPULATED_TRIES: dict[int, GeneralizedTrie] = {}
-for gen_depth in TEST_MARKS:
+for gen_depth in TEST_DEPTHS:
     TEST_FULLY_POPULATED_TRIES[gen_depth] = generate_fully_populated_trie(max_depth=gen_depth)
 
 
@@ -185,18 +185,6 @@ TEST_ORGANIC_TRIES: dict[str, GeneralizedTrie] = {
 TEST_ORGANIC_MARKS: dict[str, int] = {
     'english': max(len(word) for word in ENGLISH_WORDS)
 }
-
-
-class BenchGroup(NamedTuple):
-    '''Declaration of a benchmark group.
-
-    A benchmark group is a collection of benchmark cases
-    that share a common purpose or theme.
-    '''
-    id: str
-    name: str
-    description: str
-    mark_label: str
 
 
 @dataclass(kw_only=True)
@@ -344,12 +332,11 @@ class BenchResults:
     '''Container for the results of a single benchmark test.
 
     Properties:
-        group (BenchGroup): The reporting group to which the benchmark case belongs.
-        name (str): The name of the benchmark case.
-        mark (int | str): The identifying mark for the benchmark case.
+        group (str): The reporting group to which the benchmark case belongs.
+        title (str): The name of the benchmark case.
         description (str): A brief description of the benchmark case.
         n (int): The number of rounds the benchmark ran per iteration.
-        runtime_validation (bool): Whether runtime validation was enabled
+        variation_cols (dict[str, str]): The columns to use for labelling kwarg variations in the benchmark.
         interval_unit (str): The unit of measurement for the interval (e.g. "ns").
         interval_scale (float): The scale factor for the interval (e.g. 1e-9 for nanoseconds).
         ops_per_interval_unit (str): The unit of measurement for operations per interval (e.g. "ops/s").
@@ -357,12 +344,11 @@ class BenchResults:
         total_elapsed (int): The total elapsed time for the benchmark.
         extra_info (dict[str, Any]): Additional information about the benchmark run.
     '''
-    group: BenchGroup
-    name: str
-    mark: int | str
+    group: str
+    title: str
     description: str
     n: int
-    runtime_validation: bool
+    variation_cols: dict[str, str] = field(default_factory=dict[str, str])
     interval_unit: str = DEFAULT_INTERVAL_UNIT
     interval_scale: float = DEFAULT_INTERVAL_SCALE
     ops_per_interval_unit: str = DEFAULT_INTERVAL_UNIT
@@ -371,6 +357,7 @@ class BenchResults:
     ops_per_second: BenchOperationsPerInterval = field(default_factory=BenchOperationsPerInterval)
     op_timings: BenchOperationTimings = field(default_factory=BenchOperationTimings)
     total_elapsed: int = 0
+    variation_marks: dict[str, Any] = field(default_factory=dict[str, Any])
     extra_info: dict[str, Any] = field(default_factory=dict[str, Any])
 
     def __post_init__(self):
@@ -388,28 +375,30 @@ class BenchCase:
 
     kwargs_variations example:
         kwargs_variations={
-            'mark': [1, 2, 3],
+            'search_depth': [1, 2, 3],
             'runtime_validation': [True, False]
         }
 
     Args:
-        name (str): The name of the benchmark case.
-        group (BenchGroup): The reporting group to which the benchmark case belongs.
-        mark (int | str | None): The identifying mark for the benchmark case.
+        group (str): The benchmark reporting group to which the benchmark case belongs.
+        title (str): The name of the benchmark case.
         description (str): A brief description of the benchmark case.
         action (Callable[..., Any]): The action to perform for the benchmark.
+        iterations (int): The number of iterations to run for the benchmark.
         min_time (float): The minimum time for the benchmark in seconds. (default: 5.0)
         max_time (float): The maximum time for the benchmark in seconds. (default: 20.0)
+        variation_cols (dict[str, str]): kwargs to be used for cols to denote kwarg variations.
         kwargs_variations (dict[str, list[Any]]): Variations of keyword arguments for the benchmark.
         runner (Optional[Callable[..., Any]]): A custom runner for the benchmark.
     '''
-    name: str
-    group: BenchGroup
-    mark: int | str | None = None
+    group: str
+    title: str
     description: str
     action: Callable[..., Any]
+    iterations: int = DEFAULT_ITERATIONS
     min_time: float = 5.0  # seconds
     max_time: float = 20.0  # seconds
+    variation_cols: dict[str, str] = field(default_factory=dict[str, str])
     kwargs_variations: dict[str, list[Any]] = field(default_factory=dict[str, list[Any]])
     runner: Optional[Callable[..., Any]] = None
     verbose: bool = False
@@ -437,24 +426,10 @@ class BenchCase:
         """
         collected_results: list[BenchResults] = []
         for kwargs in self.expanded_kwargs_variations:
-            bench_args: dict[str, Any] = {
-                'group': self.group,
-                'name': self.name,
-                'mark': self.mark,
-                'description': self.description,
-                'min_time': self.min_time,
-                'max_time': self.max_time,
-                # 'verbose': self.verbose
-            }
-            # merge the generated kwargs (this allows overriding BenchCase attributes
-            # such as the mark with variations)
-            bench_args.update(kwargs)
+            benchmark: BenchmarkRunner = BenchmarkRunner(case=self, kwargs=kwargs)
             if self.verbose:
-                name = bench_args["name"]
-                formatted_name = name.format(**bench_args)
-                mark = bench_args["mark"]
-                print(f'Running benchmark "{formatted_name}" for mark {mark}')
-            results: BenchResults = self.action(**bench_args)
+                print(f'Running benchmark "{self.title}"')
+            results: BenchResults = self.action(benchmark)
             collected_results.append(results)
         self.results = collected_results
 
@@ -512,7 +487,7 @@ class BenchCase:
             numbers=[result.ops_per_second.standard_deviation for result in self.results],
             base_unit='Ops')
 
-        table = Table(title=(self.name + '\n\n' + self.description),
+        table = Table(title=(self.title + '\n\n' + self.description),
                       show_header=True,
                       title_style='bold green1',
                       header_style='bold magenta')
@@ -527,10 +502,10 @@ class BenchCase:
         table.add_column(f'95th {p95_unit}', justify='center', vertical='bottom', overflow='fold')
         table.add_column(f'std dev {stddev_unit}', justify='center', vertical='bottom', overflow='fold')
         table.add_column('rsd%', justify='center', vertical='bottom', overflow='fold')
-        table.add_column('Runtime Validate', justify='center', vertical='bottom', overflow='fold', max_width=9)
-        table.add_column(self.group.mark_label, justify='center', vertical='bottom', overflow='fold')
+        for value in self.variation_cols.values():
+            table.add_column(value, justify='center', vertical='bottom', overflow='fold')
         for result in self.results:
-            table.add_row(
+            row: list[str] = [
                 f'{result.n:>6d}',
                 f'{len(result.iterations):>6d}',
                 f'{result.total_elapsed * DEFAULT_INTERVAL_SCALE:>4.2f}',
@@ -541,30 +516,40 @@ class BenchCase:
                 f'{result.ops_per_second.percentiles[5] * p5_scale:>6.2f}',
                 f'{result.ops_per_second.percentiles[95] * p95_scale:>6.2f}',
                 f'{result.ops_per_second.standard_deviation * stddev_scale:>6.2f}',
-                f'{result.ops_per_second.relative_standard_deviation:>3.2f}%',
-                f'{result.runtime_validation!s}',
-                f'{result.mark!s}')
+                f'{result.ops_per_second.relative_standard_deviation:>3.2f}%'
+            ]
+            for value in result.variation_marks.values():
+                row.append(f'{value!s}')
+            table.add_row(*row)
         return table
 
 
 class BenchmarkRunner():
     """A class to run benchmarks for various actions.
     """
-    @staticmethod
+    def __init__(self,
+                 case: BenchCase,
+                 kwargs: dict[str, Any],
+                 runner: Optional[Callable[..., Any]] = None):
+        self.case: BenchCase = case
+        self.kwargs: dict[str, Any] = kwargs
+        self.run: Callable[..., Any] = runner if runner is not None else self.default_runner
+
+    @property
+    def variation_marks(self) -> dict[str, Any]:
+        '''Return the variation marks for the benchmark.
+
+        The variation marks identify the specific variations being tested in a run
+        from the kwargs values.
+        '''
+        return {key: self.kwargs.get(key, None) for key in self.case.variation_cols.keys()}
+
     def default_runner(
-            action: Callable[..., Any],
+            self,
             n: int,
-            group: BenchGroup,
-            name: str,
-            mark: int | str,
-            description: str,
-            min_time: float,
-            max_time: float,
-            runtime_validation: bool,
-            iterations: int,
+            action: Callable[..., Any],
             setup: Optional[Callable[..., Any]] = None,
-            teardown: Optional[Callable[..., Any]] = None,
-            verbose: bool = False) -> BenchResults:
+            teardown: Optional[Callable[..., Any]] = None) -> BenchResults:
         """Run a generic benchmark using the specified action and test data for rounds.
 
         This function will execute the benchmark for the given action and
@@ -578,27 +563,24 @@ class BenchmarkRunner():
         for the overhead of the function call.
 
         Args:
+            variation_cols (dict[str, str]): The variation columns to use for the benchmark.
+            n (int): The number of test rounds that will be run by the action on each iteration.
             action (Callable[..., Any]): The action to benchmark.
-            n (int): The number of test rounds run.
-            test_data (Sequence[dict[str, Any] | list[Any] | tuple[Any, ...]]):
-                The test data to use for the benchmark rounds.
-            group (BenchGroup): The reporting group to which the benchmark case belongs.
-            name (str): The name of the benchmark case.
-            mark (int | str): The identifying mark for the benchmark case.
-            description (str): A brief description of the benchmark case.
-            min_time (float): The minimum time for the benchmark in seconds.
-            max_time (float): The maximum time for the benchmark in seconds.
-            runtime_validation (bool): Whether to perform runtime validation.
-            iterations (int): The number of iterations to run.
             setup (Optional[Callable[..., Any]]): A setup function to run before each iteration.
             teardown (Optional[Callable[..., Any]]): A teardown function to run after each iteration.
-            verbose (bool): Whether to print verbose output. (default = False)
         """
+        group: str = self.case.group
+        title: str = self.case.title
+        description: str = self.case.description
+        min_time: float = self.case.min_time
+        max_time: float = self.case.max_time
+        iterations: int = self.case.iterations
+
         iteration_pass: int = 0
         time_start: int = DEFAULT_TIMER()
         max_stop_at: int = int(max_time / DEFAULT_INTERVAL_SCALE) + time_start
         min_stop_at: int = int(min_time / DEFAULT_INTERVAL_SCALE) + time_start
-        wall_time: int = DEFAULT_TIMER() - time_start
+        wall_time: int = DEFAULT_TIMER()
         iterations_min: int = max(MIN_MEASURED_ITERATIONS, iterations)
 
         gc.collect()
@@ -633,10 +615,9 @@ class BenchmarkRunner():
 
         benchmark_results = BenchResults(
             group=group,
-            name=name.format(runtime_validation=runtime_validation, mark=mark, n=n),
-            description=description.format(runtime_validation=runtime_validation, mark=mark, n=n),
-            mark=mark,
-            runtime_validation=runtime_validation,
+            title=title,
+            description=description,
+            variation_marks=self.variation_marks,
             n=n,
             iterations=iterations_list,
             total_elapsed=total_elapsed,
@@ -645,157 +626,73 @@ class BenchmarkRunner():
         return benchmark_results
 
 
-def benchmark_build_with_add(
-        group: BenchGroup,
-        name: str,
-        mark: int | str,
-        description: str,
-        min_time: float,
-        max_time: float,
-        runtime_validation: bool,
-        test_data: dict[int | str, Sequence[GeneralizedKey]],
-        iterations: int) -> BenchResults:
+def benchmark_build_with_add(benchmark: BenchmarkRunner) -> BenchResults:
     '''Benchmark the addition of keys to the trie.
 
     Args:
-        group (str): The reporting group to which the benchmark case belongs.
-        name (str): The name of the benchmark case.
-        mark (int | str): The identifying mark for the benchmark case.
-        description (str): A brief description of the benchmark case.
-        min_time (float): The minimum time for the benchmark in seconds.
-        max_time (float): The maximum time for the benchmark in seconds.
-        runtime_validation (bool): Whether to enable runtime validation.
-        test_data (dict[int | str, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
-        iterations (int): The number of iterations to run the benchmark.
+        benchmark (BenchmarkRunner): The benchmark runner instance.
 
     Returns (BenchResults):
         The results of the benchmark.
     '''
-    test_keys = test_data[mark]
+    kwargs = benchmark.kwargs
+    depth = kwargs['depth']
+    test_keys = kwargs['test_data'][depth]
+    runtime_validation = kwargs['runtime_validation']
 
     def action_to_benchmark():
         trie = GeneralizedTrie(runtime_validation=runtime_validation)
         for key in test_keys:
             trie.add(key, None)
 
-    return BenchmarkRunner.default_runner(
-        action=action_to_benchmark,
-        n=len(test_keys),
-        group=group,
-        name=name,
-        mark=mark,
-        description=description,
-        min_time=min_time,
-        max_time=max_time,
-        runtime_validation=runtime_validation,
-        iterations=iterations,
-    )
+    return benchmark.run(action=action_to_benchmark, n=len(test_keys))
 
 
-def benchmark_build_with_assign(
-        name: str,
-        group: BenchGroup,
-        mark: int | str,
-        description: str,
-        min_time: float,
-        max_time: float,
-        runtime_validation: bool,
-        test_data: dict[int | str, Sequence[GeneralizedKey]],
-        iterations: int) -> BenchResults:
+def benchmark_build_with_assign(benchmark: BenchmarkRunner) -> BenchResults:
     '''Benchmark the assignment of keys to the trie.
 
     Args:
-        group (str): The reporting group to which the benchmark case belongs.
-        name (str): The name of the benchmark case.
-        mark (int | str): The identifying mark for the benchmark case.
-        min_time (float): The minimum time for the benchmark in seconds.
-        max_time (float): The maximum time for the benchmark in seconds.
-        description (str): A brief description of the benchmark case.
-        runtime_validation (bool): Whether to enable runtime validation.
-        test_data (dict[int | str, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
-        iterations (int): The number of iterations to run the benchmark.
+        benchmark (BenchmarkRunner): The benchmark runner instance.
 
     Returns (BenchResults):
         The results of the benchmark.
     '''
-    test_keys = test_data[mark]
+    kwargs: dict[str, Any] = benchmark.kwargs
+    depth = kwargs['depth']
+    test_keys = kwargs['test_data'][depth]
+    runtime_validation = kwargs['runtime_validation']
 
     def action_to_benchmark():
         trie = GeneralizedTrie(runtime_validation=runtime_validation)
         for key in test_keys:
             trie[key] = None
 
-    return BenchmarkRunner.default_runner(
-        action=action_to_benchmark,
-        n=len(test_keys),
-        group=group,
-        name=name,
-        mark=mark,
-        description=description,
-        min_time=min_time,
-        max_time=max_time,
-        runtime_validation=runtime_validation,
-        iterations=iterations,
-    )
+    return benchmark.run(n=len(test_keys), action=action_to_benchmark)
 
 
-def benchmark_build_with_update(
-        group: BenchGroup,
-        name: str,
-        mark: int | str,
-        description: str,
-        min_time: float,
-        max_time: float,
-        runtime_validation: bool,
-        test_data: dict[int | str, Sequence[GeneralizedKey]],
-        iterations: int) -> BenchResults:
+def benchmark_build_with_update(benchmark: BenchmarkRunner) -> BenchResults:
     '''Benchmark the building of a trie using update().
 
     Args:
-        group (BenchGroup): The reporting group to which the benchmark case belongs.
-        name (str): The name of the benchmark case.
-        mark (int | str): The identifying mark for the benchmark case.
-        description (str): A brief description of the benchmark case.
-        min_time (float): The minimum time for the benchmark in seconds.
-        max_time (float): The maximum time for the benchmark in seconds.
-        runtime_validation (bool): Whether to enable runtime validation.
-        test_data (dict[int | str, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
-        iterations (int): The number of iterations to run the benchmark.
+        benchmark (BenchmarkRunner): The benchmark runner instance.
 
     Returns (BenchResults):
         The results of the benchmark.
     '''
-    test_keys = test_data[mark]
+    kwargs: dict[str, Any] = benchmark.kwargs
+    depth = kwargs['depth']
+    test_keys = kwargs['test_data'][depth]
+    runtime_validation = kwargs['runtime_validation']
 
     def action_to_benchmark():
         trie = GeneralizedTrie(runtime_validation=runtime_validation)
         for key in test_keys:
             trie.update(key, None)
 
-    return BenchmarkRunner.default_runner(
-        action=action_to_benchmark,
-        n=len(test_keys),
-        group=group,
-        name=name,
-        mark=mark,
-        description=description,
-        min_time=min_time,
-        max_time=max_time,
-        runtime_validation=runtime_validation,
-        iterations=iterations,
-    )
+    return benchmark.run(n=len(test_keys), action=action_to_benchmark)
 
 
-def benchmark_updating_trie(
-        group: BenchGroup,
-        name: str,
-        mark: int | str,
-        description: str,
-        min_time: float,
-        max_time: float,
-        runtime_validation: bool,
-        test_data: dict[str | int, Sequence[GeneralizedKey]],
-        iterations: int) -> BenchResults:
+def benchmark_updating_trie(benchmark: BenchmarkRunner) -> BenchResults:
     '''Benchmark update() operations on keys in an existing trie.
 
     This is effectively a benchmark of code like this where all test keys
@@ -806,57 +703,30 @@ def benchmark_updating_trie(
         trie.update(key, 1)
     ```
     Args:
-        name (str): The name of the benchmark case.
-        group (BenchGroup): The reporting group to which the benchmark case belongs.
-        mark (int | str): The identifying mark for the benchmark case.
-        description (str): A brief description of the benchmark case.
-        min_time (float): The minimum time for the benchmark in seconds.
-        max_time (float): The maximum time for the benchmark in seconds.
-        runtime_validation (bool): Whether to enable runtime validation.
-        test_data (dict[str | int, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
-        iterations (int): The number of iterations to run the benchmark.
+        benchmark (BenchmarkRunner): The benchmark runner instance.
 
     Returns:
         A list of BenchResults containing the benchmark results.
     '''
     # Build the prefix tree - built here because we are modifying it
     # and don't want to modify the pre-generated test tries
-    test_keys = test_data[mark]
+    kwargs = benchmark.kwargs
+    depth = kwargs['depth']
+    test_keys = kwargs['test_data'][depth]
     test_args_data: list[tuple[GeneralizedKey, int]] = list([(key, 1) for key in test_keys])
     if len(test_keys) != len(test_args_data):
         raise ValueError("Test keys and args data length mismatch")
     trie = generate_test_trie_from_data(data=test_keys, value=None)
-    trie.runtime_validation = runtime_validation
-    test_keys = test_data[mark]
+    trie.runtime_validation = kwargs['runtime_validation']
 
     def action_to_benchmark():
         for key in test_keys:
             trie.update(key, None)
 
-    return BenchmarkRunner.default_runner(
-        action=action_to_benchmark,
-        n=len(test_keys),
-        group=group,
-        name=name,
-        mark=mark,
-        description=description,
-        min_time=min_time,
-        max_time=max_time,
-        runtime_validation=runtime_validation,
-        iterations=iterations,
-    )
+    return benchmark.run(n=len(test_keys), action=action_to_benchmark)
 
 
-def benchmark_remove_key_from_trie(
-        group: BenchGroup,
-        name: str,
-        mark: int | str,
-        description: str,
-        min_time: float,
-        max_time: float,
-        runtime_validation: bool,
-        test_data: dict[str | int, Sequence[GeneralizedKey]],
-        iterations: int) -> BenchResults:
+def benchmark_remove_key_from_trie(benchmark: BenchmarkRunner) -> BenchResults:
     '''Benchmark remove() operations on keys in an existing trie.
 
     This is effectively a benchmark of code like this where all test keys
@@ -867,26 +737,19 @@ def benchmark_remove_key_from_trie(
         trie.remove(key)
     ```
     Args:
-        name (str): The name of the benchmark case.
-        group (BenchGroup): The reporting group to which the benchmark case belongs.
-        mark (int | str): The identifying mark for the benchmark case.
-        description (str): A brief description of the benchmark case.
-        min_time (float): The minimum time for the benchmark in seconds.
-        max_time (float): The maximum time for the benchmark in seconds.
-        runtime_validation (bool): Whether to enable runtime validation.
-        test_data (dict[str | int, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
-        iterations (int): The number of iterations to run the benchmark.
+        benchmark (BenchmarkRunner): The benchmark runner instance.
 
     Returns:
         A list of BenchResults containing the benchmark results.
     '''
-
-    test_keys = test_data[mark]
+    kwargs = benchmark.kwargs
+    depth = kwargs['depth']
+    test_keys = kwargs['test_data'][depth]
+    runtime_validation = kwargs['runtime_validation']
     trie: GeneralizedTrie = GeneralizedTrie(runtime_validation=runtime_validation)
 
     def setup():
-        "Setup the trie with test keys. clear() first for safety."
-        trie.clear()
+        "Setup the trie with test keys."
         for key in test_keys:
             trie.update(key, None)
 
@@ -895,31 +758,14 @@ def benchmark_remove_key_from_trie(
         for key in test_keys:
             trie.remove(key)
 
-    return BenchmarkRunner.default_runner(
-        action=action_to_benchmark,
-        n=len(test_keys),
-        group=group,
-        name=name,
-        mark=mark,
-        description=description,
-        min_time=min_time,
-        max_time=max_time,
-        runtime_validation=runtime_validation,
-        iterations=iterations,
-        setup=setup,
-    )
+    def teardown():
+        "Reset the trie after the benchmark iteration."
+        trie.clear()
+
+    return benchmark.run(n=len(test_keys), action=action_to_benchmark, setup=setup, teardown=teardown)
 
 
-def benchmark_del_key_from_trie(
-        group: BenchGroup,
-        name: str,
-        mark: int | str,
-        description: str,
-        min_time: float,
-        max_time: float,
-        runtime_validation: bool,
-        test_data: dict[str | int, Sequence[GeneralizedKey]],
-        iterations: int) -> BenchResults:
+def benchmark_del_key_from_trie(benchmark: BenchmarkRunner) -> BenchResults:
     '''Benchmark "del trie[<key>] operations on keys in an existing trie.
 
     This is effectively a benchmark of code like this where all test keys
@@ -930,25 +776,19 @@ def benchmark_del_key_from_trie(
         del trie[key]
     ```
     Args:
-        name (str): The name of the benchmark case.
-        group (BenchGroup): The reporting group to which the benchmark case belongs.
-        mark (int | str): The identifying mark for the benchmark case.
-        description (str): A brief description of the benchmark case.
-        min_time (float): The minimum time for the benchmark in seconds.
-        max_time (float): The maximum time for the benchmark in seconds.
-        runtime_validation (bool): Whether to enable runtime validation.
-        test_data (dict[str | int, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
-        iterations (int): The number of iterations to run the benchmark.
+        benchmark (BenchmarkRunner): The benchmark runner instance.
 
     Returns:
         A list of BenchResults containing the benchmark results.
     '''
-    test_keys: Sequence[GeneralizedKey] = test_data[mark]
+    kwargs = benchmark.kwargs
+    depth = kwargs['depth']
+    test_keys = kwargs['test_data'][depth]
+    runtime_validation = kwargs['runtime_validation']
     trie: GeneralizedTrie = GeneralizedTrie(runtime_validation=runtime_validation)
 
     def setup():
         "Setup the trie with test keys."
-        trie.clear()
         for key in test_keys:
             trie.update(key, None)
 
@@ -957,31 +797,14 @@ def benchmark_del_key_from_trie(
         for key in test_keys:
             del trie[key]
 
-    return BenchmarkRunner.default_runner(
-        action=action_to_benchmark,
-        n=len(test_keys),
-        group=group,
-        name=name,
-        mark=mark,
-        description=description,
-        min_time=min_time,
-        max_time=max_time,
-        runtime_validation=runtime_validation,
-        iterations=iterations,
-        setup=setup,
-    )
+    def teardown():
+        "Clear the trie after the benchmark iteration."
+        trie.clear()
+
+    return benchmark.run(n=len(test_keys), action=action_to_benchmark, setup=setup, teardown=teardown)
 
 
-def benchmark_del_id_from_trie(
-        group: BenchGroup,
-        name: str,
-        mark: int | str,
-        description: str,
-        min_time: float,
-        max_time: float,
-        runtime_validation: bool,
-        test_data: dict[str | int, Sequence[GeneralizedKey]],
-        iterations: int) -> BenchResults:
+def benchmark_del_id_from_trie(benchmark: BenchmarkRunner) -> BenchResults:
     '''Benchmark "del trie[<key>] operations on keys in an existing trie.
 
     This is effectively a benchmark of code like this where all test keys
@@ -992,29 +815,22 @@ def benchmark_del_id_from_trie(
         del trie[key]
     ```
     Args:
-        name (str): The name of the benchmark case.
-        group (BenchGroup): The reporting group to which the benchmark case belongs.
-        mark (int | str): The identifying mark for the benchmark case.
-        description (str): A brief description of the benchmark case.
-        min_time (float): The minimum time for the benchmark in seconds.
-        max_time (float): The maximum time for the benchmark in seconds.
-        runtime_validation (bool): Whether to enable runtime validation.
-        test_data (dict[str | int, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
-        iterations (int): The number of iterations to run the benchmark.
+        benchmark (BenchmarkRunner): The benchmark runner instance.
 
     Returns:
         A list of BenchResults containing the benchmark results.
     '''
-    test_keys: Sequence[GeneralizedKey] = test_data[mark]
+    kwargs = benchmark.kwargs
+    depth = kwargs['depth']
+    test_keys: Sequence[GeneralizedKey] = kwargs['test_data'][depth]
+    runtime_validation = kwargs['runtime_validation']
     test_ids: list[TrieId] = []
     trie: GeneralizedTrie = GeneralizedTrie(runtime_validation=runtime_validation)
 
     def setup():
-        "Setup the trie with test keys. clear() first for safety."
-        trie.clear()
+        "Setup the trie with test keys and get the TrieIds for deletion."
         for key in test_keys:
             trie.update(key, None)
-        test_ids.clear()
         test_ids.extend(trie.keys())
 
     def action_to_benchmark():
@@ -1022,129 +838,60 @@ def benchmark_del_id_from_trie(
         for trie_id in test_ids:
             del trie[trie_id]
 
-    return BenchmarkRunner.default_runner(
-        action=action_to_benchmark,
-        n=len(test_keys),
-        group=group,
-        name=name,
-        mark=mark,
-        description=description,
-        min_time=min_time,
-        max_time=max_time,
-        runtime_validation=runtime_validation,
-        iterations=iterations,
-        setup=setup,
-    )
+    def teardown():
+        "Reset the trie and test ids after the benchmark iteration."
+        test_ids.clear()
+        trie.clear()
+
+    return benchmark.run(n=len(test_keys), action=action_to_benchmark, setup=setup, teardown=teardown)
 
 
-def benchmark_key_in_trie(
-        group: BenchGroup,
-        name: str,
-        mark: int | str,
-        description: str,
-        min_time: float,
-        max_time: float,
-        runtime_validation: bool,
-        test_tries: dict[int | str, GeneralizedTrie],
-        test_data: dict[int | str, list[GeneralizedKey]],
-        iterations: int) -> BenchResults:
+def benchmark_key_in_trie(benchmark: BenchmarkRunner) -> BenchResults:
     '''Benchmark '<key> in <trie>' operations.
 
     Args:
-        name (str): The name of the benchmark case.
-        group (BenchGroup): The reporting group to which the benchmark case belongs.
-        mark (int | str): The identifying mark for the benchmark case.
-        description (str): A brief description of the benchmark case.
-        min_time (float): The minimum time for the benchmark in seconds.
-        max_time (float): The maximum time for the benchmark in seconds.
-        runtime_validation (bool): Whether to enable runtime validation.
-        test_tries (dict[int | str, GeneralizedTrie]): The test data to use for the benchmark.
-        test_data (dict[int | str, list[GeneralizedKey]]): The test keys to use for the benchmark.
-        iterations (int): The number of iterations to run the benchmark.
+        benchmark (BenchmarkRunner): The benchmark runner instance.
 
     Returns:
         A list of BenchResults containing the benchmark results.
     '''
-    trie: GeneralizedTrie = test_tries[mark]
-    test_keys: list[GeneralizedKey] = test_data[mark]
-    trie.runtime_validation = runtime_validation
+    kwargs = benchmark.kwargs
+    dataset = kwargs['dataset']
+    test_keys: list[GeneralizedKey] = kwargs['test_data'][dataset]
+    trie: GeneralizedTrie = kwargs['test_tries'][dataset]
+    trie.runtime_validation = kwargs['runtime_validation']
 
     def action_to_benchmark():
+        "Check if all test keys are in the trie."
         for key in test_keys:
             _ = key in trie
 
-    return BenchmarkRunner.default_runner(
-        action=action_to_benchmark,
-        n=len(test_keys),
-        group=group,
-        name=name,
-        mark=mark,
-        description=description,
-        min_time=min_time,
-        max_time=max_time,
-        runtime_validation=runtime_validation,
-        iterations=iterations,
-    )
+    return benchmark.run(n=len(test_keys), action=action_to_benchmark)
 
 
-def benchmark_id_in_trie(
-        group: BenchGroup,
-        name: str,
-        mark: int | str,
-        description: str,
-        min_time: float,
-        max_time: float,
-        runtime_validation: bool,
-        test_tries: dict[int | str, GeneralizedTrie],
-        iterations: int) -> BenchResults:
+def benchmark_id_in_trie(benchmark: BenchmarkRunner) -> BenchResults:
     '''Benchmark '<TrieId> in trie' operations.
 
     Args:
-        name (str): The name of the benchmark case.
-        group (str): The reporting group to which the benchmark case belongs.
-        mark (int | str): The identifying mark for the benchmark case.
-        description (str): A brief description of the benchmark case.
-        min_time (float): The minimum time for the benchmark in seconds.
-        max_time (float): The maximum time for the benchmark in seconds.
-        runtime_validation (bool): Whether to enable runtime validation.
-        test_data (GeneralizedTrie): The test data to use for the benchmark.
-        iterations (int): The number of iterations to run the benchmark.
+        benchmark (BenchmarkRunner): The benchmark runner instance.
 
     Returns:
         A list of BenchResults containing the benchmark results.
     '''
-    trie: GeneralizedTrie = test_tries[mark]
-    test_keys: list[TrieId] = list(trie.keys())
+    kwargs: dict[str, Any] = benchmark.kwargs
+    dataset = kwargs['dataset']
+    trie: GeneralizedTrie = kwargs['test_tries'][dataset]
+    trie.runtime_validation = kwargs['runtime_validation']
+    test_ids: list[TrieId] = list(trie.keys())
 
     def action_to_benchmark():
-        for key in test_keys:
-            _ = key in trie  # pylint: disable=unnecessary-dunder-call
+        for key in test_ids:
+            _ = key in trie
 
-    return BenchmarkRunner.default_runner(
-        action=action_to_benchmark,
-        n=len(test_keys),
-        group=group,
-        name=name,
-        mark=mark,
-        description=description,
-        min_time=min_time,
-        max_time=max_time,
-        runtime_validation=runtime_validation,
-        iterations=iterations,
-    )
+    return benchmark.run(n=len(test_ids), action=action_to_benchmark)
 
 
-def benchmark_trie_prefixes_key(
-        group: BenchGroup,
-        name: str,
-        mark: int | str,
-        description: str,
-        min_time: float,
-        max_time: float,
-        runtime_validation: bool,
-        test_tries: dict[str | int, GeneralizedTrie],
-        test_data: dict[str | int, Sequence[GeneralizedKey]],
-        iterations: int) -> BenchResults:
+def benchmark_trie_prefixes_key(benchmark: BenchmarkRunner) -> BenchResults:
     '''Benchmark trie prefixes() method.
 
     This test checks the performance of the prefixes() method on fully populated tries.
@@ -1163,54 +910,25 @@ def benchmark_trie_prefixes_key(
         _ = list(trie.prefixes(key))
     ```
     Args:
-        name (str): The name of the benchmark case.
-        group (BenchGroup): The reporting group to which the benchmark case belongs.
-        mark (int | str): The identifying mark for the benchmark case.
-        description (str): A brief description of the benchmark case.
-        min_time (float): The minimum time for the benchmark in seconds.
-        max_time (float): The maximum time for the benchmark in seconds.
-        runtime_validation (bool): Whether to enable runtime validation.
-        test_trie (dict[str | int, GeneralizedTrie]): The test tries to use for the benchmark.
-        test_data (dict[str | int, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
-        iterations (int): The number of iterations to run the benchmark.
+        benchmark (BenchmarkRunner): The benchmark runner instance.
 
     Returns:
         A list of BenchResults containing the benchmark results.
     '''
-    test_keys = test_data[mark]
-    trie = test_tries[mark]
-    trie.runtime_validation = runtime_validation
-    n: int = len(test_keys)
+    kwargs: dict[str, Any] = benchmark.kwargs
+    depth = kwargs['depth']
+    test_keys: list[GeneralizedKey] = kwargs['test_keys'][depth]
+    trie: GeneralizedTrie = kwargs['test_tries'][depth]
+    trie.runtime_validation = kwargs['runtime_validation']
 
     def action_to_benchmark():
         for key in test_keys:
             _ = list(trie.prefixes(key))
 
-    return BenchmarkRunner.default_runner(
-        action=action_to_benchmark,
-        n=n,
-        group=group,
-        name=name,
-        mark=mark,
-        description=description,
-        min_time=min_time,
-        max_time=max_time,
-        runtime_validation=runtime_validation,
-        iterations=iterations,
-    )
+    return benchmark.run(n=len(test_keys), action=action_to_benchmark)
 
 
-def benchmark_trie_prefixed_by_key(
-        group: BenchGroup,
-        name: str,
-        mark: int | str,
-        description: str,
-        min_time: float,
-        max_time: float,
-        runtime_validation: bool,
-        test_trie: GeneralizedTrie,
-        test_keys: Sequence[GeneralizedKey],
-        iterations: int) -> BenchResults:
+def benchmark_trie_prefixed_by_key(benchmark: BenchmarkRunner) -> BenchResults:
     '''Benchmark trie prefixes_by() method.
 
     This test checks the performance of the prefixed_by() method on fully populated tries
@@ -1230,300 +948,199 @@ def benchmark_trie_prefixed_by_key(
         _ = list(trie.prefixed_by(key, depth))
     ```
     Args:
-        name (str): The name of the benchmark case.
-        group (BenchGroup): The reporting group to which the benchmark case belongs.
-        mark (int | str): The identifying mark for the benchmark case.
-        description (str): A brief description of the benchmark case.
-        min_time (float): The minimum time for the benchmark in seconds.
-        max_time (float): The maximum time for the benchmark in seconds.
-        runtime_validation (bool): Whether to enable runtime validation.
-        test_trie (GeneralizedTrie): The test trie to use for the benchmark.
-        test_keys (Sequence[GeneralizedKey]): The target keys to use for the benchmark.
-        iterations (int): The number of iterations to run the benchmark.
+        benchmark (BenchmarkRunner): The benchmark runner instance.
 
     Returns:
         A list of BenchResults containing the benchmark results.
     '''
-    trie = test_trie
-    if not isinstance(mark, int):
-        raise TypeError(f"Expected 'mark' to be int, got {type(mark).__name__}")
-    search_depth = mark
-    trie.runtime_validation = runtime_validation
-    n: int = len(test_keys)
+    kwargs: dict[str, Any] = benchmark.kwargs
+    search_depth = kwargs['search_depth']
+    if not isinstance(search_depth, int):
+        raise TypeError(f"Expected 'search_depth' to be int, got {type(search_depth).__name__}")
+    trie: GeneralizedTrie = kwargs['test_trie']
+    trie.runtime_validation = kwargs['runtime_validation']
+    test_keys: list[GeneralizedKey] = kwargs['test_data']
 
     def action_to_benchmark():
         for key in test_keys:
             _ = list(trie.prefixed_by(key, search_depth))
 
-    return BenchmarkRunner.default_runner(
-        action=action_to_benchmark,
-        n=n,
-        group=group,
-        name=name,
-        mark=mark,
-        description=description,
-        min_time=min_time,
-        max_time=max_time,
-        runtime_validation=runtime_validation,
-        iterations=iterations,
-    )
+    return benchmark.run(n=len(test_keys), action=action_to_benchmark)
 
 
 def get_benchmark_cases() -> list[BenchCase]:
     """
     Define the benchmark cases to be run.
     """
-    benchmark_groups_list: list[BenchGroup] = [
-        BenchGroup(
-            id='synthetic-id-in-trie',
-            name='Synthetic "<TrieId> in trie"',
-            description='Key lookup using "<TrieId> in trie" and synthetic data',
-            mark_label='Depth'
-        ),
-        BenchGroup(
-            id='synthetic-key-in-trie',
-            name='Synthetic "<key> in trie"',
-            description='Key lookup using "<key> in trie" and synthetic data',
-            mark_label='Depth'
-        ),
-        BenchGroup(
-            id='synthetic-building-trie-add()',
-            name='Synthetic building trie using trie.add(<key>, <value>)',
-            description=('Building a trie using synthetic data and the add() method '
-                         '(trie.add(<key>, <value>))'),
-            mark_label='Depth'
-        ),
-        BenchGroup(
-            id='synthetic-building-trie-update()',
-            name='Synthetic building trie using trie.update(<key>, <value>)',
-            description=('Building a trie using synthetic data and the update() method '
-                         '(trie.update(<key>, <value>))'),
-            mark_label='Depth'
-        ),
-        BenchGroup(
-            id='synthetic-building-trie-assign',
-            name='Synthetic building trie using trie[<key>] = <value>',
-            description=('Building a trie using synthetic data and '
-                         'assignment (trie[<key>] = <value>)'),
-            mark_label='Depth'
-        ),
-        BenchGroup(
-            id='synthetic-updating-trie-update()',
-            name='Synthetic updating trie using trie.update(<key>, <value>)',
-            description=('Updating a trie using synthetic data and the update() method '
-                         '(trie.update(<key>, <value>))'),
-            mark_label='Depth'
-        ),
-        BenchGroup(
-            id='synthetic-trie-remove()-key',
-            name='Synthetic removing keys from trie using trie.remove(<key>)',
-            description=('Deleting keys using synthetic data and the remove() method '
-                         '(trie.remove(<key>))'),
-            mark_label='Depth'
-        ),
-        BenchGroup(
-            id='synthetic-trie-del-key',
-            name='Synthetic deleting keys using "del trie[<key>]"',
-            description=('Deleting keys using synthetic data and the del operator '
-                         '(del trie[<key>])'),
-            mark_label='Depth'
-        ),
-        BenchGroup(
-            id='synthetic-trie-del-id',
-            name='Synthetic deleting keys using "del trie[<TrieId>]"',
-            description=('Deleting keys using synthetic data and the del operator '
-                         '(del trie[<TrieId>])'),
-            mark_label='Depth'
-        ),
-        BenchGroup(
-            id='english-dictionary-id-in-trie',
-            name='English Dictionary "<TrieId> in trie")',
-            description=(
-                '"<TrieId> in trie" operation for words from the English dictionary'
-            ),
-            mark_label='Data Set'
-        ),
-        BenchGroup(
-            id='english-dictionary-key-in-trie',
-            name='English Dictionary "<key> in trie"',
-            description='"<key> in trie" operation for words from the English dictionary',
-            mark_label='Data Set'
-        ),
-        BenchGroup(
-            id='synthetic-trie-prefixes(<key>)',
-            name='Synthetic trie.prefixes(<key>)',
-            description=('Finding keys using trie.prefixes(<key>) method'),
-            mark_label='Depth'
-        ),
-        BenchGroup(
-            id='synthetic-trie-prefixed_by(<key>, <search_depth>)',
-            name='Synthetic trie.prefixed_by(<key>, <search_depth>)',
-            description=('Finding keys using trie.prefixed_by(<key>, <search_depth>) method'),
-            mark_label='Search Depth'
-        ),
-    ]
-
-    benchmark_groups: dict[str, BenchGroup] = {}
-    for group in benchmark_groups_list:
-        benchmark_groups[group.id] = group
-
     benchmark_cases_list: list[BenchCase] = [
         BenchCase(
-            name='<key> in trie (Synthetic)',
-            group=benchmark_groups['synthetic-key-in-trie'],
+            group='synthetic-id-in-trie',
+            title='<key> in trie (Synthetic)',
             description='Timing [yellow bold]<key> in trie[/yellow bold] with synthetic data',
             action=benchmark_key_in_trie,
+            iterations=DEFAULT_ITERATIONS,
+            variation_cols={'dataset': 'Depth', 'runtime_validation': 'Runtime Validation'},
             kwargs_variations={
                 'runtime_validation': [False, True],
                 'test_tries': [TEST_TRIES],
                 'test_data': [TEST_DATA],
-                'iterations': [DEFAULT_ITERATIONS],
-                'mark': TEST_MARKS,
+                'dataset': TEST_DEPTHS,
             }
         ),
         BenchCase(
-            name='<TrieId> in trie (English)',
-            group=benchmark_groups['english-dictionary-id-in-trie'],
+            group='english-dictionary-id-in-trie',
+            title='<TrieId> in trie (English)',
             description=(
                 'Timing [yellow bold]<TrieId> in trie[/yellow bold] with words from the English dictionary'),
             action=benchmark_id_in_trie,
+            iterations=DEFAULT_ITERATIONS,
+            variation_cols={'dataset': 'Dataset', 'runtime_validation': 'Runtime Validation'},
             kwargs_variations={
                 'runtime_validation': [False, True],
                 'test_tries': [TEST_ORGANIC_TRIES],
-                'iterations': [DEFAULT_ITERATIONS],
-                'mark': ['english'],
+                'dataset': ['english'],
             }
         ),
         BenchCase(
-            name='<key> in trie (English)',
-            group=benchmark_groups['english-dictionary-key-in-trie'],
+            group='english-dictionary-key-in-trie',
+            title='<key> in trie (English)',
             description=('Timing [yellow bold]<key> in trie[/yellow bold] with words from the English dictionary'),
             action=benchmark_key_in_trie,
+            iterations=DEFAULT_ITERATIONS,
+            variation_cols={'dataset': 'Dataset', 'runtime_validation': 'Runtime Validation'},
             kwargs_variations={
                 'runtime_validation': [False, True],
                 'test_tries': [TEST_ORGANIC_TRIES],
                 'test_data': [TEST_ORGANIC_DATA],
-                'iterations': [DEFAULT_ITERATIONS],
-                'mark': ['english'],
+                'dataset': ['english'],
             }
         ),
         BenchCase(
-            name='trie.add(<key>, <value>) (Synthetic)',
-            group=benchmark_groups['synthetic-building-trie-add()'],
+            group='synthetic-building-trie-add()',
+            title='trie.add(<key>, <value>) (Synthetic)',
             description=('Timing [yellow bold]trie.add(<key>, <value>)[/yellow bold] '
-                         'while building a newtrie with synthetic data'),
+                         'while building a new trie with synthetic data'),
             action=benchmark_build_with_add,
+            iterations=DEFAULT_ITERATIONS,
+            variation_cols={'depth': 'Depth', 'runtime_validation': 'Runtime Validation'},
             kwargs_variations={
                 'runtime_validation': [False, True],
                 'test_data': [TEST_DATA],
-                'iterations': [DEFAULT_ITERATIONS],
-                'mark': TEST_MARKS,
+                'depth': TEST_DEPTHS,
             }
         ),
         BenchCase(
-            name='trie.update(<key>, <value>) (Synthetic)',
-            group=benchmark_groups['synthetic-building-trie-update()'],
+            group='synthetic-building-trie-update()',
+            title='trie.update(<key>, <value>) (Synthetic)',
             description=('Timing [yellow bold]trie.update(<key>, <value>)[/yellow bold] '
                          'while building a new trie with synthetic data'),
             action=benchmark_build_with_update,
+            iterations=DEFAULT_ITERATIONS,
+            variation_cols={'depth': 'Depth', 'runtime_validation': 'Runtime Validation'},
             kwargs_variations={
                 'runtime_validation': [False, True],
                 'test_data': [TEST_DATA],
-                'iterations': [DEFAULT_ITERATIONS],
-                'mark': TEST_MARKS,
+                'depth': TEST_DEPTHS,
             }
         ),
         BenchCase(
-            name='trie[<key>] = <value> (Synthetic)',
-            group=benchmark_groups['synthetic-building-trie-assign'],
+            group='synthetic-building-trie-assign',
+            title='trie[<key>] = <value> (Synthetic)',
             description=('Timing [yellow bold]trie[<key>] = <value>[/yellow bold] '
                          'while building a new trie with synthetic data'),
             action=benchmark_build_with_assign,
+            iterations=DEFAULT_ITERATIONS,
+            variation_cols={'depth': 'Depth', 'runtime_validation': 'Runtime Validation'},
             kwargs_variations={
                 'runtime_validation': [False, True],
                 'test_data': [TEST_DATA],
-                'iterations': [DEFAULT_ITERATIONS],
-                'mark': TEST_MARKS,
+                'depth': TEST_DEPTHS,
             }
         ),
         BenchCase(
-            name='trie.update(<key>, <value>) (Synthetic)',
-            group=benchmark_groups['synthetic-updating-trie-update()'],
+            group='synthetic-updating-trie-update()',
+            title='trie.update(<key>, <value>) (Synthetic)',
             description=('Timing [yellow bold]trie.update(<key>, <value>)[/yellow bold] '
                          'while updating values for existing keys with synthetic data'),
             action=benchmark_updating_trie,
+            iterations=DEFAULT_ITERATIONS,
+            variation_cols={'depth': 'Depth', 'runtime_validation': 'Runtime Validation'},
             kwargs_variations={
                 'runtime_validation': [False, True],
                 'test_data': [TEST_DATA],
-                'iterations': [DEFAULT_ITERATIONS],
-                'mark': TEST_MARKS,
+                'depth': TEST_DEPTHS,
             }
         ),
         BenchCase(
-            name='trie.remove(<key>) (Synthetic)',
-            group=benchmark_groups['synthetic-trie-remove()-key'],
+            group='synthetic-updating-trie-remove()',
+            title='trie.remove(<key>) (Synthetic)',
             description=('Timing [yellow bold]trie.remove(<key>)[/yellow bold] '
                          'while removing keys from a trie with synthetic data'),
             action=benchmark_remove_key_from_trie,
+            variation_cols={'depth': 'Depth', 'runtime_validation': 'Runtime Validation'},
+            iterations=DEFAULT_ITERATIONS,
             kwargs_variations={
                 'runtime_validation': [False, True],
                 'test_data': [TEST_DATA],
-                'iterations': [DEFAULT_ITERATIONS],
-                'mark': TEST_MARKS,
+                'depth': TEST_DEPTHS,
             },
         ),
         BenchCase(
-            name='del trie[<key>] (Synthetic)',
-            group=benchmark_groups['synthetic-trie-del-key'],
+            group='synthetic-updating-trie-del-key',
+            title='del trie[<key>] (Synthetic)',
             description=('Timing [yellow bold]del trie[<key>][/yellow bold] '
                          'while deleting keys from a trie with synthetic data'),
             action=benchmark_del_key_from_trie,
+            variation_cols={'depth': 'Depth', 'runtime_validation': 'Runtime Validation'},
+            iterations=DEFAULT_ITERATIONS,
             kwargs_variations={
                 'runtime_validation': [False, True],
                 'test_data': [TEST_DATA],
-                'iterations': [DEFAULT_ITERATIONS],
-                'mark': TEST_MARKS,
+                'depth': TEST_DEPTHS,
             },
         ),
         BenchCase(
-            name='del trie[<TrieId>] (Synthetic)',
-            group=benchmark_groups['synthetic-trie-del-id'],
+            group='synthetic-updating-trie-del-id',
+            title='del trie[<TrieId>] (Synthetic)',
             description=('Timing [yellow bold]del trie[<TrieId>][/yellow bold] '
                          'while deleting keys from a trie with synthetic data'),
             action=benchmark_del_id_from_trie,
+            variation_cols={'depth': 'Depth', 'runtime_validation': 'Runtime Validation'},
+            iterations=DEFAULT_ITERATIONS,
             kwargs_variations={
                 'runtime_validation': [False, True],
                 'test_data': [TEST_DATA],
-                'iterations': [DEFAULT_ITERATIONS],
-                'mark': TEST_MARKS,
+                'depth': TEST_DEPTHS,
             },
         ),
         BenchCase(
-            name='trie.prefixes(<key>) (Synthetic)',
-            group=benchmark_groups['synthetic-trie-prefixes(<key>)'],
+            group='synthetic-trie-prefixes(<key>)',
+            title='trie.prefixes(<key>) (Synthetic)',
             description=('Timing [yellow bold]trie.prefixes(<key>)[/yellow bold] '
                          'while finding keys matching a specific prefix in a trie with synthetic data'),
             action=benchmark_trie_prefixes_key,
+            variation_cols={'depth': 'Depth', 'runtime_validation': 'Runtime Validation'},
+            iterations=DEFAULT_ITERATIONS,
             kwargs_variations={
                 'runtime_validation': [False, True],
                 'test_tries': [TEST_FULLY_POPULATED_TRIES],
                 'test_data': [TEST_DATA],
-                'iterations': [DEFAULT_ITERATIONS],
-                'mark': TEST_MARKS,
+                'depth': TEST_DEPTHS,
             },
         ),
         BenchCase(
-            name='trie.prefixed_by(<key>, <search_depth>) (Synthetic)',
-            group=benchmark_groups['synthetic-trie-prefixed_by(<key>, <search_depth>)'],
+            group='synthetic-trie-prefixed_by(<key>, <search_depth>)',
+            title='trie.prefixed_by(<key>, <search_depth>) (Synthetic)',
             description=('Timing [yellow bold]trie.prefixed_by(<key>, <search_depth>)[/yellow bold] '
                          'in a fully populated trie'),
             action=benchmark_trie_prefixed_by_key,
+            variation_cols={'search_depth': 'Search Depth', 'runtime_validation': 'Runtime Validation'},
+            iterations=DEFAULT_ITERATIONS,
             kwargs_variations={
                 'runtime_validation': [False, True],
                 'test_trie': [TEST_FULLY_POPULATED_TRIES[9]],
                 'test_keys': [TEST_DATA[5]],
-                'iterations': [DEFAULT_ITERATIONS],
-                'mark': [1, 2, 3],
+                'search_depth': [1, 2, 3],
             },
         ),
     ]
