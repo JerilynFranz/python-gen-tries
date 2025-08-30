@@ -26,7 +26,12 @@ from gentrie import GeneralizedTrie, GeneralizedKey, TrieId
 MIN_MEASURED_ITERATIONS: int = 3
 
 DEFAULT_ITERATIONS: int = 20
+
 DEFAULT_TIMER = time.perf_counter_ns
+DEFAULT_INTERVAL_SCALE: float = 1e-9
+DEFAULT_INTERVAL_UNIT: str = 'ns'
+DEFAULT_OPS_PER_INTERVAL_SCALE: float = 1.0
+DEFAULT_OPS_PER_INTERVAL_UNIT: str = 'Ops/s'
 
 SYMBOLS: str = '0123'  # Define the symbols for the trie
 
@@ -196,46 +201,182 @@ class BenchGroup(NamedTuple):
 
 @dataclass(kw_only=True)
 class BenchIteration:
-    '''Container for the results of a single benchmark iteration.'''
+    '''Container for the results of a single benchmark iteration.
+
+    Properties:
+        n (int): The number of operations performed.
+        elapsed (float): The elapsed time for the operations.
+        unit (str): The unit of measurement for the elapsed time.
+        scale (float): The scale factor for the elapsed time.
+        ops_per_second (float): The number of operations per second. (read only)
+    '''
     n: int = 0
-    elapsed_ns: int = 0
-    ops_per_second: float = 0.0
+    elapsed: int = 0
+    unit: str = DEFAULT_INTERVAL_UNIT
+    scale: float = DEFAULT_INTERVAL_SCALE
+
+    @property
+    def ops_per_second(self) -> float:
+        '''The number of operations per second.
+
+        This is calculated as the inverse of the elapsed time.
+
+        The edge cases of 0 elapsed time or n results in a returned value of 0.
+        This would otherwise be an impossible value and so flags a measurement error.
+        '''
+        if not self.elapsed:
+            return 0
+        return self.n / (self.elapsed * self.scale)
 
 
-@dataclass(kw_only=True)
-class BenchOperationsPerSecond:
-    '''Container for the operations per second statistics of a benchmark.
+class BenchStatistics:
+    '''Generic container for statistics on a benchmark.
 
     Attributes:
-        mean (float): The mean operations per second.
-        median (float): The median operations per second.
-        minimum (float): The minimum operations per second.
-        maximum (float): The maximum operations per second.
-        standard_deviation (float): The standard deviation of operations per second.
-        relative_standard_deviation (float): The relative standard deviation of operations per second.
-        percentiles (dict[int, float]): Percentiles of operations per second.
+        unit (str): The unit of measurement for the benchmark (e.g., "ops/s").
+        scale (float): The scale factor for the interval (e.g. 1 for seconds).
+        data: list[int | float] = field(default_factory=list[int | float])
+        mean (float): The mean operations per time interval. (read only)
+        median (float): The median operations per time interval. (read only)
+        minimum (float): The minimum operations per time interval. (read only)
+        maximum (float): The maximum operations per time interval. (read only)
+        standard_deviation (float): The standard deviation of operations per time interval. (read only)
+        relative_standard_deviation (float): The relative standard deviation of ops per time interval. (read only)
+        percentiles (dict[int, float]): Percentiles of operations per time interval. (read only)
     '''
-    mean: float = 0.0
-    median: float = 0.0
-    minimum: float = 0.0
-    maximum: float = 0.0
-    standard_deviation: float = 0.0
-    relative_standard_deviation: float = 0.0
-    percentiles: dict[int, float] = field(default_factory=dict[int, float])
+    def __init__(self, unit: str = '', scale: float = 0.0, data: Optional[list[int | float]] = None):
+        self.unit: str = unit
+        self.scale: float = scale
+        self.data: list[int | float] = data if data is not None else []
+
+    @property
+    def mean(self) -> float:
+        '''The mean of the data.'''
+        return statistics.mean(self.data) if self.data else 0.0
+
+    @property
+    def median(self) -> float:
+        '''The median of the data.'''
+        return statistics.median(self.data) if self.data else 0.0
+
+    @property
+    def minimum(self) -> float:
+        '''The minimum of the data.'''
+        return float(min(self.data)) if self.data else 0.0
+
+    @property
+    def maximum(self) -> float:
+        '''The maximum of the data.'''
+        return float(max(self.data)) if self.data else 0.0
+
+    @property
+    def standard_deviation(self) -> float:
+        '''The standard deviation of the data.'''
+        return statistics.stdev(self.data) if len(self.data) > 1 else 0.0
+
+    @property
+    def relative_standard_deviation(self):
+        '''The relative standard deviation of the data.'''
+        return self.standard_deviation / self.mean * 100 if self.mean else 0.0
+
+    @property
+    def percentiles(self) -> dict[int, float]:
+        '''Percentiles of the data.
+
+        Computes the 5th, 10th, 25th, 50th, 75th, 90th, and 95th percentiles
+        and returns them as a dictionary keyed by percent.
+        '''
+        # Calculate percentiles if we have enough data points
+        if not self.data:
+            return {p: float('nan') for p in [5, 10, 25, 50, 75, 90, 95]}
+        percentiles: dict[int, float] = {}
+        for percent in [5, 10, 25, 50, 75, 90, 95]:
+            percentiles[percent] = statistics.quantiles(self.data, n=100)[percent - 1]
+        return percentiles
+
+
+class BenchOperationsPerInterval(BenchStatistics):
+    '''Container for the operations per time interval statistics of a benchmark.
+
+    Attributes:
+        unit (str): The unit of measurement for the benchmark (e.g., "ops/s").
+        scale (float): The scale factor for the interval (e.g. 1 for seconds).
+        data: list[int] = field(default_factory=list[int])
+        mean (float): The mean operations per time interval. (read only)
+        median (float): The median operations per time interval. (read only)
+        minimum (float): The minimum operations per time interval. (read only)
+        maximum (float): The maximum operations per time interval. (read only)
+        standard_deviation (float): The standard deviation of operations per time interval. (read only)
+        relative_standard_deviation (float): The relative standard deviation of ops per time interval. (read only)
+        percentiles (dict[int, float]): Percentiles of operations per time interval. (read only)
+    '''
+    def __init__(self,
+                 unit: str = DEFAULT_OPS_PER_INTERVAL_UNIT,
+                 scale: float = DEFAULT_OPS_PER_INTERVAL_SCALE,
+                 data: Optional[list[int | float]] = None):
+        super().__init__(unit=unit, scale=scale, data=data)
+
+
+class BenchOperationTimings(BenchStatistics):
+    '''Container for the operation timing statistics of a benchmark.
+
+    Attributes:
+        unit (str): The unit of measurement for the timings (e.g., "ns").
+        scale (float): The scale factor for the timings (e.g., "1e-9" for nanoseconds).
+        mean (float): The mean time per operation.
+        median (float): The median time per operation.
+        minimum (float): The minimum time per operation.
+        maximum (float): The maximum time per operation.
+        standard_deviation (float): The standard deviation of the time per operation.
+        relative_standard_deviation (float): The relative standard deviation of the time per operation.
+        percentiles (dict[int, float]): Percentiles of time per operation.
+        data: list[float | int] = field(default_factory=list[float | int])
+    '''
+    def __init__(self,
+                 unit: str = DEFAULT_INTERVAL_UNIT,
+                 scale: float = DEFAULT_INTERVAL_SCALE,
+                 data: Optional[list[int | float]] = None):
+        super().__init__(unit=unit, scale=scale, data=data)
 
 
 @dataclass(kw_only=True)
 class BenchResults:
-    '''Container for the results of a single benchmark test.'''
+    '''Container for the results of a single benchmark test.
+
+    Properties:
+        group (BenchGroup): The reporting group to which the benchmark case belongs.
+        name (str): The name of the benchmark case.
+        mark (int | str): The identifying mark for the benchmark case.
+        description (str): A brief description of the benchmark case.
+        n (int): The number of rounds the benchmark ran per iteration.
+        runtime_validation (bool): Whether runtime validation was enabled
+        interval_unit (str): The unit of measurement for the interval (e.g. "ns").
+        interval_scale (float): The scale factor for the interval (e.g. 1e-9 for nanoseconds).
+        ops_per_interval_unit (str): The unit of measurement for operations per interval (e.g. "ops/s").
+        ops_per_interval_scale (float): The scale factor for operations per interval (e.g. 1.0 for ops/s).
+        total_elapsed (int): The total elapsed time for the benchmark.
+        extra_info (dict[str, Any]): Additional information about the benchmark run.
+    '''
     group: BenchGroup
     name: str
     mark: int | str
     description: str
     n: int
     runtime_validation: bool
+    interval_unit: str = DEFAULT_INTERVAL_UNIT
+    interval_scale: float = DEFAULT_INTERVAL_SCALE
+    ops_per_interval_unit: str = DEFAULT_INTERVAL_UNIT
+    ops_per_interval_scale: float = DEFAULT_INTERVAL_SCALE
     iterations: list[BenchIteration] = field(default_factory=list[BenchIteration])
-    ops_per_second: BenchOperationsPerSecond = field(default_factory=BenchOperationsPerSecond)
-    total_elapsed_ns: int = 0
+    ops_per_second: BenchOperationsPerInterval = field(default_factory=BenchOperationsPerInterval)
+    op_timings: BenchOperationTimings = field(default_factory=BenchOperationTimings)
+    total_elapsed: int = 0
+    extra_info: dict[str, Any] = field(default_factory=dict[str, Any])
+
+    def __post_init__(self):
+        if self.iterations:
+            self.op_timings.data = list([iteration.elapsed for iteration in self.iterations])
+            self.ops_per_second.data = list([iteration.ops_per_second for iteration in self.iterations])
 
 
 @dataclass(kw_only=True)
@@ -261,7 +402,6 @@ class BenchCase:
         max_time (float): The maximum time for the benchmark in seconds. (default: 20.0)
         kwargs_variations (dict[str, list[Any]]): Variations of keyword arguments for the benchmark.
         runner (Optional[Callable[..., Any]]): A custom runner for the benchmark.
-        verbose (bool): Whether to enable verbose output.
     '''
     name: str
     group: BenchGroup
@@ -304,7 +444,7 @@ class BenchCase:
                 'description': self.description,
                 'min_time': self.min_time,
                 'max_time': self.max_time,
-                'verbose': self.verbose
+                # 'verbose': self.verbose
             }
             # merge the generated kwargs (this allows overriding BenchCase attributes
             # such as the mark with variations)
@@ -393,7 +533,7 @@ class BenchCase:
             table.add_row(
                 f'{result.n:>6d}',
                 f'{len(result.iterations):>6d}',
-                f'{result.total_elapsed_ns / 1e9:>4.2f}',
+                f'{result.total_elapsed * DEFAULT_INTERVAL_SCALE:>4.2f}',
                 f'{result.ops_per_second.mean * mean_scale:>6.2f}',
                 f'{result.ops_per_second.median * median_scale:>6.2f}',
                 f'{result.ops_per_second.minimum * min_scale:>6.2f}',
@@ -424,8 +564,7 @@ class BenchmarkRunner():
             iterations: int,
             setup: Optional[Callable[..., Any]] = None,
             teardown: Optional[Callable[..., Any]] = None,
-            verbose: bool = False
-            ) -> BenchResults:
+            verbose: bool = False) -> BenchResults:
         """Run a generic benchmark using the specified action and test data for rounds.
 
         This function will execute the benchmark for the given action and
@@ -455,27 +594,22 @@ class BenchmarkRunner():
             teardown (Optional[Callable[..., Any]]): A teardown function to run after each iteration.
             verbose (bool): Whether to print verbose output. (default = False)
         """
-        benchmark_results = BenchResults(
-            group=group,
-            name=name.format(runtime_validation=runtime_validation, mark=mark, n=n),
-            description=description.format(runtime_validation=runtime_validation, mark=mark, n=n),
-            mark=mark,
-            runtime_validation=runtime_validation,
-            n=n)
         iteration_pass: int = 0
         time_start: int = DEFAULT_TIMER()
-        max_stop_at: int = int(max_time * 1e9) + time_start
-        min_stop_at: int = int(min_time * 1e9) + time_start
+        max_stop_at: int = int(max_time / DEFAULT_INTERVAL_SCALE) + time_start
+        min_stop_at: int = int(min_time / DEFAULT_INTERVAL_SCALE) + time_start
         wall_time: int = DEFAULT_TIMER() - time_start
         iterations_min: int = max(MIN_MEASURED_ITERATIONS, iterations)
 
         gc.collect()
 
+        total_elapsed: int = 0
+        iterations_list: list[BenchIteration] = []
         while ((iteration_pass <= iterations_min or wall_time < min_stop_at)
                 and wall_time < max_stop_at):
             iteration_pass += 1
             iteration_result = BenchIteration()
-            iteration_result.elapsed_ns = 0
+            iteration_result.elapsed = 0
 
             if isinstance(setup, Callable):
                 setup()
@@ -491,37 +625,23 @@ class BenchmarkRunner():
             if iteration_pass == 1:
                 # Warmup iteration, not included in final stats
                 continue
-            iteration_result.elapsed_ns += (timer_end - timer_start)
-            iteration_result.ops_per_second = n / (iteration_result.elapsed_ns / 1e9)
+            iteration_result.elapsed += (timer_end - timer_start)
             iteration_result.n = n
-            benchmark_results.total_elapsed_ns += iteration_result.elapsed_ns
-            benchmark_results.iterations.append(iteration_result)
+            total_elapsed += iteration_result.elapsed
+            iterations_list.append(iteration_result)
             wall_time = DEFAULT_TIMER()
-            if verbose and iteration_pass == 2:
-                print(f"Iteration {iteration_pass}: {benchmark_results}")
 
-        mean_ops = statistics.mean(iter.ops_per_second for iter in benchmark_results.iterations)
-        median_ops = statistics.median(iter.ops_per_second for iter in benchmark_results.iterations)
-        standard_deviation: float = 0.0
-        if len(benchmark_results.iterations) > 1:
-            standard_deviation = statistics.stdev(iter.ops_per_second for iter in benchmark_results.iterations)
-        benchmark_results.ops_per_second = BenchOperationsPerSecond(
-            mean=mean_ops,
-            median=median_ops,
-            minimum=min(iter.ops_per_second for iter in benchmark_results.iterations),
-            maximum=max(iter.ops_per_second for iter in benchmark_results.iterations),
-            standard_deviation=standard_deviation,
-            relative_standard_deviation=standard_deviation / mean_ops * 100 if mean_ops else 0
-        )
+        benchmark_results = BenchResults(
+            group=group,
+            name=name.format(runtime_validation=runtime_validation, mark=mark, n=n),
+            description=description.format(runtime_validation=runtime_validation, mark=mark, n=n),
+            mark=mark,
+            runtime_validation=runtime_validation,
+            n=n,
+            iterations=iterations_list,
+            total_elapsed=total_elapsed,
+            extra_info={})
 
-        # Calculate percentiles if we have enough data points
-        for percentile in [5, 10, 25, 50, 75, 90, 95]:
-            if len(benchmark_results.iterations) > 1:
-                benchmark_results.ops_per_second.percentiles[percentile] = statistics.quantiles(
-                    [iter.ops_per_second for iter in benchmark_results.iterations],
-                    n=100)[percentile - 1]
-            else:
-                benchmark_results.ops_per_second.percentiles[percentile] = float('nan')
         return benchmark_results
 
 
@@ -534,8 +654,7 @@ def benchmark_build_with_add(
         max_time: float,
         runtime_validation: bool,
         test_data: dict[int | str, Sequence[GeneralizedKey]],
-        iterations: int,
-        verbose: bool = False) -> BenchResults:
+        iterations: int) -> BenchResults:
     '''Benchmark the addition of keys to the trie.
 
     Args:
@@ -548,7 +667,6 @@ def benchmark_build_with_add(
         runtime_validation (bool): Whether to enable runtime validation.
         test_data (dict[int | str, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
         iterations (int): The number of iterations to run the benchmark.
-        verbose (bool): Whether to print verbose output. (default = False)
 
     Returns (BenchResults):
         The results of the benchmark.
@@ -571,7 +689,6 @@ def benchmark_build_with_add(
         max_time=max_time,
         runtime_validation=runtime_validation,
         iterations=iterations,
-        verbose=verbose
     )
 
 
@@ -584,8 +701,7 @@ def benchmark_build_with_assign(
         max_time: float,
         runtime_validation: bool,
         test_data: dict[int | str, Sequence[GeneralizedKey]],
-        iterations: int,
-        verbose: bool = False) -> BenchResults:
+        iterations: int) -> BenchResults:
     '''Benchmark the assignment of keys to the trie.
 
     Args:
@@ -598,7 +714,6 @@ def benchmark_build_with_assign(
         runtime_validation (bool): Whether to enable runtime validation.
         test_data (dict[int | str, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
         iterations (int): The number of iterations to run the benchmark.
-        verbose (bool): Whether to print verbose output. (default = False)
 
     Returns (BenchResults):
         The results of the benchmark.
@@ -621,7 +736,6 @@ def benchmark_build_with_assign(
         max_time=max_time,
         runtime_validation=runtime_validation,
         iterations=iterations,
-        verbose=verbose
     )
 
 
@@ -634,8 +748,7 @@ def benchmark_build_with_update(
         max_time: float,
         runtime_validation: bool,
         test_data: dict[int | str, Sequence[GeneralizedKey]],
-        iterations: int,
-        verbose: bool = False) -> BenchResults:
+        iterations: int) -> BenchResults:
     '''Benchmark the building of a trie using update().
 
     Args:
@@ -648,7 +761,6 @@ def benchmark_build_with_update(
         runtime_validation (bool): Whether to enable runtime validation.
         test_data (dict[int | str, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
         iterations (int): The number of iterations to run the benchmark.
-        verbose (bool): Whether to print verbose output. (default = False)
 
     Returns (BenchResults):
         The results of the benchmark.
@@ -671,7 +783,6 @@ def benchmark_build_with_update(
         max_time=max_time,
         runtime_validation=runtime_validation,
         iterations=iterations,
-        verbose=verbose
     )
 
 
@@ -684,8 +795,7 @@ def benchmark_updating_trie(
         max_time: float,
         runtime_validation: bool,
         test_data: dict[str | int, Sequence[GeneralizedKey]],
-        iterations: int,
-        verbose: bool = False) -> BenchResults:
+        iterations: int) -> BenchResults:
     '''Benchmark update() operations on keys in an existing trie.
 
     This is effectively a benchmark of code like this where all test keys
@@ -705,7 +815,6 @@ def benchmark_updating_trie(
         runtime_validation (bool): Whether to enable runtime validation.
         test_data (dict[str | int, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
         iterations (int): The number of iterations to run the benchmark.
-        verbose (bool): Whether to print verbose output. (default = False)
 
     Returns:
         A list of BenchResults containing the benchmark results.
@@ -735,7 +844,6 @@ def benchmark_updating_trie(
         max_time=max_time,
         runtime_validation=runtime_validation,
         iterations=iterations,
-        verbose=verbose
     )
 
 
@@ -748,8 +856,7 @@ def benchmark_remove_key_from_trie(
         max_time: float,
         runtime_validation: bool,
         test_data: dict[str | int, Sequence[GeneralizedKey]],
-        iterations: int,
-        verbose: bool = False) -> BenchResults:
+        iterations: int) -> BenchResults:
     '''Benchmark remove() operations on keys in an existing trie.
 
     This is effectively a benchmark of code like this where all test keys
@@ -769,7 +876,6 @@ def benchmark_remove_key_from_trie(
         runtime_validation (bool): Whether to enable runtime validation.
         test_data (dict[str | int, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
         iterations (int): The number of iterations to run the benchmark.
-        verbose (bool): Whether to print verbose output. (default = False)
 
     Returns:
         A list of BenchResults containing the benchmark results.
@@ -801,7 +907,6 @@ def benchmark_remove_key_from_trie(
         runtime_validation=runtime_validation,
         iterations=iterations,
         setup=setup,
-        verbose=verbose
     )
 
 
@@ -814,8 +919,7 @@ def benchmark_del_key_from_trie(
         max_time: float,
         runtime_validation: bool,
         test_data: dict[str | int, Sequence[GeneralizedKey]],
-        iterations: int,
-        verbose: bool = False) -> BenchResults:
+        iterations: int) -> BenchResults:
     '''Benchmark "del trie[<key>] operations on keys in an existing trie.
 
     This is effectively a benchmark of code like this where all test keys
@@ -835,7 +939,6 @@ def benchmark_del_key_from_trie(
         runtime_validation (bool): Whether to enable runtime validation.
         test_data (dict[str | int, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
         iterations (int): The number of iterations to run the benchmark.
-        verbose (bool): Whether to print verbose output. (default = False)
 
     Returns:
         A list of BenchResults containing the benchmark results.
@@ -866,7 +969,6 @@ def benchmark_del_key_from_trie(
         runtime_validation=runtime_validation,
         iterations=iterations,
         setup=setup,
-        verbose=verbose
     )
 
 
@@ -879,8 +981,7 @@ def benchmark_del_id_from_trie(
         max_time: float,
         runtime_validation: bool,
         test_data: dict[str | int, Sequence[GeneralizedKey]],
-        iterations: int,
-        verbose: bool = False) -> BenchResults:
+        iterations: int) -> BenchResults:
     '''Benchmark "del trie[<key>] operations on keys in an existing trie.
 
     This is effectively a benchmark of code like this where all test keys
@@ -900,7 +1001,6 @@ def benchmark_del_id_from_trie(
         runtime_validation (bool): Whether to enable runtime validation.
         test_data (dict[str | int, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
         iterations (int): The number of iterations to run the benchmark.
-        verbose (bool): Whether to print verbose output. (default = False)
 
     Returns:
         A list of BenchResults containing the benchmark results.
@@ -934,7 +1034,6 @@ def benchmark_del_id_from_trie(
         runtime_validation=runtime_validation,
         iterations=iterations,
         setup=setup,
-        verbose=verbose
     )
 
 
@@ -948,8 +1047,7 @@ def benchmark_key_in_trie(
         runtime_validation: bool,
         test_tries: dict[int | str, GeneralizedTrie],
         test_data: dict[int | str, list[GeneralizedKey]],
-        iterations: int,
-        verbose: bool = False) -> BenchResults:
+        iterations: int) -> BenchResults:
     '''Benchmark '<key> in <trie>' operations.
 
     Args:
@@ -963,7 +1061,6 @@ def benchmark_key_in_trie(
         test_tries (dict[int | str, GeneralizedTrie]): The test data to use for the benchmark.
         test_data (dict[int | str, list[GeneralizedKey]]): The test keys to use for the benchmark.
         iterations (int): The number of iterations to run the benchmark.
-        verbose (bool): Whether to print verbose output. (default = False)
 
     Returns:
         A list of BenchResults containing the benchmark results.
@@ -987,7 +1084,6 @@ def benchmark_key_in_trie(
         max_time=max_time,
         runtime_validation=runtime_validation,
         iterations=iterations,
-        verbose=verbose
     )
 
 
@@ -1000,8 +1096,7 @@ def benchmark_id_in_trie(
         max_time: float,
         runtime_validation: bool,
         test_tries: dict[int | str, GeneralizedTrie],
-        iterations: int,
-        verbose: bool = False) -> BenchResults:
+        iterations: int) -> BenchResults:
     '''Benchmark '<TrieId> in trie' operations.
 
     Args:
@@ -1014,7 +1109,6 @@ def benchmark_id_in_trie(
         runtime_validation (bool): Whether to enable runtime validation.
         test_data (GeneralizedTrie): The test data to use for the benchmark.
         iterations (int): The number of iterations to run the benchmark.
-        verbose (bool): Whether to print verbose output. (default = False)
 
     Returns:
         A list of BenchResults containing the benchmark results.
@@ -1037,7 +1131,6 @@ def benchmark_id_in_trie(
         max_time=max_time,
         runtime_validation=runtime_validation,
         iterations=iterations,
-        verbose=verbose
     )
 
 
@@ -1051,8 +1144,7 @@ def benchmark_trie_prefixes_key(
         runtime_validation: bool,
         test_tries: dict[str | int, GeneralizedTrie],
         test_data: dict[str | int, Sequence[GeneralizedKey]],
-        iterations: int,
-        verbose: bool = False) -> BenchResults:
+        iterations: int) -> BenchResults:
     '''Benchmark trie prefixes() method.
 
     This test checks the performance of the prefixes() method on fully populated tries.
@@ -1081,7 +1173,6 @@ def benchmark_trie_prefixes_key(
         test_trie (dict[str | int, GeneralizedTrie]): The test tries to use for the benchmark.
         test_data (dict[str | int, Sequence[GeneralizedKey]]): The test data to use for the benchmark.
         iterations (int): The number of iterations to run the benchmark.
-        verbose (bool): Whether to print verbose output. (default = False)
 
     Returns:
         A list of BenchResults containing the benchmark results.
@@ -1106,7 +1197,6 @@ def benchmark_trie_prefixes_key(
         max_time=max_time,
         runtime_validation=runtime_validation,
         iterations=iterations,
-        verbose=verbose
     )
 
 
@@ -1120,8 +1210,7 @@ def benchmark_trie_prefixed_by_key(
         runtime_validation: bool,
         test_trie: GeneralizedTrie,
         test_keys: Sequence[GeneralizedKey],
-        iterations: int,
-        verbose: bool = False) -> BenchResults:
+        iterations: int) -> BenchResults:
     '''Benchmark trie prefixes_by() method.
 
     This test checks the performance of the prefixed_by() method on fully populated tries
@@ -1151,7 +1240,6 @@ def benchmark_trie_prefixed_by_key(
         test_trie (GeneralizedTrie): The test trie to use for the benchmark.
         test_keys (Sequence[GeneralizedKey]): The target keys to use for the benchmark.
         iterations (int): The number of iterations to run the benchmark.
-        verbose (bool): Whether to print verbose output. (default = False)
 
     Returns:
         A list of BenchResults containing the benchmark results.
@@ -1178,7 +1266,6 @@ def benchmark_trie_prefixed_by_key(
         max_time=max_time,
         runtime_validation=runtime_validation,
         iterations=iterations,
-        verbose=verbose
     )
 
 
