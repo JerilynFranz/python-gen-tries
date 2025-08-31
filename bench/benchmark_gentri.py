@@ -19,10 +19,16 @@ import statistics
 import time
 from typing import Any, Callable, Optional, Sequence
 
-from rich.console import Console
+from rich.progress import Progress, TaskID
 from rich.table import Table
 
 from gentrie import GeneralizedTrie, GeneralizedKey, TrieId
+
+PROGRESS = Progress(refresh_per_second=5)
+"""Progress bar for benchmarking."""
+
+TASKS: dict[str, TaskID] = {}
+"""Task IDs for the progress bar."""
 
 MIN_MEASURED_ITERATIONS: int = 3
 """Minimum number of iterations for statistical analysis."""
@@ -367,6 +373,8 @@ class BenchCase:
         variation_cols (dict[str, str]): kwargs to be used for cols to denote kwarg variations.
         kwargs_variations (dict[str, list[Any]]): Variations of keyword arguments for the benchmark.
         runner (Optional[Callable[..., Any]]): A custom runner for the benchmark.
+        verbose (bool): Enable verbose output.
+        progress (bool): Enable progress output.
     '''
     group: str
     title: str
@@ -379,6 +387,8 @@ class BenchCase:
     kwargs_variations: dict[str, list[Any]] = field(default_factory=dict[str, list[Any]])
     runner: Optional[Callable[..., Any]] = None
     verbose: bool = False
+    progress: bool = False
+    variations_task: Optional[TaskID] = None
 
     def __post_init__(self):
         self.results: list[BenchResults] = []
@@ -401,13 +411,32 @@ class BenchCase:
         keyword arguments and collect the results. After running the
         benchmarks, the results will be stored in the `self.results` attribute.
         """
+        all_variations = self.expanded_kwargs_variations
+        task_name: str = 'variations'
+        if task_name not in TASKS and self.progress:
+            TASKS[task_name] = PROGRESS.add_task(
+                description=f'[cyan] Running case {self.title}',
+                total=len(all_variations))
+        if task_name in TASKS:
+            PROGRESS.update(task_id=TASKS[task_name],
+                            description=f'[cyan] Running case {self.title}',
+                            total=len(all_variations))
+        if task_name in TASKS:
+            PROGRESS.start_task(TASKS[task_name])
         collected_results: list[BenchResults] = []
-        for kwargs in self.expanded_kwargs_variations:
+        kwargs: dict[str, Any]
+        for variations_counter, kwargs in enumerate(all_variations):
             benchmark: BenchmarkRunner = BenchmarkRunner(case=self, kwargs=kwargs)
-            if self.verbose:
-                print(f'Running benchmark "{self.title}"')
             results: BenchResults = self.action(benchmark)
             collected_results.append(results)
+            if task_name in TASKS:
+                PROGRESS.update(task_id=TASKS[task_name],
+                                description=(f'[cyan] Running case {self.title} '
+                                             f'({variations_counter + 1}/{len(all_variations)})'),
+                                completed=variations_counter + 1,
+                                refresh=True)
+        if task_name in TASKS:
+            PROGRESS.stop_task(TASKS[task_name])
         self.results = collected_results
 
     def _scale_for(self, numbers: list[float], base_unit: str) -> tuple[str, float]:
@@ -439,8 +468,8 @@ class BenchCase:
             unit, scale = 'n' + base_unit, 1e9
         return unit, scale
 
-    def results_as_rich_table(self) -> Table:
-        """Returns benchmark results in a rich table format if available.
+    def ops_results_as_rich_table(self) -> None:
+        """Prints the benchmark results in a rich table format if available.
         """
         mean_unit, mean_scale = self._scale_for(
             numbers=[result.ops_per_second.mean for result in self.results],
@@ -498,7 +527,7 @@ class BenchCase:
             for value in result.variation_marks.values():
                 row.append(f'{value!s}')
             table.add_row(*row)
-        return table
+        PROGRESS.console.print(table)
 
 
 class BenchmarkRunner():
@@ -562,7 +591,20 @@ class BenchmarkRunner():
 
         gc.collect()
 
-        total_elapsed: int = 0
+        tasks_name = 'runner'
+
+        progress_max: float = 100.0
+        if self.case.progress and tasks_name not in TASKS:
+            TASKS[tasks_name] = PROGRESS.add_task(
+                            description=f'[green] Benchmarking {group}',
+                            total=progress_max)
+        if tasks_name in TASKS:
+            PROGRESS.update(TASKS[tasks_name],
+                            completed=5.0,
+                            description=f'[green] Benchmarking {group} (iteration {iteration_pass:<6d}; '
+                                        f'time {0.00:<3.2f}s)')
+            PROGRESS.start_task(TASKS[tasks_name])
+        total_elapsed: float = 0
         iterations_list: list[BenchIteration] = []
         while ((iteration_pass <= iterations_min or wall_time < min_stop_at)
                 and wall_time < max_stop_at):
@@ -590,6 +632,18 @@ class BenchmarkRunner():
             iterations_list.append(iteration_result)
             wall_time = DEFAULT_TIMER()
 
+            # Update progress display if showing progress
+            if tasks_name in TASKS:
+                iteration_completion: float = progress_max * iteration_pass / iterations_min
+                wall_time_elapsed_seconds: float = (wall_time - time_start) * DEFAULT_INTERVAL_SCALE
+                time_completion: float = progress_max * (wall_time - time_start) / (min_stop_at - time_start)
+                progress_current = min(iteration_completion, time_completion)
+                PROGRESS.update(TASKS[tasks_name],
+                                completed=progress_current,
+                                description=(
+                                    f'[green] Benchmarking {group} (iteration {iteration_pass:6d}; '
+                                    f'time {wall_time_elapsed_seconds:<3.2f}s)'))
+
         benchmark_results = BenchResults(
             group=group,
             title=title,
@@ -599,6 +653,9 @@ class BenchmarkRunner():
             iterations=iterations_list,
             total_elapsed=total_elapsed,
             extra_info={})
+
+        if tasks_name in TASKS:
+            PROGRESS.stop_task(TASKS[tasks_name])
 
         return benchmark_results
 
@@ -1173,48 +1230,98 @@ def get_benchmark_cases() -> list[BenchCase]:
     return benchmark_cases_list
 
 
-def run_benchmarks(verbose: bool = False, benchmarks: str = 'all'):
+def run_benchmarks(args: Namespace):
     """Run the benchmark tests and print the results.
     """
     benchmark_cases: list[BenchCase] = get_benchmark_cases()
     for case in benchmark_cases:
-        case.verbose = verbose
-    console = Console()
-    for case in benchmark_cases:
-        if not (benchmarks == 'all' or case.group in benchmarks):
-            continue
-        case.run()
-        if case.results:
-            console.print(case.results_as_rich_table())
-        else:
-            console.print('No results available')
+        case.verbose = args.verbose
+        case.progress = args.progress
+
+    if args.progress:
+        PROGRESS.start()
+    try:
+        task_name: str = 'cases'
+        if task_name not in TASKS and args.progress:
+            TASKS[task_name] = PROGRESS.add_task(
+                description='Running benchmark cases',
+                total=len(benchmark_cases))
+
+        cases_to_run: list[BenchCase] = []
+        for case in benchmark_cases:
+            if not (args.run == 'all' or case.group in args.run):
+                continue
+            cases_to_run.append(case)
+
+        for case_counter, case in enumerate(cases_to_run):
+            if task_name in TASKS:
+                PROGRESS.update(
+                    task_id=TASKS[task_name],
+                    completed=case_counter,
+                    description=f'Running benchmark cases (case {case_counter + 1:2d}/{len(cases_to_run)})')
+            case.run()
+            if case.results:
+                if args.json:
+                    if args.ops:
+                        case.ops_results_as_json()
+                    if args.timing:
+                        case.timing_results_as_json()
+
+                if args.tcsv:
+                    if args.ops:
+                        case.ops_results_as_tagged_csv()
+                    if args.timing:
+                        case.timing_results_as_tagged_csv()
+                if args.console:
+                    if args.ops:
+                        case.ops_results_as_rich_table()
+                    if args.timing:
+                        case.timing_results_as_rich_table()
+            else:
+                PROGRESS.console.print('No results available')
+    except KeyboardInterrupt:
+        PROGRESS.console.print('Benchmarking interrupted by keyboard interrupt')
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        PROGRESS.console.print(f'Error occurred while running benchmarks: {exc}')
+    finally:
+        if args.progress:
+            PROGRESS.stop()
 
 
 def main():
     """Main entry point for running benchmarks."""
     parser = ArgumentParser(description='Run GeneralizedTrie benchmarks.')
-    parser.add_argument('--output_dir', default='.', help='Output destination directory')
     parser.add_argument('--verbose', action='store_true', help='Enable verbose output')
+    parser.add_argument('--progress', action='store_true', help='Enable progress output')
     parser.add_argument('--list', action='store_true', help='List all available benchmarks')
-    parser.add_argument('--run', nargs="+", default='all', help='Run specific benchmarks')
+    parser.add_argument('--run', nargs="+", default='all', metavar='<benchmark>', help='Run specific benchmarks')
     parser.add_argument('--console', action='store_true', help='Enable console output')
-    parser.add_argument('--json', default='store_true', help='Enable JSON file output')
-    parser.add_argument('--tcsv', default='store_true', help='Enable tagged CSV output')
-    parser.add_argument('--ops', default='store_true', help='Enable operations per second output')
-    parser.add_argument('--timing', default='store_true', help='Enable operations timing output')
+    parser.add_argument('--json', action='store_true', help='Enable JSON file output to files')
+    parser.add_argument('--tcsv', action='store_true', help='Enable tagged CSV output to files')
+    parser.add_argument('--output_dir', default='.', help='Output destination directory (default: .)')
+    parser.add_argument('--ops', action='store_true', help='Enable operations per second output')
+    parser.add_argument('--timing', action='store_true', help='Enable operations timing output')
 
-    console = Console()
     args: Namespace = parser.parse_args()
     if args.verbose:
-        console.print('Verbose output enabled')
+        PROGRESS.console.print('Verbose output enabled')
 
-    if args.list:
-        console.print('Available benchmarks:')
-        for case in get_benchmark_cases():
-            console.print('  - ', f'[green]{case.group:<40s}[/green]', f'{case.title}')
+    if not (args.console or args.json or args.tcsv):
+        PROGRESS.console.print('No output format(s) selected, using console output by default')
+        args.console = True
+
+    if not (args.ops or args.timing):
+        PROGRESS.console.print('No benchmark result type selected: At least one of --ops or --timing must be enabled')
+        parser.print_usage()
         return
 
-    run_benchmarks(verbose=args.verbose, benchmarks=args.run)
+    if args.list:
+        PROGRESS.console.print('Available benchmarks:')
+        for case in get_benchmark_cases():
+            PROGRESS.console.print('  - ', f'[green]{case.group:<40s}[/green]', f'{case.title}')
+        return
+
+    run_benchmarks(args=args)
 
 
 if __name__ == '__main__':
