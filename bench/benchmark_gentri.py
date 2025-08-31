@@ -993,7 +993,7 @@ def benchmark_trie_prefixed_by_key(benchmark: BenchmarkRunner) -> BenchResults:
         raise TypeError(f"Expected 'search_depth' to be int, got {type(search_depth).__name__}")
     trie: GeneralizedTrie = kwargs['test_trie']
     trie.runtime_validation = kwargs['runtime_validation']
-    test_keys: list[GeneralizedKey] = kwargs['test_data']
+    test_keys: list[GeneralizedKey] = kwargs['test_keys']
 
     def action_to_benchmark():
         for key in test_keys:
@@ -1238,15 +1238,15 @@ def run_benchmarks(args: Namespace):
         case.verbose = args.verbose
         case.progress = args.progress
 
-    if args.progress:
-        PROGRESS.start()
-    try:
-        cases_to_run: list[BenchCase] = []
-        for case in benchmark_cases:
-            if not (args.run == 'all' or case.group in args.run):
-                continue
+    cases_to_run: list[BenchCase] = []
+    for case in benchmark_cases:
+        if 'all' in args.run or case.group in args.run:
             cases_to_run.append(case)
 
+    if args.progress:
+        PROGRESS.start()
+    case_counter: int = 0
+    try:
         task_name: str = 'cases'
         if task_name not in TASKS and args.progress:
             TASKS[task_name] = PROGRESS.add_task(
