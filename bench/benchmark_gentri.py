@@ -1241,17 +1241,17 @@ def run_benchmarks(args: Namespace):
     if args.progress:
         PROGRESS.start()
     try:
-        task_name: str = 'cases'
-        if task_name not in TASKS and args.progress:
-            TASKS[task_name] = PROGRESS.add_task(
-                description='Running benchmark cases',
-                total=len(benchmark_cases))
-
         cases_to_run: list[BenchCase] = []
         for case in benchmark_cases:
             if not (args.run == 'all' or case.group in args.run):
                 continue
             cases_to_run.append(case)
+
+        task_name: str = 'cases'
+        if task_name not in TASKS and args.progress:
+            TASKS[task_name] = PROGRESS.add_task(
+                description='Running benchmark cases',
+                total=len(cases_to_run))
 
         for case_counter, case in enumerate(cases_to_run):
             if task_name in TASKS:
@@ -1279,6 +1279,12 @@ def run_benchmarks(args: Namespace):
                         case.timing_results_as_rich_table()
             else:
                 PROGRESS.console.print('No results available')
+        if task_name in TASKS:
+            PROGRESS.update(
+                task_id=TASKS[task_name],
+                completed=len(cases_to_run),
+                description=f'Running benchmark cases (case {case_counter + 1:2d}/{len(cases_to_run)})')
+        TASKS.clear()
     except KeyboardInterrupt:
         PROGRESS.console.print('Benchmarking interrupted by keyboard interrupt')
     except Exception as exc:  # pylint: disable=broad-exception-caught
@@ -1306,6 +1312,12 @@ def main():
     if args.verbose:
         PROGRESS.console.print('Verbose output enabled')
 
+    if args.list:
+        PROGRESS.console.print('Available benchmarks:')
+        for case in get_benchmark_cases():
+            PROGRESS.console.print('  - ', f'[green]{case.group:<40s}[/green]', f'{case.title}')
+        return
+
     if not (args.console or args.json or args.tcsv):
         PROGRESS.console.print('No output format(s) selected, using console output by default')
         args.console = True
@@ -1315,11 +1327,6 @@ def main():
         parser.print_usage()
         return
 
-    if args.list:
-        PROGRESS.console.print('Available benchmarks:')
-        for case in get_benchmark_cases():
-            PROGRESS.console.print('  - ', f'[green]{case.group:<40s}[/green]', f'{case.title}')
-        return
 
     run_benchmarks(args=args)
 
