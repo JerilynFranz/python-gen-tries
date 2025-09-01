@@ -25,10 +25,18 @@ import statistics
 import time
 from typing import Any, Callable, Literal, Optional, Sequence
 
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import pandas as pd
 from rich.progress import Progress, TaskID
 from rich.table import Table
-
+import seaborn as sns
+import seaborn.objects as so
 from gentrie import GeneralizedTrie, GeneralizedKey, TrieId
+
+# Configure Matplotlib and Seaborn
+#mpl.rcParams['savefig.format'] = 'svg'
+#so.Plot.config.theme.update(mpl.rcParams)
 
 PROGRESS = Progress(refresh_per_second=5)
 """Progress bar for benchmarking."""
@@ -759,7 +767,6 @@ class BenchCase:
     def output_results_to_csv(self,
                               filepath: Path,
                               base_unit: str,
-                              results: list[BenchResults],
                               target: Literal['ops_per_second', 'per_round_timings']) -> None:
         """Output the benchmark results to a file as tagged CSV if available.
 
@@ -828,7 +835,6 @@ class BenchCase:
         """
         return self.output_results_to_csv(filepath=filepath,
                                           base_unit=BASE_OPS_PER_INTERVAL_UNIT,
-                                          results=self.results,
                                           target='ops_per_second')
 
     def output_timing_results_to_csv(self, filepath: Path) -> None:
@@ -836,8 +842,65 @@ class BenchCase:
         """
         return self.output_results_to_csv(filepath=filepath,
                                           base_unit=BASE_INTERVAL_UNIT,
-                                          results=self.results,
                                           target='per_round_timings')
+
+    def plot_results(self,
+                     filepath: Path,
+                     target: Literal['ops_per_second', 'per_round_timings'],
+                     base_unit: str = '',
+                     target_name: str = '',              
+                     scale: float = 1.0
+                     ) -> None:
+        """Generates and saves a bar plot of the ops/sec results."""
+        if not self.results:
+            return
+
+        utils = BenchmarkUtils()
+        all_numbers: list[float] = []
+        all_numbers.extend([getattr(result, target).mean for result in self.results])
+        common_unit, common_scale = utils.si_scale_for_smallest(numbers=all_numbers, base_unit=base_unit)
+        target_name = f'{target_name} ({common_unit})'
+
+        # Prepare data for plotting
+        plot_data = []
+        for result in self.results:
+            target_stats = getattr(result, target)
+            variation_label = '\n'.join([f"{self.variation_cols.get(k, k)}: {v}"
+                                         for k, v in result.variation_marks.items()])
+            plot_data.append({
+                'variation': variation_label,
+                target_name: target_stats.mean * common_scale,
+            })
+
+        if not plot_data:
+            return
+
+        df = pd.DataFrame(plot_data)
+
+        # Create the plot
+        #plt.figure(figsize=(24, 16), dpi=300)
+        sns.set_theme(style="dark")
+        ax = sns.relplot(data=df, y=target_name, x="variation")
+
+        plt.tight_layout()
+        plt.savefig(filepath)
+        plt.close()  # Close the figure to free memory
+
+    def plot_ops_results(self, filepath: Path) -> None:
+        if not self.results:
+            return
+        return self.plot_results(filepath=filepath,
+                                 target='ops_per_second',
+                                 base_unit=BASE_OPS_PER_INTERVAL_UNIT,
+                                 target_name=f'Operations per Second',
+                                 scale=self.results[0].ops_per_second.scale)
+
+    def plot_timing_results(self, filepath: Path) -> None:
+        return self.plot_results(filepath=filepath,
+                                 target='per_round_timings',
+                                 base_unit=BASE_INTERVAL_UNIT,
+                                 target_name=f'Time Per Round',
+                                 scale=1/self.results[0].per_round_timings.scale)
 
     def as_dict(self, args: Namespace) -> dict[str, Any]:
         """Returns the benchmark case and results as a JSON serializable dict.
@@ -1582,7 +1645,7 @@ def run_benchmarks(args: Namespace):
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     output_dir: Path = Path(args.output_dir)
     benchmark_run_dir: Path = output_dir.joinpath(f'run_{timestamp}')
-    if args.json or args.json_data or args.csv:
+    if args.json or args.json_data or args.csv or args.graph:
         output_dir.mkdir(parents=True, exist_ok=True)
         benchmark_run_dir.mkdir(parents=True, exist_ok=True)
 
@@ -1606,6 +1669,14 @@ def run_benchmarks(args: Namespace):
                 if args.json or args.json_data:
                     data_export.append(case.as_dict(args=args))
 
+                if args.graph:
+                    if args.ops:
+                        graph_file: Path = benchmark_run_dir.joinpath(f'benchmark_graph_ops_{case.group[:60]}.svg')
+                        case.plot_ops_results(graph_file)
+                    if args.timing:
+                        graph_file: Path = benchmark_run_dir.joinpath(f'benchmark_graph_timing_{case.group[:60]}.svg')
+                        case.plot_timing_results(graph_file)
+
                 if args.csv:
                     output_targets: list[str] = []
                     if args.ops:
@@ -1613,7 +1684,7 @@ def run_benchmarks(args: Namespace):
                     if args.timing:
                         output_targets.append('timing')
                     for target in output_targets:
-                        partial_filename: str = utils.sanitize_filename(f'benchmark_{target}_{case.group[:60]}_')
+                        partial_filename: str = utils.sanitize_filename(f'benchmark_{target}_{case.group[:60]}')
                         uniquifier: int = 1
                         csv_file: Path = benchmark_run_dir.joinpath(f'{uniquifier:0>4d}_{partial_filename}.csv')
                         while csv_file.exists():
@@ -1668,6 +1739,7 @@ def main():
                         action='store_true',
                         help='Enable JSON file statistics and data output to files')
     parser.add_argument('--csv', action='store_true', help='Enable tagged CSV statistics output to files')
+    parser.add_argument('--graph', action='store_true', help='Enable graphical output (e.g., plots)')
     parser.add_argument('--output_dir', default='.benchmarks',
                         help='Output destination directory (default: .benchmarks)')
     parser.add_argument('--ops',
@@ -1692,7 +1764,7 @@ def main():
     if args.json and args.json_data:
         PROGRESS.console.print('Both --json and --json-data are enabled, using --json-data')
         args.json = False
-    if (args.json or args.json_data or args.csv) and not args.output_dir:
+    if (args.graph or args.json or args.json_data or args.csv) and not args.output_dir:
         PROGRESS.console.print('No output directory specified, using default: .benchmarks')
 
     if args.console and not (args.ops or args.timing):
@@ -1704,6 +1776,12 @@ def main():
     if args.csv and not (args.ops or args.timing):
         PROGRESS.console.print(
             'No benchmark result type selected for --csv: At least one of --ops or --timing must be enabled')
+        parser.print_usage()
+        return
+
+    if args.graph and not (args.ops or args.timing):
+        PROGRESS.console.print(
+            'No benchmark result type selected for --graph: At least one of --ops or --timing must be enabled')
         parser.print_usage()
         return
 

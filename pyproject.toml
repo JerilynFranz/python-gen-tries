@@ -21,6 +21,18 @@ exclude = [
     ".gitignore",
     "coverage/",
 ]
+[tool.pyright]
+include = ["src", "tests", "bench"]
+exclude = ["**/node_modules",
+    "**/__pycache__",
+    "src/experimental",
+    "src/typestubs"
+]
+ignore = []
+defineConstant = { DEBUG = true }
+
+reportMissingImports = "error"
+reportUnnecessaryIsInstance = false
 
 [project]
 name = "gen-tries"
