@@ -486,11 +486,11 @@ class BenchStatistics:
             'type': f'{self.__class__.__name__}:statistics',
             'unit': self.unit,
             'scale': self.scale,
-            'mean': self.mean,
-            'median': self.median,
-            'minimum': self.minimum,
-            'maximum': self.maximum,
-            'standard_deviation': self.standard_deviation,
+            'mean': self.mean / self.scale if self.scale else self.mean,
+            'median': self.median / self.scale if self.scale else self.median,
+            'minimum': self.minimum / self.scale if self.scale else self.minimum,
+            'maximum': self.maximum / self.scale if self.scale else self.maximum,
+            'standard_deviation': self.standard_deviation / self.scale if self.scale else self.standard_deviation,
             'relative_standard_deviation': self.relative_standard_deviation,
             'percentiles': self.percentiles,
         }
@@ -500,7 +500,7 @@ class BenchStatistics:
             str, str | float | dict[int, float] | list[int | float]]:
         '''Returns the statistics and data as a JSON-serializable dictionary.'''
         stats: dict[str, str | float | dict[int, float] | list[int | float]] = self.statistics_as_dict
-        stats['data'] = self.data
+        stats['data'] = [value / self.scale for value in self.data]
         return stats
 
 
@@ -909,7 +909,6 @@ class BenchCase:
                     row.append(value)
                 writer.writerow(row)
 
-        csvfile.flush()
         return
 
     def output_timing_results_to_csv(self, filepath: Path) -> None:
@@ -947,6 +946,8 @@ class BenchCase:
                 f'std dev ({common_unit})',
                 'rsd (%)'
             ]
+            for value in self.variation_cols.values():
+                header.append(value)
             writer.writerow(header)
             for result in self.results:
                 row: list[str | float | int] = [
@@ -1712,7 +1713,7 @@ def run_benchmarks(args: Namespace):
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     output_dir: Path = Path(args.output_dir)
     benchmark_run_dir: Path = output_dir.joinpath(f'run_{timestamp}')
-    if args.json or args.json_data or args.tcsv:
+    if args.json or args.json_data or args.csv:
         output_dir.mkdir(parents=True, exist_ok=True)
         benchmark_run_dir.mkdir(parents=True, exist_ok=True)
 
@@ -1736,7 +1737,7 @@ def run_benchmarks(args: Namespace):
                 if args.json or args.json_data:
                     data_export.append(case.as_dict(args=args))
 
-                if args.tcsv:
+                if args.csv:
                     output_targets: list[str] = []
                     if args.ops:
                         output_targets.append('ops')
@@ -1745,14 +1746,14 @@ def run_benchmarks(args: Namespace):
                     for target in output_targets:
                         partial_filename: str = utils.sanitize_filename(f'benchmark_{target}_{case.group[:60]}_')
                         uniquifier: int = 1
-                        tcsv_file: Path = benchmark_run_dir.joinpath(f'{uniquifier:0<4d}_{partial_filename}.tcsv')
-                        while tcsv_file.exists():
+                        csv_file: Path = benchmark_run_dir.joinpath(f'{uniquifier:0>4d}_{partial_filename}.csv')
+                        while csv_file.exists():
                             uniquifier += 1
-                            tcsv_file = benchmark_run_dir.joinpath(f'{uniquifier:0<4d}_{partial_filename}.tcsv')
+                            csv_file = benchmark_run_dir.joinpath(f'{uniquifier:0>4d}_{partial_filename}.csv')
                         if target == 'ops':
-                            case.output_ops_results_to_csv(tcsv_file)
+                            case.output_ops_results_to_csv(csv_file)
                         elif target == 'timing':
-                            case.output_timing_results_to_csv(tcsv_file)
+                            case.output_timing_results_to_csv(csv_file)
 
                 if args.console:
                     case.results_as_rich_table(args)
@@ -1794,13 +1795,13 @@ def main():
     parser.add_argument('--json-data',
                         action='store_true',
                         help='Enable JSON file statistics and data output to files')
-    parser.add_argument('--tcsv', action='store_true', help='Enable tagged CSV statistics output to files')
+    parser.add_argument('--csv', action='store_true', help='Enable tagged CSV statistics output to files')
     parser.add_argument('--output_dir', default='.benchmarks',
                         help='Output destination directory (default: .benchmarks)')
-    parser.add_argument('--ops_per_second',
+    parser.add_argument('--ops',
                         action='store_true',
-                        help='Enable operations per second output to console or tcsv')
-    parser.add_argument('--timing', action='store_true', help='Enable operations timing output to console or tcsv')
+                        help='Enable operations per second output to console or csv')
+    parser.add_argument('--timing', action='store_true', help='Enable operations timing output to console or csv')
 
     args: Namespace = parser.parse_args()
     if args.verbose:
@@ -1812,19 +1813,25 @@ def main():
             PROGRESS.console.print('  - ', f'[green]{case.group:<40s}[/green]', f'{case.title}')
         return
 
-    if not (args.console or args.json or args.tcsv or args.json or args.json_data):
+    if not (args.console or args.json or args.csv or args.json or args.json_data):
         PROGRESS.console.print('No output format(s) selected, using console output by default')
         args.console = True
 
     if args.json and args.json_data:
         PROGRESS.console.print('Both --json and --json-data are enabled, using --json-data')
         args.json = False
-    if (args.json or args.json_data or args.tcsv) and not args.output_dir:
+    if (args.json or args.json_data or args.csv) and not args.output_dir:
         PROGRESS.console.print('No output directory specified, using default: .benchmarks')
 
     if args.console and not (args.ops or args.timing):
         PROGRESS.console.print(
             'No benchmark result type selected for --console: At least one of --ops or --timing must be enabled')
+        parser.print_usage()
+        return
+
+    if args.csv and not (args.ops or args.timing):
+        PROGRESS.console.print(
+            'No benchmark result type selected for --csv: At least one of --ops or --timing must be enabled')
         parser.print_usage()
         return
 
