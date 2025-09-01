@@ -7,14 +7,20 @@ against a set of predefined test cases.
 '''
 # pylint: disable=wrong-import-position, too-many-instance-attributes
 # pylint: disable=too-many-positional-arguments, too-many-arguments, too-many-locals
+# pyright: reportUnnecessaryIsInstance=false
 
 from argparse import ArgumentParser, Namespace
+import csv
+from datetime import datetime
 from functools import cache
 from dataclasses import dataclass, field
 import gc
 import gzip
 import itertools
+import json
+import math
 from pathlib import Path
+import re
 import statistics
 import time
 from typing import Any, Callable, Optional, Sequence
@@ -45,11 +51,20 @@ DEFAULT_INTERVAL_SCALE: float = 1e-9
 DEFAULT_INTERVAL_UNIT: str = 'ns'
 """Default unit for time intervals (nanoseconds)."""
 
+BASE_INTERVAL_UNIT: str = 's'
+"""Base unit for time intervals."""
+
 DEFAULT_OPS_PER_INTERVAL_SCALE: float = 1.0
 """Default scaling factor for operations per interval (1.0 -> 1.0)."""
 
 DEFAULT_OPS_PER_INTERVAL_UNIT: str = 'Ops/s'
 """Default unit for operations per interval (operations per second)."""
+
+BASE_OPS_PER_INTERVAL_UNIT: str = 'Ops/s'
+"""Base unit for operations per interval."""
+
+DEFAULT_SIGNIFICANT_FIGURES: int = 3
+"""Default number of significant figures for output values (3 significant figures)."""
 
 
 def generate_test_data(depth: int, symbols: str, max_keys: int) -> list[str]:
@@ -170,21 +185,220 @@ def load_english_words():
     return list(map(str.rstrip, gzip.open(words_file, "rt")))
 
 
+# TODO: Implement a formatting function to correctly format and decimal align significant figures
+
+def sigfigs(number: float, figures: int = DEFAULT_SIGNIFICANT_FIGURES) -> float:
+    """Rounds a floating point number to the specified number of significant figures.
+
+    If the number of significant figures is not specified, it defaults to
+    DEFAULT_SIGNIFICANT_FIGURES.
+
+    * 14.2 to 2 digits of significant figures becomes 14
+    * 0.234 to 2 digits of significant figures becomes 0.23
+    * 0.0234 to 2 digits of significant figures becomes 0.023
+    * 14.5 to 2 digits of significant figures becomes 15
+    * 0.235 to 2 digits of significant figures becomes 0.24
+
+    Args:
+        number (float): The number to round.
+        figures (int): The number of significant figures to round to.
+
+    Returns:
+        The rounded number as a float.
+
+    Raises:
+        TypeError: If the number arg is not a float or the figures arg is not an int.
+        ValueError: If the figures arg is not at least 1.
+    """
+    if not isinstance(number, float):
+        raise TypeError("number arg must be a float")
+    if not isinstance(figures, int):
+        raise TypeError("figures arg must be an int")
+    if figures < 1:
+        raise ValueError("figures arg must be at least 1")
+
+    if number == 0.0:
+        return 0.0
+    return round(number, figures - int(math.floor(math.log10(abs(number)))) - 1)
+
+
+class BenchmarkUtils:
+    '''Benchmarking utility class.'''
+
+    def sanitize_filename(self, name: str) -> str:
+        """Sanitizes a filename by replacing invalid characters with _.
+
+        Only 'a-z', 'A-Z', '0-9', '_', and '-' are allowed. All other characters
+        are replaced with '_' and multiple sequential '_' characters are then collapsed to
+        single '_' characters.
+
+        Args:
+            name (str): The filename to sanitize.
+
+        Returns:
+            str: The sanitized filename.
+        """
+        first_pass: str = re.sub(r'[^a-zA-Z0-9_-]+', '_', name)
+        return re.sub(r'_+', '_', first_pass)
+
+    def si_scale_for_smallest(self, numbers: list[float], base_unit: str) -> tuple[str, float]:
+        """Scale factor and SI unit for the smallest in list of numbers.
+
+        The scale factor is the factor that will be applied to the numbers to convert
+        them to the desired unit. The SI unit is the unit that corresponds to the scale factor.
+
+        If passed only one number, it effectively gives the scale for that single number.
+        If passed a list, it gives the scale for the smallest absolute value in the list.
+
+        Args:
+            numbers: A list of numbers to scale.
+            base_unit: The base unit to use for scaling.
+
+        Returns:
+            A tuple containing the scaled unit and the scaling factor.
+        """
+        # smallest absolute number in list
+        min_n: float = min([abs(n) for n in numbers])
+        unit: str = ''
+        scale: float = 1.0
+        if min_n >= 1e12:
+            unit, scale = 'T' + base_unit, 1e-12
+        elif min_n >= 1e9:
+            unit, scale = 'G' + base_unit, 1e-9
+        elif min_n >= 1e6:
+            unit, scale = 'M' + base_unit, 1e-6
+        elif min_n >= 1e3:
+            unit, scale = 'K' + base_unit, 1e-3
+        elif min_n >= 1e0:
+            unit, scale = base_unit, 1.0
+        elif min_n >= 1e-3:
+            unit, scale = 'm' + base_unit, 1e3
+        elif min_n >= 1e-6:
+            unit, scale = 'μ' + base_unit, 1e6
+        elif min_n >= 1e-9:
+            unit, scale = 'n' + base_unit, 1e9
+        elif min_n >= 1e-12:
+            unit, scale = 'p' + base_unit, 1e12
+        return unit, scale
+
+    def si_scale(self, unit: str, base_unit: str) -> float:
+        """Get the SI scale factor for a unit given the base unit.
+
+        This method will return the scale factor for the given unit
+        relative to the base unit for SI prefixes ranging from tera (T)
+        to pico (p).
+
+        Args:
+            unit (str): The unit to get the scale factor for.
+            base_unit (str): The base unit.
+
+        Returns:
+            The scale factor for the given unit.
+
+        Raises:
+            ValueError: If the SI unit is not recognized.
+        """
+        si_prefixes = {
+            f'T{base_unit}': 1e12,
+            f'G{base_unit}': 1e9,
+            f'M{base_unit}': 1e6,
+            f'K{base_unit}': 1e3,
+            f'{base_unit}': 1.0,
+            f'm{base_unit}': 1e-3,
+            f'μ{base_unit}': 1e-6,
+            f'n{base_unit}': 1e-9,
+            f'p{base_unit}': 1e-12,
+        }
+        if unit in si_prefixes:
+            return si_prefixes[unit]
+        raise ValueError(f'Unknown SI unit: {unit}')
+
+    def si_scale_to_unit(self, base_unit: str, current_unit: str, target_unit: str) -> float:
+        """Scale factor to convert a current SI unit to a target SI unit based on their SI prefixes.
+
+        Example:
+        scale_by: float = self.si_scale_to_unit(base_unit='s', current_unit='s', target_unit='ns')
+
+        Args:
+            numbers: A list of numbers to scale.
+            current_unit: The base unit to use for unscaling.
+
+        Returns:
+            The scaling factor to return the number to the base unit
+        """
+        current_scale = self.si_scale(current_unit, base_unit)
+        target_scale = self.si_scale(target_unit, base_unit)
+        return target_scale / current_scale
+
+    def sigfigs(self, number: float, figures: int = DEFAULT_SIGNIFICANT_FIGURES) -> float:
+        """Rounds a floating point number to the specified number of significant figures.
+
+        If the number of significant figures is not specified, it defaults to
+        DEFAULT_SIGNIFICANT_FIGURES.
+
+        * 14.2 to 2 digits of significant figures becomes 14
+        * 0.234 to 2 digits of significant figures becomes 0.23
+        * 0.0234 to 2 digits of significant figures becomes 0.023
+        * 14.5 to 2 digits of significant figures becomes 15
+        * 0.235 to 2 digits of significant figures becomes 0.24
+
+        Args:
+            number (float): The number to round.
+            figures (int): The number of significant figures to round to.
+
+        Returns:
+            The rounded number as a float.
+
+        Raises:
+            TypeError: If the number arg is not a float or the figures arg is not an int.
+            ValueError: If the figures arg is not at least 1.
+        """
+        if not isinstance(number, float):
+            raise TypeError("number arg must be a float")
+        if not isinstance(figures, int):
+            raise TypeError("figures arg must be an int")
+        if figures < 1:
+            raise ValueError("figures arg must be at least 1")
+
+        if number == 0.0:
+            return 0.0
+        return round(number, figures - int(math.floor(math.log10(abs(number)))) - 1)
+
+
 @dataclass(kw_only=True)
 class BenchIteration:
     '''Container for the results of a single benchmark iteration.
 
     Properties:
-        n (int): The number of operations performed.
+        n (int): The number of rounds performed in the iteration.
         elapsed (float): The elapsed time for the operations.
         unit (str): The unit of measurement for the elapsed time.
         scale (float): The scale factor for the elapsed time.
         ops_per_second (float): The number of operations per second. (read only)
+        per_round_elapsed (float): The mean time for a single round scaled to the base unit. (read only)
     '''
     n: int = 0
     elapsed: int = 0
     unit: str = DEFAULT_INTERVAL_UNIT
     scale: float = DEFAULT_INTERVAL_SCALE
+
+    @property
+    def per_round_elapsed(self) -> float:
+        '''The mean time for a single round scaled to the base unit.
+        If elapsed is 0, returns 0.0
+
+        The per round computation is the elapsed time divided by n
+        where n is the number of rounds.
+
+        The scaling to the base unit is done using the scale factor.
+        This has the effect of converting the elapsed time into the base unit.
+        For example, if the scale factor is 1e-9 then elapsed time in nanoseconds
+        will be converted to seconds.
+
+        Returns:
+            The mean time for a single round scaled to the base unit.
+        '''
+        return self.elapsed * self.scale / self.n if self.n else 0.0
 
     @property
     def ops_per_second(self) -> float:
@@ -265,6 +479,30 @@ class BenchStatistics:
             percentiles[percent] = statistics.quantiles(self.data, n=100)[percent - 1]
         return percentiles
 
+    @property
+    def statistics_as_dict(self) -> dict[str, str | float | dict[int, float] | list[int | float]]:
+        '''Returns the statistics as a JSON-serializable dictionary.'''
+        return {
+            'type': f'{self.__class__.__name__}:statistics',
+            'unit': self.unit,
+            'scale': self.scale,
+            'mean': self.mean,
+            'median': self.median,
+            'minimum': self.minimum,
+            'maximum': self.maximum,
+            'standard_deviation': self.standard_deviation,
+            'relative_standard_deviation': self.relative_standard_deviation,
+            'percentiles': self.percentiles,
+        }
+
+    @property
+    def statistics_and_data_as_dict(self) -> dict[
+            str, str | float | dict[int, float] | list[int | float]]:
+        '''Returns the statistics and data as a JSON-serializable dictionary.'''
+        stats: dict[str, str | float | dict[int, float] | list[int | float]] = self.statistics_as_dict
+        stats['data'] = self.data
+        return stats
+
 
 class BenchOperationsPerInterval(BenchStatistics):
     '''Container for the operations per time interval statistics of a benchmark.
@@ -338,15 +576,43 @@ class BenchResults:
     ops_per_interval_scale: float = DEFAULT_INTERVAL_SCALE
     iterations: list[BenchIteration] = field(default_factory=list[BenchIteration])
     ops_per_second: BenchOperationsPerInterval = field(default_factory=BenchOperationsPerInterval)
-    op_timings: BenchOperationTimings = field(default_factory=BenchOperationTimings)
+    per_round_timings: BenchOperationTimings = field(default_factory=BenchOperationTimings)
     total_elapsed: int = 0
     variation_marks: dict[str, Any] = field(default_factory=dict[str, Any])
     extra_info: dict[str, Any] = field(default_factory=dict[str, Any])
 
     def __post_init__(self):
         if self.iterations:
-            self.op_timings.data = list([iteration.elapsed for iteration in self.iterations])
+            self.per_round_timings.data = list([iteration.per_round_elapsed for iteration in self.iterations])
             self.ops_per_second.data = list([iteration.ops_per_second for iteration in self.iterations])
+
+    @property
+    def results_as_dict(self) -> dict[str, str | float | dict[int, float] | dict[str, Any]]:
+        '''Returns the benchmark results as a JSON-serializable dictionary.'''
+        return {
+            'type': self.__class__.__name__,
+            'group': self.group,
+            'title': self.title,
+            'description': self.description,
+            'n': self.n,
+            'variation_cols': self.variation_cols,
+            'interval_unit': self.interval_unit,
+            'interval_scale': self.interval_scale,
+            'ops_per_interval_unit': self.ops_per_interval_unit,
+            'ops_per_interval_scale': self.ops_per_interval_scale,
+            'total_elapsed': self.total_elapsed,
+            'extra_info': self.extra_info,
+            'per_round_timings': self.per_round_timings.statistics_as_dict,
+            'ops_per_second': self.ops_per_second.statistics_as_dict,
+        }
+
+    @property
+    def results_and_data_as_dict(self) -> dict[str, str | float | dict[int, float] | dict[str, Any]]:
+        '''Returns the benchmark results and iterations as a JSON-serializable dictionary.'''
+        results = self.results_as_dict
+        results['per_round_timings'] = self.per_round_timings.statistics_and_data_as_dict
+        results['ops_per_second'] = self.ops_per_second.statistics_and_data_as_dict
+        return results
 
 
 @dataclass(kw_only=True)
@@ -375,6 +641,10 @@ class BenchCase:
         runner (Optional[Callable[..., Any]]): A custom runner for the benchmark.
         verbose (bool): Enable verbose output.
         progress (bool): Enable progress output.
+
+
+    Properties:
+        results (list[BenchResults]): The benchmark results for the case.
     '''
     group: str
     title: str
@@ -418,6 +688,7 @@ class BenchCase:
                 description=f'[cyan] Running case {self.title}',
                 total=len(all_variations))
         if task_name in TASKS:
+            PROGRESS.reset(TASKS[task_name])
             PROGRESS.update(task_id=TASKS[task_name],
                             description=f'[cyan] Running case {self.title}',
                             total=len(all_variations))
@@ -439,59 +710,49 @@ class BenchCase:
             PROGRESS.stop_task(TASKS[task_name])
         self.results = collected_results
 
-    def _scale_for(self, numbers: list[float], base_unit: str) -> tuple[str, float]:
-        """Scale a list of numbers by a given factor.
+    def results_as_rich_table(self, args: Namespace) -> None:
+        """Prints the benchmark results in rich table format if available.
+
+        If args.ops is True, the operations results will be included.
+        If args.timing is True, the timing results will be included.
+
+        The results will be printed in a rich table format to the console.
 
         Args:
-            numbers: A list of numbers to scale.
-            base_unit: The base unit to use for scaling.
+            args (Namespace): The command line arguments.
 
-        Returns:
-            A tuple containing the scaled unit and the scaling factor.
         """
-        min_n: float = min(numbers)
-        unit: str = ''
-        scale: float = 1.0
-        if min_n >= 1e9:
-            unit, scale = 'G' + base_unit, 1e-9
-        elif min_n >= 1e6:
-            unit, scale = 'M' + base_unit, 1e-6
-        elif min_n >= 1e3:
-            unit, scale = 'K' + base_unit, 1e-3
-        elif min_n >= 1e0:
-            unit, scale = base_unit, 1.0
-        elif min_n >= 1e-3:
-            unit, scale = 'm' + base_unit, 1e3
-        elif min_n >= 1e-6:
-            unit, scale = 'μ' + base_unit, 1e6
-        elif min_n >= 1e-9:
-            unit, scale = 'n' + base_unit, 1e9
-        return unit, scale
+        if args.ops:
+            self.ops_results_as_rich_table()
+        if args.timing:
+            self.timing_results_as_rich_table()
 
     def ops_results_as_rich_table(self) -> None:
         """Prints the benchmark results in a rich table format if available.
         """
-        mean_unit, mean_scale = self._scale_for(
+        utils = BenchmarkUtils()
+        base_unit = BASE_OPS_PER_INTERVAL_UNIT
+        mean_unit, mean_scale = utils.si_scale_for_smallest(
             numbers=[result.ops_per_second.mean for result in self.results],
-            base_unit='Ops')
-        median_unit, median_scale = self._scale_for(
+            base_unit=base_unit)
+        median_unit, median_scale = utils.si_scale_for_smallest(
             numbers=[result.ops_per_second.median for result in self.results],
-            base_unit='Ops')
-        min_unit, min_scale = self._scale_for(
+            base_unit=base_unit)
+        min_unit, min_scale = utils.si_scale_for_smallest(
             numbers=[result.ops_per_second.minimum for result in self.results],
-            base_unit='Ops')
-        max_unit, max_scale = self._scale_for(
+            base_unit=base_unit)
+        max_unit, max_scale = utils.si_scale_for_smallest(
             numbers=[result.ops_per_second.maximum for result in self.results],
-            base_unit='Ops')
-        p5_unit, p5_scale = self._scale_for(
+            base_unit=base_unit)
+        p5_unit, p5_scale = utils.si_scale_for_smallest(
             numbers=[result.ops_per_second.percentiles[5] for result in self.results],
-            base_unit='Ops')
-        p95_unit, p95_scale = self._scale_for(
+            base_unit=base_unit)
+        p95_unit, p95_scale = utils.si_scale_for_smallest(
             numbers=[result.ops_per_second.percentiles[95] for result in self.results],
-            base_unit='Ops')
-        stddev_unit, stddev_scale = self._scale_for(
+            base_unit=base_unit)
+        stddev_unit, stddev_scale = utils.si_scale_for_smallest(
             numbers=[result.ops_per_second.standard_deviation for result in self.results],
-            base_unit='Ops')
+            base_unit=base_unit)
 
         table = Table(title=(self.title + '\n\n' + self.description),
                       show_header=True,
@@ -515,19 +776,219 @@ class BenchCase:
                 f'{result.n:>6d}',
                 f'{len(result.iterations):>6d}',
                 f'{result.total_elapsed * DEFAULT_INTERVAL_SCALE:>4.2f}',
-                f'{result.ops_per_second.mean * mean_scale:>6.2f}',
-                f'{result.ops_per_second.median * median_scale:>6.2f}',
-                f'{result.ops_per_second.minimum * min_scale:>6.2f}',
-                f'{result.ops_per_second.maximum * max_scale:>6.2f}',
-                f'{result.ops_per_second.percentiles[5] * p5_scale:>6.2f}',
-                f'{result.ops_per_second.percentiles[95] * p95_scale:>6.2f}',
-                f'{result.ops_per_second.standard_deviation * stddev_scale:>6.2f}',
-                f'{result.ops_per_second.relative_standard_deviation:>3.2f}%'
+                f'{utils.sigfigs(result.ops_per_second.mean * mean_scale):>8.2f}',
+                f'{utils.sigfigs(result.ops_per_second.median * median_scale):>8.2f}',
+                f'{utils.sigfigs(result.ops_per_second.minimum * min_scale):>8.2f}',
+                f'{utils.sigfigs(result.ops_per_second.maximum * max_scale):>8.2f}',
+                f'{utils.sigfigs(result.ops_per_second.percentiles[5] * p5_scale):>8.2f}',
+                f'{utils.sigfigs(result.ops_per_second.percentiles[95] * p95_scale):>8.2f}',
+                f'{utils.sigfigs(result.ops_per_second.standard_deviation * stddev_scale):>8.2f}',
+                f'{utils.sigfigs(result.ops_per_second.relative_standard_deviation):>5.2f}%'
             ]
             for value in result.variation_marks.values():
                 row.append(f'{value!s}')
             table.add_row(*row)
         PROGRESS.console.print(table)
+
+    def timing_results_as_rich_table(self) -> None:
+        """Prints the benchmark results in a rich table format if available.
+        """
+        utils = BenchmarkUtils()
+        base_unit = BASE_INTERVAL_UNIT
+        mean_unit, mean_scale = utils.si_scale_for_smallest(
+            numbers=[result.per_round_timings.mean for result in self.results],
+            base_unit=base_unit)
+        median_unit, median_scale = utils.si_scale_for_smallest(
+            numbers=[result.per_round_timings.median for result in self.results],
+            base_unit=base_unit)
+        min_unit, min_scale = utils.si_scale_for_smallest(
+            numbers=[result.per_round_timings.minimum for result in self.results],
+            base_unit=base_unit)
+        max_unit, max_scale = utils.si_scale_for_smallest(
+            numbers=[result.per_round_timings.maximum for result in self.results],
+            base_unit=base_unit)
+        p5_unit, p5_scale = utils.si_scale_for_smallest(
+            numbers=[result.per_round_timings.percentiles[5] for result in self.results],
+            base_unit=base_unit)
+        p95_unit, p95_scale = utils.si_scale_for_smallest(
+            numbers=[result.per_round_timings.percentiles[95] for result in self.results],
+            base_unit=base_unit)
+        stddev_unit, stddev_scale = utils.si_scale_for_smallest(
+            numbers=[result.per_round_timings.standard_deviation for result in self.results],
+            base_unit=base_unit)
+
+        table = Table(title=(self.title + '\n\n' + self.description),
+                      show_header=True,
+                      title_style='bold green1',
+                      header_style='bold magenta')
+        table.add_column('N', justify='center')
+        table.add_column('Iterations', justify='center')
+        table.add_column('Elapsed Seconds', justify='center', max_width=7)
+        table.add_column(f'mean {mean_unit}', justify='center', vertical='bottom', overflow='fold')
+        table.add_column(f'median {median_unit}', justify='center', vertical='bottom', overflow='fold')
+        table.add_column(f'min {min_unit}', justify='center', vertical='bottom', overflow='fold')
+        table.add_column(f'max {max_unit}', justify='center', vertical='bottom', overflow='fold')
+        table.add_column(f'5th {p5_unit}', justify='center', vertical='bottom', overflow='fold')
+        table.add_column(f'95th {p95_unit}', justify='center', vertical='bottom', overflow='fold')
+        table.add_column(f'std dev {stddev_unit}', justify='center', vertical='bottom', overflow='fold')
+        table.add_column('rsd%', justify='center', vertical='bottom', overflow='fold')
+        for value in self.variation_cols.values():
+            table.add_column(value, justify='center', vertical='bottom', overflow='fold')
+        for result in self.results:
+            row: list[str] = [
+                f'{result.n:>6d}',
+                f'{len(result.iterations):>6d}',
+                f'{utils.sigfigs(result.total_elapsed * DEFAULT_INTERVAL_SCALE):>4.2f}',
+                f'{utils.sigfigs(result.per_round_timings.mean * mean_scale):>8.2f}',
+                f'{utils.sigfigs(result.per_round_timings.median * median_scale):>8.2f}',
+                f'{utils.sigfigs(result.per_round_timings.minimum * min_scale):>8.2f}',
+                f'{utils.sigfigs(result.per_round_timings.maximum * max_scale):>8.2f}',
+                f'{utils.sigfigs(result.per_round_timings.percentiles[5] * p5_scale):>8.2f}',
+                f'{utils.sigfigs(result.per_round_timings.percentiles[95] * p95_scale):>8.2f}',
+                f'{utils.sigfigs(result.per_round_timings.standard_deviation * stddev_scale):>8.2f}',
+                f'{utils.sigfigs(result.per_round_timings.relative_standard_deviation):>5.2f}%'
+            ]
+            for value in result.variation_marks.values():
+                row.append(f'{value!s}')
+            table.add_row(*row)
+        PROGRESS.console.print(table)
+
+    def output_ops_results_to_csv(self, filepath: Path) -> None:
+        """Output the benchmark results to a file as tagged CSV if available.
+        """
+        if not self.results:
+            return
+
+        utils = BenchmarkUtils()
+        base_unit = BASE_OPS_PER_INTERVAL_UNIT
+        all_numbers: list[float] = []
+        all_numbers.extend([result.ops_per_second.mean for result in self.results])
+        all_numbers.extend([result.ops_per_second.median for result in self.results])
+        all_numbers.extend([result.ops_per_second.minimum for result in self.results])
+        all_numbers.extend([result.ops_per_second.maximum for result in self.results])
+        all_numbers.extend([result.ops_per_second.percentiles[5] for result in self.results])
+        all_numbers.extend([result.ops_per_second.percentiles[95] for result in self.results])
+        all_numbers.extend([result.ops_per_second.standard_deviation for result in self.results])
+        common_unit, common_scale = utils.si_scale_for_smallest(numbers=all_numbers, base_unit=base_unit)
+
+        with filepath.open(mode='w', encoding='utf-8', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow([f'# {self.title}'])
+            writer.writerow([f'# {self.description}'])
+            header: list[str] = [
+                'N',
+                'Iterations',
+                'Elapsed Seconds',
+                f'mean ({common_unit})',
+                f'median ({common_unit})',
+                f'min ({common_unit})',
+                f'max ({common_unit})',
+                f'5th ({common_unit})',
+                f'95th ({common_unit})',
+                f'std dev ({common_unit})',
+                'rsd (%)'
+            ]
+            for value in self.variation_cols.values():
+                header.append(value)
+            writer.writerow(header)
+            for result in self.results:
+                row: list[str | float | int] = [
+                    result.n,
+                    len(result.iterations),
+                    result.total_elapsed * DEFAULT_INTERVAL_SCALE,
+                    utils.sigfigs(result.ops_per_second.mean * common_scale),
+                    utils.sigfigs(result.ops_per_second.median * common_scale),
+                    utils.sigfigs(result.ops_per_second.minimum * common_scale),
+                    utils.sigfigs(result.ops_per_second.maximum * common_scale),
+                    utils.sigfigs(result.ops_per_second.percentiles[5] * common_scale),
+                    utils.sigfigs(result.ops_per_second.percentiles[95] * common_scale),
+                    utils.sigfigs(result.ops_per_second.standard_deviation * common_scale),
+                    utils.sigfigs(result.ops_per_second.relative_standard_deviation)
+                ]
+                for value in result.variation_marks.values():
+                    row.append(value)
+                writer.writerow(row)
+
+        csvfile.flush()
+        return
+
+    def output_timing_results_to_csv(self, filepath: Path) -> None:
+        """Outputs the timing benchmark results to file as tagged CSV.
+        """
+        if not self.results:
+            return
+
+        utils = BenchmarkUtils()
+        base_unit = BASE_INTERVAL_UNIT
+        all_numbers: list[float] = []
+        all_numbers.extend([result.per_round_timings.mean for result in self.results])
+        all_numbers.extend([result.per_round_timings.median for result in self.results])
+        all_numbers.extend([result.per_round_timings.minimum for result in self.results])
+        all_numbers.extend([result.per_round_timings.maximum for result in self.results])
+        all_numbers.extend([result.per_round_timings.percentiles[5] for result in self.results])
+        all_numbers.extend([result.per_round_timings.percentiles[95] for result in self.results])
+        all_numbers.extend([result.per_round_timings.standard_deviation for result in self.results])
+        common_unit, common_scale = utils.si_scale_for_smallest(numbers=all_numbers, base_unit=base_unit)
+
+        with filepath.open(mode='w', encoding='utf-8', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow([f'# {self.title}'])
+            writer.writerow([f'# {self.description}'])
+            header: list[str] = [
+                'N',
+                'Iterations',
+                'Elapsed Seconds',
+                f'mean ({common_unit})',
+                f'median ({common_unit})',
+                f'min ({common_unit})',
+                f'max ({common_unit})',
+                f'5th ({common_unit})',
+                f'95th ({common_unit})',
+                f'std dev ({common_unit})',
+                'rsd (%)'
+            ]
+            writer.writerow(header)
+            for result in self.results:
+                row: list[str | float | int] = [
+                    result.n,
+                    len(result.iterations),
+                    utils.sigfigs(result.total_elapsed * DEFAULT_INTERVAL_SCALE),
+                    utils.sigfigs(result.per_round_timings.mean * common_scale),
+                    utils.sigfigs(result.per_round_timings.median * common_scale),
+                    utils.sigfigs(result.per_round_timings.minimum * common_scale),
+                    utils.sigfigs(result.per_round_timings.maximum * common_scale),
+                    utils.sigfigs(result.per_round_timings.percentiles[5] * common_scale),
+                    utils.sigfigs(result.per_round_timings.percentiles[95] * common_scale),
+                    utils.sigfigs(result.per_round_timings.standard_deviation * common_scale),
+                    utils.sigfigs(result.per_round_timings.relative_standard_deviation)
+                ]
+                for value in result.variation_marks.values():
+                    row.append(value)
+                writer.writerow(row)
+
+        csvfile.flush()
+        return
+
+    def as_dict(self, args: Namespace) -> dict[str, Any]:
+        """Returns the benchmark case and results as a JSON serializable dict.
+
+        Args:
+            args (Namespace): The command line arguments.
+        """
+        results = []
+        for result in self.results:
+            if args.json_data:
+                results.append(result.results_and_data_as_dict)
+            else:
+                results.append(result.results_as_dict)
+        return {
+            'type': self.__class__.__name__,
+            'group': self.group,
+            'title': self.title,
+            'description': self.description,
+            'variation_cols': self.variation_cols,
+            'results': results
+        }
 
 
 class BenchmarkRunner():
@@ -599,6 +1060,7 @@ class BenchmarkRunner():
                             description=f'[green] Benchmarking {group}',
                             total=progress_max)
         if tasks_name in TASKS:
+            PROGRESS.reset(TASKS[tasks_name])
             PROGRESS.update(TASKS[tasks_name],
                             completed=5.0,
                             description=f'[green] Benchmarking {group} (iteration {iteration_pass:<6d}; '
@@ -1043,7 +1505,7 @@ def get_benchmark_cases() -> list[BenchCase]:
 
     benchmark_cases_list: list[BenchCase] = [
         BenchCase(
-            group='synthetic-id-in-trie',
+            group='str-synthetic-id-in-trie',
             title='<TrieId> in trie (Synthetic)',
             description='Timing [yellow bold]<TrieId> in trie[/yellow bold] with synthetic data',
             action=benchmark_id_in_trie,
@@ -1057,7 +1519,7 @@ def get_benchmark_cases() -> list[BenchCase]:
             }
         ),
         BenchCase(
-            group='synthetic-key-in-trie',
+            group='str-synthetic-key-in-trie',
             title='<key> in trie (Synthetic)',
             description='Timing [yellow bold]<key> in trie[/yellow bold] with synthetic data',
             action=benchmark_key_in_trie,
@@ -1071,7 +1533,7 @@ def get_benchmark_cases() -> list[BenchCase]:
             }
         ),
         BenchCase(
-            group='english-dictionary-id-in-trie',
+            group='str-english-dictionary-id-in-trie',
             title='<TrieId> in trie (English)',
             description=(
                 'Timing [yellow bold]<TrieId> in trie[/yellow bold] with words from the English dictionary'),
@@ -1085,7 +1547,7 @@ def get_benchmark_cases() -> list[BenchCase]:
             }
         ),
         BenchCase(
-            group='english-dictionary-key-in-trie',
+            group='str-english-dictionary-key-in-trie',
             title='<key> in trie (English)',
             description=('Timing [yellow bold]<key> in trie[/yellow bold] with words from the English dictionary'),
             action=benchmark_key_in_trie,
@@ -1099,7 +1561,7 @@ def get_benchmark_cases() -> list[BenchCase]:
             }
         ),
         BenchCase(
-            group='synthetic-building-trie-add',
+            group='str-synthetic-building-trie-add',
             title='trie.add(<key>, <value>) (Synthetic)',
             description=('Timing [yellow bold]trie.add(<key>, <value>)[/yellow bold] '
                          'while building a new trie with synthetic data'),
@@ -1113,7 +1575,7 @@ def get_benchmark_cases() -> list[BenchCase]:
             }
         ),
         BenchCase(
-            group='synthetic-building-trie-update',
+            group='str-synthetic-building-trie-update',
             title='trie.update(<key>, <value>) (Synthetic)',
             description=('Timing [yellow bold]trie.update(<key>, <value>)[/yellow bold] '
                          'while building a new trie with synthetic data'),
@@ -1127,7 +1589,7 @@ def get_benchmark_cases() -> list[BenchCase]:
             }
         ),
         BenchCase(
-            group='synthetic-building-trie-assign',
+            group='str-synthetic-building-trie-assign',
             title='trie[<key>] = <value> (Synthetic)',
             description=('Timing [yellow bold]trie[<key>] = <value>[/yellow bold] '
                          'while building a new trie with synthetic data'),
@@ -1141,7 +1603,7 @@ def get_benchmark_cases() -> list[BenchCase]:
             }
         ),
         BenchCase(
-            group='synthetic-updating-trie-update',
+            group='str-synthetic-updating-trie-update',
             title='trie.update(<key>, <value>) (Synthetic)',
             description=('Timing [yellow bold]trie.update(<key>, <value>)[/yellow bold] '
                          'while updating values for existing keys with synthetic data'),
@@ -1155,7 +1617,7 @@ def get_benchmark_cases() -> list[BenchCase]:
             }
         ),
         BenchCase(
-            group='synthetic-updating-trie-remove',
+            group='str-synthetic-updating-trie-remove',
             title='trie.remove(<key>) (Synthetic)',
             description=('Timing [yellow bold]trie.remove(<key>)[/yellow bold] '
                          'while removing keys from a trie with synthetic data'),
@@ -1169,7 +1631,7 @@ def get_benchmark_cases() -> list[BenchCase]:
             },
         ),
         BenchCase(
-            group='synthetic-updating-trie-del-key',
+            group='str-synthetic-updating-trie-del-key',
             title='del trie[<key>] (Synthetic)',
             description=('Timing [yellow bold]del trie[<key>][/yellow bold] '
                          'while deleting keys from a trie with synthetic data'),
@@ -1183,7 +1645,7 @@ def get_benchmark_cases() -> list[BenchCase]:
             },
         ),
         BenchCase(
-            group='synthetic-updating-trie-del-id',
+            group='str-synthetic-updating-trie-del-id',
             title='del trie[<TrieId>] (Synthetic)',
             description=('Timing [yellow bold]del trie[<TrieId>][/yellow bold] '
                          'while deleting keys from a trie with synthetic data'),
@@ -1197,7 +1659,7 @@ def get_benchmark_cases() -> list[BenchCase]:
             },
         ),
         BenchCase(
-            group='synthetic-trie-prefixes',
+            group='str-synthetic-trie-prefixes',
             title='trie.prefixes(<key>) (Synthetic)',
             description=('Timing [yellow bold]trie.prefixes(<key>)[/yellow bold] '
                          'while finding keys matching a specific prefix in a trie with synthetic data'),
@@ -1212,7 +1674,7 @@ def get_benchmark_cases() -> list[BenchCase]:
             },
         ),
         BenchCase(
-            group='synthetic-trie-prefixed_by',
+            group='str-synthetic-trie-prefixed_by',
             title='trie.prefixed_by(<key>, <search_depth>) (Synthetic)',
             description=('Timing [yellow bold]trie.prefixed_by(<key>, <search_depth>)[/yellow bold] '
                          'in a fully populated trie'),
@@ -1246,6 +1708,15 @@ def run_benchmarks(args: Namespace):
     if args.progress:
         PROGRESS.start()
     case_counter: int = 0
+    data_export: list[dict[str, Any]] = []
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    output_dir: Path = Path(args.output_dir)
+    benchmark_run_dir: Path = output_dir.joinpath(f'run_{timestamp}')
+    if args.json or args.json_data or args.tcsv:
+        output_dir.mkdir(parents=True, exist_ok=True)
+        benchmark_run_dir.mkdir(parents=True, exist_ok=True)
+
+    utils = BenchmarkUtils()
     try:
         task_name: str = 'cases'
         if task_name not in TASKS and args.progress:
@@ -1255,30 +1726,44 @@ def run_benchmarks(args: Namespace):
 
         for case_counter, case in enumerate(cases_to_run):
             if task_name in TASKS:
+                PROGRESS.reset(TASKS[task_name])
                 PROGRESS.update(
                     task_id=TASKS[task_name],
                     completed=case_counter,
                     description=f'Running benchmark cases (case {case_counter + 1:2d}/{len(cases_to_run)})')
             case.run()
             if case.results:
-                if args.json:
-                    if args.ops:
-                        case.ops_results_as_json()
-                    if args.timing:
-                        case.timing_results_as_json()
+                if args.json or args.json_data:
+                    data_export.append(case.as_dict(args=args))
 
                 if args.tcsv:
+                    output_targets: list[str] = []
                     if args.ops:
-                        case.ops_results_as_tagged_csv()
+                        output_targets.append('ops')
                     if args.timing:
-                        case.timing_results_as_tagged_csv()
+                        output_targets.append('timing')
+                    for target in output_targets:
+                        partial_filename: str = utils.sanitize_filename(f'benchmark_{target}_{case.group[:60]}_')
+                        uniquifier: int = 1
+                        tcsv_file: Path = benchmark_run_dir.joinpath(f'{uniquifier:0<4d}_{partial_filename}.tcsv')
+                        while tcsv_file.exists():
+                            uniquifier += 1
+                            tcsv_file = benchmark_run_dir.joinpath(f'{uniquifier:0<4d}_{partial_filename}.tcsv')
+                        if target == 'ops':
+                            case.output_ops_results_to_csv(tcsv_file)
+                        elif target == 'timing':
+                            case.output_timing_results_to_csv(tcsv_file)
+
                 if args.console:
-                    if args.ops:
-                        case.ops_results_as_rich_table()
-                    if args.timing:
-                        case.timing_results_as_rich_table()
+                    case.results_as_rich_table(args)
             else:
                 PROGRESS.console.print('No results available')
+        if args.json or args.json_data:
+            filename = 'benchmark_results.json'
+            full_path: Path = benchmark_run_dir.joinpath(filename)
+            with full_path.open('w', encoding='utf-8') as json_file:
+                json.dump(data_export, json_file, indent=4)
+            PROGRESS.console.print(f'Benchmark results exported as JSON to [green]{str(full_path)}[/green]')
         if task_name in TASKS:
             PROGRESS.update(
                 task_id=TASKS[task_name],
@@ -1291,7 +1776,10 @@ def run_benchmarks(args: Namespace):
         PROGRESS.console.print(f'Error occurred while running benchmarks: {exc}')
     finally:
         if args.progress:
+            TASKS.clear()
             PROGRESS.stop()
+            for task in PROGRESS.task_ids:
+                PROGRESS.remove_task(task)
 
 
 def main():
@@ -1302,11 +1790,17 @@ def main():
     parser.add_argument('--list', action='store_true', help='List all available benchmarks')
     parser.add_argument('--run', nargs="+", default='all', metavar='<benchmark>', help='Run specific benchmarks')
     parser.add_argument('--console', action='store_true', help='Enable console output')
-    parser.add_argument('--json', action='store_true', help='Enable JSON file output to files')
-    parser.add_argument('--tcsv', action='store_true', help='Enable tagged CSV output to files')
-    parser.add_argument('--output_dir', default='.', help='Output destination directory (default: .)')
-    parser.add_argument('--ops', action='store_true', help='Enable operations per second output')
-    parser.add_argument('--timing', action='store_true', help='Enable operations timing output')
+    parser.add_argument('--json', action='store_true', help='Enable JSON file statistics output to files')
+    parser.add_argument('--json-data',
+                        action='store_true',
+                        help='Enable JSON file statistics and data output to files')
+    parser.add_argument('--tcsv', action='store_true', help='Enable tagged CSV statistics output to files')
+    parser.add_argument('--output_dir', default='.benchmarks',
+                        help='Output destination directory (default: .benchmarks)')
+    parser.add_argument('--ops_per_second',
+                        action='store_true',
+                        help='Enable operations per second output to console or tcsv')
+    parser.add_argument('--timing', action='store_true', help='Enable operations timing output to console or tcsv')
 
     args: Namespace = parser.parse_args()
     if args.verbose:
@@ -1318,15 +1812,21 @@ def main():
             PROGRESS.console.print('  - ', f'[green]{case.group:<40s}[/green]', f'{case.title}')
         return
 
-    if not (args.console or args.json or args.tcsv):
+    if not (args.console or args.json or args.tcsv or args.json or args.json_data):
         PROGRESS.console.print('No output format(s) selected, using console output by default')
         args.console = True
 
-    if not (args.ops or args.timing):
-        PROGRESS.console.print('No benchmark result type selected: At least one of --ops or --timing must be enabled')
+    if args.json and args.json_data:
+        PROGRESS.console.print('Both --json and --json-data are enabled, using --json-data')
+        args.json = False
+    if (args.json or args.json_data or args.tcsv) and not args.output_dir:
+        PROGRESS.console.print('No output directory specified, using default: .benchmarks')
+
+    if args.console and not (args.ops or args.timing):
+        PROGRESS.console.print(
+            'No benchmark result type selected for --console: At least one of --ops or --timing must be enabled')
         parser.print_usage()
         return
-
 
     run_benchmarks(args=args)
 
