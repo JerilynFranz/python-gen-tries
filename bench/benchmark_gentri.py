@@ -23,7 +23,7 @@ from pathlib import Path
 import re
 import statistics
 import time
-from typing import Any, Callable, Optional, Sequence
+from typing import Any, Callable, Literal, Optional, Sequence
 
 from rich.progress import Progress, TaskID
 from rich.table import Table
@@ -186,41 +186,6 @@ def load_english_words():
 
 
 # TODO: Implement a formatting function to correctly format and decimal align significant figures
-
-def sigfigs(number: float, figures: int = DEFAULT_SIGNIFICANT_FIGURES) -> float:
-    """Rounds a floating point number to the specified number of significant figures.
-
-    If the number of significant figures is not specified, it defaults to
-    DEFAULT_SIGNIFICANT_FIGURES.
-
-    * 14.2 to 2 digits of significant figures becomes 14
-    * 0.234 to 2 digits of significant figures becomes 0.23
-    * 0.0234 to 2 digits of significant figures becomes 0.023
-    * 14.5 to 2 digits of significant figures becomes 15
-    * 0.235 to 2 digits of significant figures becomes 0.24
-
-    Args:
-        number (float): The number to round.
-        figures (int): The number of significant figures to round to.
-
-    Returns:
-        The rounded number as a float.
-
-    Raises:
-        TypeError: If the number arg is not a float or the figures arg is not an int.
-        ValueError: If the figures arg is not at least 1.
-    """
-    if not isinstance(number, float):
-        raise TypeError("number arg must be a float")
-    if not isinstance(figures, int):
-        raise TypeError("figures arg must be an int")
-    if figures < 1:
-        raise ValueError("figures arg must be at least 1")
-
-    if number == 0.0:
-        return 0.0
-    return round(number, figures - int(math.floor(math.log10(abs(number)))) - 1)
-
 
 class BenchmarkUtils:
     '''Benchmarking utility class.'''
@@ -710,48 +675,32 @@ class BenchCase:
             PROGRESS.stop_task(TASKS[task_name])
         self.results = collected_results
 
-    def results_as_rich_table(self, args: Namespace) -> None:
-        """Prints the benchmark results in rich table format if available.
-
-        If args.ops is True, the operations results will be included.
-        If args.timing is True, the timing results will be included.
-
-        The results will be printed in a rich table format to the console.
-
-        Args:
-            args (Namespace): The command line arguments.
-
-        """
-        if args.ops:
-            self.ops_results_as_rich_table()
-        if args.timing:
-            self.timing_results_as_rich_table()
-
-    def ops_results_as_rich_table(self) -> None:
+    def results_as_rich_table(self,
+                              base_unit: str,
+                              target: Literal['ops_per_second', 'per_round_timings']) -> None:
         """Prints the benchmark results in a rich table format if available.
         """
         utils = BenchmarkUtils()
-        base_unit = BASE_OPS_PER_INTERVAL_UNIT
         mean_unit, mean_scale = utils.si_scale_for_smallest(
-            numbers=[result.ops_per_second.mean for result in self.results],
+            numbers=[getattr(result, target).mean for result in self.results],
             base_unit=base_unit)
         median_unit, median_scale = utils.si_scale_for_smallest(
-            numbers=[result.ops_per_second.median for result in self.results],
+            numbers=[getattr(result, target).median for result in self.results],
             base_unit=base_unit)
         min_unit, min_scale = utils.si_scale_for_smallest(
-            numbers=[result.ops_per_second.minimum for result in self.results],
+            numbers=[getattr(result, target).minimum for result in self.results],
             base_unit=base_unit)
         max_unit, max_scale = utils.si_scale_for_smallest(
-            numbers=[result.ops_per_second.maximum for result in self.results],
+            numbers=[getattr(result, target).maximum for result in self.results],
             base_unit=base_unit)
         p5_unit, p5_scale = utils.si_scale_for_smallest(
-            numbers=[result.ops_per_second.percentiles[5] for result in self.results],
+            numbers=[getattr(result, target).percentiles[5] for result in self.results],
             base_unit=base_unit)
         p95_unit, p95_scale = utils.si_scale_for_smallest(
-            numbers=[result.ops_per_second.percentiles[95] for result in self.results],
+            numbers=[getattr(result, target).percentiles[95] for result in self.results],
             base_unit=base_unit)
         stddev_unit, stddev_scale = utils.si_scale_for_smallest(
-            numbers=[result.ops_per_second.standard_deviation for result in self.results],
+            numbers=[getattr(result, target).standard_deviation for result in self.results],
             base_unit=base_unit)
 
         table = Table(title=(self.title + '\n\n' + self.description),
@@ -772,103 +721,65 @@ class BenchCase:
         for value in self.variation_cols.values():
             table.add_column(value, justify='center', vertical='bottom', overflow='fold')
         for result in self.results:
+            stats_target = getattr(result, target)
             row: list[str] = [
                 f'{result.n:>6d}',
                 f'{len(result.iterations):>6d}',
                 f'{result.total_elapsed * DEFAULT_INTERVAL_SCALE:>4.2f}',
-                f'{utils.sigfigs(result.ops_per_second.mean * mean_scale):>8.2f}',
-                f'{utils.sigfigs(result.ops_per_second.median * median_scale):>8.2f}',
-                f'{utils.sigfigs(result.ops_per_second.minimum * min_scale):>8.2f}',
-                f'{utils.sigfigs(result.ops_per_second.maximum * max_scale):>8.2f}',
-                f'{utils.sigfigs(result.ops_per_second.percentiles[5] * p5_scale):>8.2f}',
-                f'{utils.sigfigs(result.ops_per_second.percentiles[95] * p95_scale):>8.2f}',
-                f'{utils.sigfigs(result.ops_per_second.standard_deviation * stddev_scale):>8.2f}',
-                f'{utils.sigfigs(result.ops_per_second.relative_standard_deviation):>5.2f}%'
+                f'{utils.sigfigs(stats_target.mean * mean_scale):>8.2f}',
+                f'{utils.sigfigs(stats_target.median * median_scale):>8.2f}',
+                f'{utils.sigfigs(stats_target.minimum * min_scale):>8.2f}',
+                f'{utils.sigfigs(stats_target.maximum * max_scale):>8.2f}',
+                f'{utils.sigfigs(stats_target.percentiles[5] * p5_scale):>8.2f}',
+                f'{utils.sigfigs(stats_target.percentiles[95] * p95_scale):>8.2f}',
+                f'{utils.sigfigs(stats_target.standard_deviation * stddev_scale):>8.2f}',
+                f'{utils.sigfigs(stats_target.relative_standard_deviation):>5.2f}%'
             ]
             for value in result.variation_marks.values():
                 row.append(f'{value!s}')
             table.add_row(*row)
         PROGRESS.console.print(table)
+
+    def ops_results_as_rich_table(self) -> None:
+        """Prints the benchmark results in a rich table format if available.
+        """
+        return self.results_as_rich_table(
+            base_unit=BASE_OPS_PER_INTERVAL_UNIT,
+            target='ops_per_second'
+        )
 
     def timing_results_as_rich_table(self) -> None:
         """Prints the benchmark results in a rich table format if available.
         """
-        utils = BenchmarkUtils()
-        base_unit = BASE_INTERVAL_UNIT
-        mean_unit, mean_scale = utils.si_scale_for_smallest(
-            numbers=[result.per_round_timings.mean for result in self.results],
-            base_unit=base_unit)
-        median_unit, median_scale = utils.si_scale_for_smallest(
-            numbers=[result.per_round_timings.median for result in self.results],
-            base_unit=base_unit)
-        min_unit, min_scale = utils.si_scale_for_smallest(
-            numbers=[result.per_round_timings.minimum for result in self.results],
-            base_unit=base_unit)
-        max_unit, max_scale = utils.si_scale_for_smallest(
-            numbers=[result.per_round_timings.maximum for result in self.results],
-            base_unit=base_unit)
-        p5_unit, p5_scale = utils.si_scale_for_smallest(
-            numbers=[result.per_round_timings.percentiles[5] for result in self.results],
-            base_unit=base_unit)
-        p95_unit, p95_scale = utils.si_scale_for_smallest(
-            numbers=[result.per_round_timings.percentiles[95] for result in self.results],
-            base_unit=base_unit)
-        stddev_unit, stddev_scale = utils.si_scale_for_smallest(
-            numbers=[result.per_round_timings.standard_deviation for result in self.results],
-            base_unit=base_unit)
+        return self.results_as_rich_table(
+            base_unit=BASE_INTERVAL_UNIT,
+            target='per_round_timings'
+        )
 
-        table = Table(title=(self.title + '\n\n' + self.description),
-                      show_header=True,
-                      title_style='bold green1',
-                      header_style='bold magenta')
-        table.add_column('N', justify='center')
-        table.add_column('Iterations', justify='center')
-        table.add_column('Elapsed Seconds', justify='center', max_width=7)
-        table.add_column(f'mean {mean_unit}', justify='center', vertical='bottom', overflow='fold')
-        table.add_column(f'median {median_unit}', justify='center', vertical='bottom', overflow='fold')
-        table.add_column(f'min {min_unit}', justify='center', vertical='bottom', overflow='fold')
-        table.add_column(f'max {max_unit}', justify='center', vertical='bottom', overflow='fold')
-        table.add_column(f'5th {p5_unit}', justify='center', vertical='bottom', overflow='fold')
-        table.add_column(f'95th {p95_unit}', justify='center', vertical='bottom', overflow='fold')
-        table.add_column(f'std dev {stddev_unit}', justify='center', vertical='bottom', overflow='fold')
-        table.add_column('rsd%', justify='center', vertical='bottom', overflow='fold')
-        for value in self.variation_cols.values():
-            table.add_column(value, justify='center', vertical='bottom', overflow='fold')
-        for result in self.results:
-            row: list[str] = [
-                f'{result.n:>6d}',
-                f'{len(result.iterations):>6d}',
-                f'{utils.sigfigs(result.total_elapsed * DEFAULT_INTERVAL_SCALE):>4.2f}',
-                f'{utils.sigfigs(result.per_round_timings.mean * mean_scale):>8.2f}',
-                f'{utils.sigfigs(result.per_round_timings.median * median_scale):>8.2f}',
-                f'{utils.sigfigs(result.per_round_timings.minimum * min_scale):>8.2f}',
-                f'{utils.sigfigs(result.per_round_timings.maximum * max_scale):>8.2f}',
-                f'{utils.sigfigs(result.per_round_timings.percentiles[5] * p5_scale):>8.2f}',
-                f'{utils.sigfigs(result.per_round_timings.percentiles[95] * p95_scale):>8.2f}',
-                f'{utils.sigfigs(result.per_round_timings.standard_deviation * stddev_scale):>8.2f}',
-                f'{utils.sigfigs(result.per_round_timings.relative_standard_deviation):>5.2f}%'
-            ]
-            for value in result.variation_marks.values():
-                row.append(f'{value!s}')
-            table.add_row(*row)
-        PROGRESS.console.print(table)
-
-    def output_ops_results_to_csv(self, filepath: Path) -> None:
+    def output_results_to_csv(self,
+                              filepath: Path,
+                              base_unit: str,
+                              results: list[BenchResults],
+                              target: Literal['ops_per_second', 'per_round_timings']) -> None:
         """Output the benchmark results to a file as tagged CSV if available.
+
+        Args:
+            filepath: The path to the CSV file to write.
+            results: The benchmark results to write.
+            target: The target metric to write (either 'ops_per_second' or 'per_round_timings').
         """
         if not self.results:
             return
 
         utils = BenchmarkUtils()
-        base_unit = BASE_OPS_PER_INTERVAL_UNIT
         all_numbers: list[float] = []
-        all_numbers.extend([result.ops_per_second.mean for result in self.results])
-        all_numbers.extend([result.ops_per_second.median for result in self.results])
-        all_numbers.extend([result.ops_per_second.minimum for result in self.results])
-        all_numbers.extend([result.ops_per_second.maximum for result in self.results])
-        all_numbers.extend([result.ops_per_second.percentiles[5] for result in self.results])
-        all_numbers.extend([result.ops_per_second.percentiles[95] for result in self.results])
-        all_numbers.extend([result.ops_per_second.standard_deviation for result in self.results])
+        all_numbers.extend([getattr(result, target).mean for result in self.results])
+        all_numbers.extend([getattr(result, target).median for result in self.results])
+        all_numbers.extend([getattr(result, target).minimum for result in self.results])
+        all_numbers.extend([getattr(result, target).maximum for result in self.results])
+        all_numbers.extend([getattr(result, target).percentiles[5] for result in self.results])
+        all_numbers.extend([getattr(result, target).percentiles[95] for result in self.results])
+        all_numbers.extend([getattr(result, target).standard_deviation for result in self.results])
         common_unit, common_scale = utils.si_scale_for_smallest(numbers=all_numbers, base_unit=base_unit)
 
         with filepath.open(mode='w', encoding='utf-8', newline='') as csvfile:
@@ -892,83 +803,41 @@ class BenchCase:
                 header.append(value)
             writer.writerow(header)
             for result in self.results:
+                stats_target = getattr(result, target)
                 row: list[str | float | int] = [
                     result.n,
                     len(result.iterations),
                     result.total_elapsed * DEFAULT_INTERVAL_SCALE,
-                    utils.sigfigs(result.ops_per_second.mean * common_scale),
-                    utils.sigfigs(result.ops_per_second.median * common_scale),
-                    utils.sigfigs(result.ops_per_second.minimum * common_scale),
-                    utils.sigfigs(result.ops_per_second.maximum * common_scale),
-                    utils.sigfigs(result.ops_per_second.percentiles[5] * common_scale),
-                    utils.sigfigs(result.ops_per_second.percentiles[95] * common_scale),
-                    utils.sigfigs(result.ops_per_second.standard_deviation * common_scale),
-                    utils.sigfigs(result.ops_per_second.relative_standard_deviation)
+                    utils.sigfigs(stats_target.mean * common_scale),
+                    utils.sigfigs(stats_target.median * common_scale),
+                    utils.sigfigs(stats_target.minimum * common_scale),
+                    utils.sigfigs(stats_target.maximum * common_scale),
+                    utils.sigfigs(stats_target.percentiles[5] * common_scale),
+                    utils.sigfigs(stats_target.percentiles[95] * common_scale),
+                    utils.sigfigs(stats_target.standard_deviation * common_scale),
+                    utils.sigfigs(stats_target.relative_standard_deviation)
                 ]
                 for value in result.variation_marks.values():
                     row.append(value)
                 writer.writerow(row)
 
         return
+
+    def output_ops_results_to_csv(self, filepath: Path) -> None:
+        """Output the benchmark results to a file as tagged CSV if available.
+        """
+        return self.output_results_to_csv(filepath=filepath,
+                                          base_unit=BASE_OPS_PER_INTERVAL_UNIT,
+                                          results=self.results,
+                                          target='ops_per_second')
 
     def output_timing_results_to_csv(self, filepath: Path) -> None:
         """Outputs the timing benchmark results to file as tagged CSV.
         """
-        if not self.results:
-            return
-
-        utils = BenchmarkUtils()
-        base_unit = BASE_INTERVAL_UNIT
-        all_numbers: list[float] = []
-        all_numbers.extend([result.per_round_timings.mean for result in self.results])
-        all_numbers.extend([result.per_round_timings.median for result in self.results])
-        all_numbers.extend([result.per_round_timings.minimum for result in self.results])
-        all_numbers.extend([result.per_round_timings.maximum for result in self.results])
-        all_numbers.extend([result.per_round_timings.percentiles[5] for result in self.results])
-        all_numbers.extend([result.per_round_timings.percentiles[95] for result in self.results])
-        all_numbers.extend([result.per_round_timings.standard_deviation for result in self.results])
-        common_unit, common_scale = utils.si_scale_for_smallest(numbers=all_numbers, base_unit=base_unit)
-
-        with filepath.open(mode='w', encoding='utf-8', newline='') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow([f'# {self.title}'])
-            writer.writerow([f'# {self.description}'])
-            header: list[str] = [
-                'N',
-                'Iterations',
-                'Elapsed Seconds',
-                f'mean ({common_unit})',
-                f'median ({common_unit})',
-                f'min ({common_unit})',
-                f'max ({common_unit})',
-                f'5th ({common_unit})',
-                f'95th ({common_unit})',
-                f'std dev ({common_unit})',
-                'rsd (%)'
-            ]
-            for value in self.variation_cols.values():
-                header.append(value)
-            writer.writerow(header)
-            for result in self.results:
-                row: list[str | float | int] = [
-                    result.n,
-                    len(result.iterations),
-                    utils.sigfigs(result.total_elapsed * DEFAULT_INTERVAL_SCALE),
-                    utils.sigfigs(result.per_round_timings.mean * common_scale),
-                    utils.sigfigs(result.per_round_timings.median * common_scale),
-                    utils.sigfigs(result.per_round_timings.minimum * common_scale),
-                    utils.sigfigs(result.per_round_timings.maximum * common_scale),
-                    utils.sigfigs(result.per_round_timings.percentiles[5] * common_scale),
-                    utils.sigfigs(result.per_round_timings.percentiles[95] * common_scale),
-                    utils.sigfigs(result.per_round_timings.standard_deviation * common_scale),
-                    utils.sigfigs(result.per_round_timings.relative_standard_deviation)
-                ]
-                for value in result.variation_marks.values():
-                    row.append(value)
-                writer.writerow(row)
-
-        csvfile.flush()
-        return
+        return self.output_results_to_csv(filepath=filepath,
+                                          base_unit=BASE_INTERVAL_UNIT,
+                                          results=self.results,
+                                          target='per_round_timings')
 
     def as_dict(self, args: Namespace) -> dict[str, Any]:
         """Returns the benchmark case and results as a JSON serializable dict.
@@ -1756,7 +1625,10 @@ def run_benchmarks(args: Namespace):
                             case.output_timing_results_to_csv(csv_file)
 
                 if args.console:
-                    case.results_as_rich_table(args)
+                    if args.ops:
+                        case.ops_results_as_rich_table()
+                    if args.timing:
+                        case.timing_results_as_rich_table()
             else:
                 PROGRESS.console.print('No results available')
         if args.json or args.json_data:
