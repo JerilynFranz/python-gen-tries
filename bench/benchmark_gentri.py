@@ -25,18 +25,13 @@ import statistics
 import time
 from typing import Any, Callable, Literal, Optional, Sequence
 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import pandas as pd
 from rich.progress import Progress, TaskID
 from rich.table import Table
 import seaborn as sns
-import seaborn.objects as so
 from gentrie import GeneralizedTrie, GeneralizedKey, TrieId
 
-# Configure Matplotlib and Seaborn
-#mpl.rcParams['savefig.format'] = 'svg'
-#so.Plot.config.theme.update(mpl.rcParams)
 
 PROGRESS = Progress(refresh_per_second=5)
 """Progress bar for benchmarking."""
@@ -614,7 +609,8 @@ class BenchCase:
         runner (Optional[Callable[..., Any]]): A custom runner for the benchmark.
         verbose (bool): Enable verbose output.
         progress (bool): Enable progress output.
-
+        graph_aspect_ratio (float): The aspect ratio of the graph (default: 1.0).
+        graph_style (Literal['default', 'dark_background']): The style of the graph (default: 'default').
 
     Properties:
         results (list[BenchResults]): The benchmark results for the case.
@@ -632,6 +628,8 @@ class BenchCase:
     verbose: bool = False
     progress: bool = False
     variations_task: Optional[TaskID] = None
+    graph_aspect_ratio: float = 1.0
+    graph_style: Literal['default', 'dark_background'] = 'default'
 
     def __post_init__(self):
         self.results: list[BenchResults] = []
@@ -848,10 +846,17 @@ class BenchCase:
                      filepath: Path,
                      target: Literal['ops_per_second', 'per_round_timings'],
                      base_unit: str = '',
-                     target_name: str = '',              
-                     scale: float = 1.0
+                     target_name: str = ''
                      ) -> None:
-        """Generates and saves a bar plot of the ops/sec results."""
+        """Generates and saves a bar plot of the ops/sec results.
+
+        Args:
+            filepath (Path): The path to the output file.
+            target (Literal['ops_per_second', 'per_round_timings']): The target metric to plot.
+            base_unit (str): The base unit for the y-axis.
+            target_name (str): The name of the target metric.
+            scale (float): The scale factor for the y-axis.
+        """
         if not self.results:
             return
 
@@ -863,12 +868,13 @@ class BenchCase:
 
         # Prepare data for plotting
         plot_data = []
+        x_axis_legend = '\n'.join([f"{self.variation_cols.get(k, k)}"
+                                   for k in self.variation_cols.keys()])
         for result in self.results:
             target_stats = getattr(result, target)
-            variation_label = '\n'.join([f"{self.variation_cols.get(k, k)}: {v}"
-                                         for k, v in result.variation_marks.items()])
+            variation_label = '\n'.join([f"{v}" for v in result.variation_marks.values()])
             plot_data.append({
-                'variation': variation_label,
+                x_axis_legend: variation_label,
                 target_name: target_stats.mean * common_scale,
             })
 
@@ -878,29 +884,39 @@ class BenchCase:
         df = pd.DataFrame(plot_data)
 
         # Create the plot
-        #plt.figure(figsize=(24, 16), dpi=300)
-        sns.set_theme(style="dark")
-        ax = sns.relplot(data=df, y=target_name, x="variation")
-
-        plt.tight_layout()
+        plt.style.use('dark_background')
+        ax = sns.relplot(data=df, y=target_name, x=x_axis_legend)
+        ax.figure.suptitle(self.title, fontsize='large', weight='bold')
+        ax.figure.subplots_adjust(top=.9)
+        ax.figure.set_dpi(160)
+        ax.figure.set_figheight(10)
+        ax.figure.set_figwidth(10 * self.graph_aspect_ratio)
         plt.savefig(filepath)
         plt.close()  # Close the figure to free memory
 
     def plot_ops_results(self, filepath: Path) -> None:
+        """Plots the operations per second results graph.
+
+        Args:
+            filepath (Path): The path to the output file.
+        """
         if not self.results:
             return
         return self.plot_results(filepath=filepath,
                                  target='ops_per_second',
                                  base_unit=BASE_OPS_PER_INTERVAL_UNIT,
-                                 target_name=f'Operations per Second',
-                                 scale=self.results[0].ops_per_second.scale)
+                                 target_name='Operations per Second')
 
     def plot_timing_results(self, filepath: Path) -> None:
+        """Plots the timing results graph.
+
+        Args:
+            filepath (Path): The path to the output file.
+        """
         return self.plot_results(filepath=filepath,
                                  target='per_round_timings',
                                  base_unit=BASE_INTERVAL_UNIT,
-                                 target_name=f'Time Per Round',
-                                 scale=1/self.results[0].per_round_timings.scale)
+                                 target_name='Time Per Round')
 
     def as_dict(self, args: Namespace) -> dict[str, Any]:
         """Returns the benchmark case and results as a JSON serializable dict.
@@ -1477,7 +1493,8 @@ def get_benchmark_cases() -> list[BenchCase]:
                 'runtime_validation': [False, True],
                 'test_tries': [test_organic_tries],
                 'dataset': ['english'],
-            }
+            },
+            graph_aspect_ratio=1.0
         ),
         BenchCase(
             group='str-english-dictionary-key-in-trie',
@@ -1491,7 +1508,8 @@ def get_benchmark_cases() -> list[BenchCase]:
                 'test_tries': [test_organic_tries],
                 'test_data': [test_organic_data],
                 'dataset': ['english'],
-            }
+            },
+            graph_aspect_ratio=1.0
         ),
         BenchCase(
             group='str-synthetic-building-trie-add',
@@ -1505,7 +1523,8 @@ def get_benchmark_cases() -> list[BenchCase]:
                 'runtime_validation': [False, True],
                 'test_data': [test_data],
                 'depth': test_depths,
-            }
+            },
+            graph_aspect_ratio=2.0
         ),
         BenchCase(
             group='str-synthetic-building-trie-update',
@@ -1519,7 +1538,8 @@ def get_benchmark_cases() -> list[BenchCase]:
                 'runtime_validation': [False, True],
                 'test_data': [test_data],
                 'depth': test_depths,
-            }
+            },
+            graph_aspect_ratio=2.0
         ),
         BenchCase(
             group='str-synthetic-building-trie-assign',
@@ -1533,7 +1553,8 @@ def get_benchmark_cases() -> list[BenchCase]:
                 'runtime_validation': [False, True],
                 'test_data': [test_data],
                 'depth': test_depths,
-            }
+            },
+            graph_aspect_ratio=2.0
         ),
         BenchCase(
             group='str-synthetic-updating-trie-update',
@@ -1547,7 +1568,8 @@ def get_benchmark_cases() -> list[BenchCase]:
                 'runtime_validation': [False, True],
                 'test_data': [test_data],
                 'depth': test_depths,
-            }
+            },
+            graph_aspect_ratio=2.0
         ),
         BenchCase(
             group='str-synthetic-updating-trie-remove',
@@ -1562,6 +1584,7 @@ def get_benchmark_cases() -> list[BenchCase]:
                 'test_data': [test_data],
                 'depth': test_depths,
             },
+            graph_aspect_ratio=2.0
         ),
         BenchCase(
             group='str-synthetic-updating-trie-del-key',
@@ -1576,6 +1599,7 @@ def get_benchmark_cases() -> list[BenchCase]:
                 'test_data': [test_data],
                 'depth': test_depths,
             },
+            graph_aspect_ratio=2.0
         ),
         BenchCase(
             group='str-synthetic-updating-trie-del-id',
@@ -1590,6 +1614,7 @@ def get_benchmark_cases() -> list[BenchCase]:
                 'test_data': [test_data],
                 'depth': test_depths,
             },
+            graph_aspect_ratio=2.0
         ),
         BenchCase(
             group='str-synthetic-trie-prefixes',
@@ -1605,6 +1630,7 @@ def get_benchmark_cases() -> list[BenchCase]:
                 'test_keys': [test_data],
                 'depth': test_depths,
             },
+            graph_aspect_ratio=2.0
         ),
         BenchCase(
             group='str-synthetic-trie-prefixed_by',
@@ -1620,6 +1646,7 @@ def get_benchmark_cases() -> list[BenchCase]:
                 'test_keys': [test_data[5]],
                 'search_depth': [1, 2, 3],
             },
+            graph_aspect_ratio=2.0
         ),
     ]
     return benchmark_cases_list
