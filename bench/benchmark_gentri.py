@@ -25,6 +25,7 @@ import statistics
 import time
 from typing import Any, Callable, Literal, Optional, Sequence
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import pandas as pd
 from rich.progress import Progress, TaskID
@@ -611,6 +612,7 @@ class BenchCase:
         progress (bool): Enable progress output.
         graph_aspect_ratio (float): The aspect ratio of the graph (default: 1.0).
         graph_style (Literal['default', 'dark_background']): The style of the graph (default: 'default').
+        graph_y_starts_at_zero (bool): Whether the y-axis of the graph starts at zero (default: True).
 
     Properties:
         results (list[BenchResults]): The benchmark results for the case.
@@ -630,6 +632,7 @@ class BenchCase:
     variations_task: Optional[TaskID] = None
     graph_aspect_ratio: float = 1.0
     graph_style: Literal['default', 'dark_background'] = 'default'
+    graph_y_starts_at_zero: bool = True
 
     def __post_init__(self):
         self.results: list[BenchResults] = []
@@ -864,7 +867,7 @@ class BenchCase:
         all_numbers: list[float] = []
         all_numbers.extend([getattr(result, target).mean for result in self.results])
         common_unit, common_scale = utils.si_scale_for_smallest(numbers=all_numbers, base_unit=base_unit)
-        target_name = f'{target_name} ({common_unit})'
+        target_name = f'{target_name} ({base_unit})'
 
         # Prepare data for plotting
         plot_data = []
@@ -881,16 +884,35 @@ class BenchCase:
         if not plot_data:
             return
 
+        benchmarking_theme = {
+            'axes.grid': True,
+            'legend.framealpha': 1,
+            'legend.shadow': True,
+            'legend.fontsize': 14,
+            'legend.title_fontsize': 16,
+            'xtick.labelsize': 14,
+            'ytick.labelsize': 14,
+            'axes.labelsize': 16,
+            'axes.titlesize': 20,
+            'figure.dpi': 100}
+        mpl.rcParams.update(benchmarking_theme)
         df = pd.DataFrame(plot_data)
 
         # Create the plot
         plt.style.use('dark_background')
-        ax = sns.relplot(data=df, y=target_name, x=x_axis_legend)
-        ax.figure.suptitle(self.title, fontsize='large', weight='bold')
-        ax.figure.subplots_adjust(top=.9)
-        ax.figure.set_dpi(160)
-        ax.figure.set_figheight(10)
-        ax.figure.set_figwidth(10 * self.graph_aspect_ratio)
+        g = sns.relplot(data=df, y=target_name, x=x_axis_legend)
+        g.figure.suptitle(self.title, fontsize='large', weight='bold')
+        g.figure.subplots_adjust(top=.9)
+        g.figure.set_dpi(160)
+        g.figure.set_figheight(10)
+        g.figure.set_figwidth(10 * self.graph_aspect_ratio)
+        g.tick_params("x", rotation=45)
+        # format the labels with f-strings
+        for ax in g.axes.flat:
+            ax.yaxis.set_major_formatter('{x}' + f' {common_unit}')
+        if self.graph_y_starts_at_zero:
+            _, top = plt.ylim()
+            plt.ylim(bottom=0, top=top * 1.10)  # Add 10% headroom
         plt.savefig(filepath)
         plt.close()  # Close the figure to free memory
 
