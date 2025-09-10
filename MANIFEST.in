@@ -1,0 +1,16 @@
+prune .vscode
+prune .github
+prune .trunk
+prune bench
+prune docs
+prune coverage_html_report
+prune examples
+prune tests
+exclude .python-version
+exclude .gitignore
+exclude .readthedocs.yaml
+exclude .env
+exclude pyproject.toml
+exclude python-gentries.code-workspace
+exclude README.md
+exclude uv.lock
