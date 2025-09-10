@@ -68,9 +68,9 @@ There are two ways to directly retrieve entries using their keys:
 You can also retrieve all entries that are prefixes for or prefixed by
 a given key:
 
-- `trie.prefixed_by(key)` returns a set of `TrieEntry` objects that
+- `trie.prefixed_by(key)` returns an Iterator of `TrieEntry` objects that
   are prefixed_by of the given key.
-- `trie.prefixes(key)` returns a set of `TrieEntry` objects that
+- `trie.prefixes(key)` returns an Iterator of `TrieEntry` objects that
   are prefixes of the given key.
 
 These methods are useful for searching and retrieving entries
@@ -81,7 +81,7 @@ from gentrie import DuplicateKeyError, GeneralizedTrie, TrieEntry
 trie = GeneralizedTrie()
 
 # Adding entries using the trie[key] = value syntax
-entries: list[tuple[str, str | list[str]]] = [
+entries = [
     ('abcdef', 'value1'),
     ('abc', 'value2'),
     ('abcd', 'value3'),
@@ -89,13 +89,14 @@ entries: list[tuple[str, str | list[str]]] = [
     ('xyz', ['lists', 'are', 'also', 'supported']),
     ('xy', 'value6'),
 ]
+
 for key, value in entries:
     trie[key] = value
 
-prefixed_by: set[TrieEntry] = set(trie.prefixed_by('xy'))
+prefixed_by: list[TrieEntry] = list(trie.prefixed_by('xy'))
 print(f'prefixed_by = {prefixed_by}')
 
-prefixes: set[TrieEntry] = set(trie.prefixes('abcdefg'))
+prefixes: list[TrieEntry] = list(trie.prefixes('abcdefg'))
 print(f'prefixes = {prefixes}')
 
 # prefixed_by = {
@@ -111,22 +112,22 @@ print(f'prefixes = {prefixes}')
 
 # Adding using the add method
 # This will throw an error if the key already exists.
-more_entries: list[tuple[str | tuple[int, ...], str]] = [
+more_entries = [
     ((128, 96, 160, 0), 'value5'),
     ((128, 90), 'value5b'),
     ('xy', 'value6'),
 ]
-for key, value in more_entries:
+for different_key, different_value in more_entries:
     try:
-        trie.add(key, value)
-        print(f'Added entry: {key} -> {value}')
+        trie.add(different_key, different_value)
+        print(f'Added entry: {different_key} -> {different_value}')
     except DuplicateKeyError:
-        print(f'DuplicateKeyError - entry already exists: {key}')
+        print(f'DuplicateKeyError - entry already exists: {different_key}')
 
-prefixed_by: set[TrieEntry] = set(trie.prefixed_by([128]))
+prefixed_by = list(trie.prefixed_by([128]))
 print(f'prefixed_by = {prefixed_by}')
 
-prefixes: set[TrieEntry] = set(trie.prefixes([128, 90]))
+prefixes = list(trie.prefixes([128, 90]))
 print(f'prefixes = {prefixes}')
 
 # prefixed_by = {
@@ -149,20 +150,26 @@ even_more_entries: list[tuple[str, str]] = [
 for key, value in even_more_entries:
     trie.update(key, value)
 
-prefixed_by = set(trie.prefixed_by('abcd'))
+prefixed_by = list(trie.prefixed_by('abcd'))
 print(f'prefixed_by = {prefixed_by}')
 
-prefixes = set(trie.prefixes('abcdefg'))
+prefixes = list(trie.prefixes('abcdefg'))
 print(f'prefixes = {prefixes}')
 
-# prefixed_by = {
-#     TrieEntry(ident=3, key='abcd', value='value8'),
-#     TrieEntry(ident=9, key='abcdefghi', value='value7'),
-#     TrieEntry(ident=1, key='abcdef', value='value1')
-# }
-#
-# prefixes = {
-#     TrieEntry(ident=2, key='abc', value='value2'),
-#     TrieEntry(ident=3, key='abcd', value='value8'),
-#     TrieEntry(ident=1, key='abcdef', value='value1')
-# }
+# prefixed_by = [TrieEntry(ident=TrieId(6), key='xy', value='value6'),
+#                TrieEntry(ident=TrieId(5), key='xyz', value=['lists', 'are', 'also', 'supported'])]
+# prefixes = [TrieEntry(ident=TrieId(2), key='abc', value='value2'),
+#             TrieEntry(ident=TrieId(3), key='abcd', value='value3'),
+#             TrieEntry(ident=TrieId(1), key='abcdef', value='value1')]
+# Added entry: (128, 96, 160, 0) -> value5
+# Added entry: (128, 90) -> value5b
+# DuplicateKeyError - entry already exists: xy
+# prefixed_by = [TrieEntry(ident=TrieId(8), key=(128, 90), value='value5b'),
+#                TrieEntry(ident=TrieId(7), key=(128, 96, 160, 0), value='value5')]
+# prefixes = [TrieEntry(ident=TrieId(8), key=(128, 90), value='value5b')]
+# prefixed_by = [TrieEntry(ident=TrieId(3), key='abcd', value='value8'),
+#                TrieEntry(ident=TrieId(1), key='abcdef', value='value1'),
+#                TrieEntry(ident=TrieId(9), key='abcdefghi', value='value7')]
+# prefixes = [TrieEntry(ident=TrieId(2), key='abc', value='value2'),
+#             TrieEntry(ident=TrieId(3), key='abcd', value='value8'),
+#             TrieEntry(ident=TrieId(1), key='abcdef', value='value1')]

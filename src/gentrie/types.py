@@ -49,4 +49,5 @@ class TrieEntry(NamedTuple):
             other.key) and self.value == other.value
 
     def __hash__(self) -> int:
+        print(f'Hashing TrieEntry: ident={self.ident}, key={self.key}, value={self.value}')
         return hash((self.ident, tuple(self.key), self.value))  # pyright: ignore[reportUnknownArgumentType]
