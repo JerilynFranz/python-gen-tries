@@ -46,7 +46,7 @@ description = "Generalized trie implementation"
 readme = "README.md"
 keywords = ["trie"]
 license = { file = "LICENSE" }
-version = "0.9.4"
+version = "0.9.5"
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Developers",
@@ -147,3 +147,8 @@ ignore_errors = true
 
 [tool.coverage.html]
 directory = "coverage_html_report"
+
+[dependency-groups]
+dev = []
+tests = []
+docs = []
