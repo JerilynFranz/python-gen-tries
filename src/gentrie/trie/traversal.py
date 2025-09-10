@@ -2,7 +2,7 @@
 """Traversal operations for GeneralizedTrie."""
 
 from collections import deque
-from typing import Generator
+from typing import Iterable, TYPE_CHECKING
 
 from ..exceptions import InvalidGeneralizedKeyError, ErrorTag, TrieTypeError, TrieValueError
 from ..protocols import GeneralizedKey
@@ -10,6 +10,10 @@ from ..types import TrieEntry
 from ..validation import is_generalizedkey
 
 from .trie_mixins import TrieMixinsInterface
+
+
+if TYPE_CHECKING:
+    from ..nodes import Node
 
 # Disabled because pyright does not understand mixins
 # use of private attributes from the mixing class as declared
@@ -20,7 +24,7 @@ from .trie_mixins import TrieMixinsInterface
 class TrieTraversalMixin:
     """Mixin providing traversal operations (prefixes, prefixed_by)."""
 
-    def prefixes(self: TrieMixinsInterface, key: GeneralizedKey) -> Generator[TrieEntry, None, None]:
+    def prefixes(self: TrieMixinsInterface, key: GeneralizedKey) -> Iterable[TrieEntry]:
         """Yields TrieEntry instances for all keys in the trie that are a prefix of the passed key.
 
         Searches the trie for all keys that are prefix matches
@@ -71,7 +75,7 @@ class TrieTraversalMixin:
                 tag=ErrorTag.TRIE_PREFIXES_INVALID_GENERALIZED_KEY
             )
 
-        current_node = self
+        current_node: TrieMixinsInterface | Node = self
 
         for token in key:
             if current_node.ident:
@@ -85,7 +89,7 @@ class TrieTraversalMixin:
             yield self._trie_entries[current_node.ident]
 
     def prefixed_by(self: TrieMixinsInterface, key: GeneralizedKey, depth: int = -1
-                    ) -> Generator[TrieEntry, None, None]:
+                    ) -> Iterable[TrieEntry]:
         """Yields all entries in the trie that are prefixed by the given key, up to a specified depth.
 
         Searches the trie for all keys that start with the provided key and yields their
@@ -156,7 +160,7 @@ class TrieTraversalMixin:
                 tag=ErrorTag.TRIE_PREFIXED_BY_BAD_DEPTH_VALUE
             )
 
-        current_node = self
+        current_node: TrieMixinsInterface | Node = self
         try:
             for token in key:
                 current_node = current_node.children[token]
