@@ -11,7 +11,6 @@ from ..nodes import Node
 from ..protocols import GeneralizedKey
 from ..types import TrieEntry, TrieId
 from ..validation import is_generalizedkey
-
 from .trie_mixins import TrieMixinsInterface
 
 # Disabled because pyright does not understand mixins

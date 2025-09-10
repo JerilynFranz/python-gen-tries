@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
 """Base trie functionality and initialization."""
-
+from __future__ import annotations
 from copy import deepcopy
 from textwrap import indent
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, Optional
 
 from ..nodes import Node
 from ..protocols import TrieKeyToken
 from ..types import TrieEntry, TrieId
-
-if TYPE_CHECKING:
-    from .trie_mixins import TrieMixinsInterface
+from .trie_mixins import TrieMixinsInterface
 
 
 class TrieBase:
@@ -20,7 +18,7 @@ class TrieBase:
         runtime_validation (bool): Whether to enable runtime validation of keys.
     """
 
-    def __init__(self, runtime_validation: bool = True) -> None:
+    def __init__(self: TrieMixinsInterface, runtime_validation: bool = True) -> None:
         """Initializes a new TrieBase instance.
 
         By default, runtime validation of keys is enabled. If your code is well tested,
@@ -48,7 +46,7 @@ class TrieBase:
         # Mapping of unique identifiers to their corresponding TrieEntry instances.
         self._trie_entries: dict[TrieId, TrieEntry] = {}
 
-    def clear(self) -> None:
+    def clear(self: TrieMixinsInterface) -> None:
         """Clears all keys from the trie."""
         self.ident = None
         self.token = None
@@ -60,7 +58,7 @@ class TrieBase:
         # Reset the ident counter
         self._ident_counter = 0
 
-    def __str__(self) -> str:
+    def __str__(self: TrieMixinsInterface) -> str:
         """Generates a stringified version of the trie for visual examination."""
         output: list[str] = ["{"]
         output.append(f"  trie number = {self._ident_counter}")
@@ -73,7 +71,7 @@ class TrieBase:
         output.append("}")
         return "\n".join(output)
 
-    def _as_dict(self) -> dict[str, Any]:
+    def _as_dict(self: TrieMixinsInterface) -> dict[str, Any]:
         """Converts the trie to a dictionary representation."""
         # pylint: disable=protected-access, no-member
         return deepcopy({

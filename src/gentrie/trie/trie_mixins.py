@@ -1,5 +1,5 @@
 """Protocol for all GeneralizedTrie trie mixins."""
-
+from __future__ import annotations
 from typing import Any, Iterator, Optional, Protocol
 
 from ..nodes import Node
@@ -29,6 +29,11 @@ class TrieMixinsInterface(Protocol):
     # Any method that one mixin needs to call from another must be here.
 
     # pylint: disable=missing-function-docstring
+
+    # From base.py
+    def __init__(self, runtime_validation: bool = True) -> None: ...
+    def clear(self) -> None: ...
+    def __str__(self) -> str: ...
 
     # From storage.py
     def add(self, key: GeneralizedKey, value: Optional[Any] = None) -> TrieId: ...

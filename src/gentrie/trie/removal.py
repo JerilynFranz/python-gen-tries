@@ -6,7 +6,6 @@ from ..exceptions import ErrorTag, TrieKeyError, TrieTypeError
 from ..protocols import GeneralizedKey, TrieKeyToken
 from ..types import TrieId
 from ..validation import is_generalizedkey
-
 from .trie_mixins import TrieMixinsInterface
 
 # Disabled because pyright does not understand mixins

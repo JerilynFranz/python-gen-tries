@@ -5,7 +5,6 @@ from typing import Any
 
 from ..protocols import GeneralizedKey
 from ..types import TrieId
-
 from .trie_mixins import TrieMixinsInterface
 
 
