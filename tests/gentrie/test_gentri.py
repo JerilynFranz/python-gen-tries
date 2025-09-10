@@ -1,24 +1,38 @@
+#!python3
 """Tests for the gentrie module."""
 # pylint: disable=too-many-lines
 # pylint: disable=too-many-public-methods
 # pylint: disable=too-few-public-methods
 # pylint: disable=invalid-name
+# pylint: disable=wrong-import-order
+# pylint: disable=wrong-import-position
+
 
 import unittest
 from collections.abc import Iterable
 from textwrap import dedent
 from typing import Any
-
+import os
+import sys
 import pytest
 
+from src.gentrie import (
+    DuplicateKeyError,
+    ErrorTag,
+    GeneralizedTrie,
+    InvalidGeneralizedKeyError,
+    TrieEntry,
+    TrieId,
+    TrieKeyError,
+    TrieKeyToken,
+    TrieTypeError,
+    TrieValueError,
+    is_generalizedkey,
+    is_triekeytoken,
+    is_hashable)
 
-from src.gentrie import (DuplicateKeyError, ErrorTag, GeneralizedTrie,
-                         InvalidGeneralizedKeyError, TrieEntry, TrieId,
-                         TrieKeyError, TrieKeyToken, TrieTypeError,
-                         TrieValueError, is_generalizedkey, is_triekeytoken,
-                         is_hashable)
-
-from ..testspec import TestSpec, run_tests_list
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from testspec import TestSpec, run_tests_list  # noqa: E402  # pylint: disable=import-error
 
 
 class MockDefaultTrieKeyToken:
@@ -1579,8 +1593,8 @@ class TestGeneralizedTrie(unittest.TestCase):
         self.assertIsInstance(test_string, Iterable)
 
         trie.add(test_string)
-        found: str = dedent(str(trie))
-        expected: str = dedent("""\
+        found = dedent(str(trie))
+        expected = dedent("""\
         {
           trie number = 1
           children = {

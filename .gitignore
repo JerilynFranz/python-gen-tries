@@ -17,6 +17,10 @@ bazel-python-gen-tries
 # lcov
 genhtml
 
+# .benchmarks files
+.benchmarks
+histogram
+
 # scalene
 profile.html
 profile.json
