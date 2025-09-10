@@ -1593,8 +1593,8 @@ class TestGeneralizedTrie(unittest.TestCase):
         self.assertIsInstance(test_string, Iterable)
 
         trie.add(test_string)
-        found: str = dedent(str(trie))
-        expected: str = dedent("""\
+        found = dedent(str(trie))
+        expected = dedent("""\
         {
           trie number = 1
           children = {
