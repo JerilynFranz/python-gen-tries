@@ -3,9 +3,6 @@
 # pylint: disable=wrong-import-position, too-many-instance-attributes, line-too-long
 # pylint: disable=too-many-positional-arguments, too-many-arguments, too-many-locals
 # pyright: reportUnnecessaryTypeIgnoreComment=warning
-
-# Note: pytest-benchmark does not expose proper typing hence the many type
-# ignores on lines related to benchmark and benchmark.info
 '''bench_performance.py
 
 Benchmark for the Generalized Trie implementation.
@@ -27,7 +24,7 @@ from typing import Any, cast, Optional, Sequence
 
 import pytest
 
-from gentrie import GeneralizedTrie, GeneralizedKey
+from gentrie import GeneralizedTrie, GeneralizedKey, TrieEntry
 
 # More robust benchmark configuration
 BENCHMARK_CONFIG: dict[str, Any] = {
@@ -443,7 +440,7 @@ def test_prefixes(benchmark,
     trie.runtime_validation = runtime_validation
     search_key = TEST_DATA[depth][0]
 
-    def helper_prefixes(trie: GeneralizedTrie, search_key: GeneralizedKey) -> list[GeneralizedKey]:
+    def helper_prefixes(trie: GeneralizedTrie, search_key: GeneralizedKey) -> list[TrieEntry]:
         return list(trie.prefixes(search_key))
 
     gc.collect()
@@ -490,7 +487,7 @@ def test_prefixed_by(benchmark,
 
     def helper_prefixed_by(trie: GeneralizedTrie,
                            search_key: GeneralizedKey,
-                           search_depth: int) -> list[GeneralizedKey]:
+                           search_depth: int) -> list[TrieEntry]:
         return list(trie.prefixed_by(search_key, search_depth))
 
     gc.collect()

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Data access operations for the trie."""
 
-from typing import Any, Optional
+from typing import Any, Optional, TYPE_CHECKING
 
 from ..exceptions import ErrorTag, InvalidGeneralizedKeyError, TrieKeyError, TrieTypeError
 from ..types import TrieEntry, TrieId, GeneralizedKey
@@ -13,6 +13,10 @@ from .trie_mixins import TrieMixinsInterface
 # use of private attributes from the mixing class as declared
 # in the TrieMixinsInterface protocol.
 # pyright: reportPrivateUsage=false
+
+
+if TYPE_CHECKING:
+    from ..nodes import Node
 
 
 class TrieAccessMixin:
@@ -44,7 +48,7 @@ class TrieAccessMixin:
         if self.runtime_validation and not is_generalizedkey(key_or_ident):
             return False
 
-        current_node = self
+        current_node: TrieMixinsInterface | Node = self
         for token in key_or_ident:
             if token not in current_node.children:
                 return False

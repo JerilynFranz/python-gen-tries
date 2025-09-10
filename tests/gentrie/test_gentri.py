@@ -6,7 +6,6 @@
 # pylint: disable=invalid-name
 # pylint: disable=wrong-import-order
 # pylint: disable=wrong-import-position
-# mypy: disable=import-error, dict-item, list-item
 
 
 import unittest
@@ -33,7 +32,7 @@ from src.gentrie import (
     is_hashable)
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from testspec import TestSpec, run_tests_list  # noqa: E402  # pylint: disable=import-error
+from testspec import TestSpec, run_tests_list  # type: ignore[import-not-found] # noqa: E402, E501  # pylint: disable=import-error
 
 
 class MockDefaultTrieKeyToken:
@@ -502,7 +501,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 expected={
                     'ident': None,
                     'children': {
-                        'tree': {
+                        'tree': {  # type: ignore[dict-item]
                             'ident': None,
                             'token': 'tree',
                             'value': None,
@@ -545,7 +544,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 expected={
                     'ident': None,
                     'children': {
-                        'tree': {
+                        'tree': {  # type: ignore[dict-item]
                             'ident': None,
                             'token': 'tree',
                             'value': None,
@@ -861,7 +860,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 expected={
                     'ident': None,
                     'children': {
-                        'tree': {
+                        'tree': {  # type: ignore[dict-item]
                             'ident': None,
                             'token': 'tree',
                             'value': None,
@@ -904,7 +903,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 expected={
                     'ident': None,
                     'children': {
-                        'tree': {
+                        'tree': {  # type: ignore[dict-item]
                             'ident': None,
                             'token': 'tree',
                             'value': None,
@@ -1140,7 +1139,7 @@ class TestGeneralizedTrie(unittest.TestCase):
                 expected={
                     'ident': None,
                     'children': {
-                        'tree': {
+                        'tree': {  # type: ignore[dict-item]
                             'ident': None,
                             'token': 'tree',
                             'value': None,
@@ -1916,7 +1915,7 @@ class TestGeneralizedTrie(unittest.TestCase):
         # Test with different types of keys and a new trie
         trie = GeneralizedTrie()
         id_list_1: TrieId = trie.add([1])
-        id_list_none: TrieId = trie.add([None])
+        id_list_none: TrieId = trie.add([None])  # type: ignore[list-item]
         tests = [
             TestSpec(
                 name="[TGT_TC013] trie.__contains__(1) (false, int(1) not a valid key type)",
@@ -2170,8 +2169,9 @@ class TestGeneralizedTrie(unittest.TestCase):
             found_id_list = list(sorted(trie.keys()))
             self.assertEqual(found_id_list, expect_id_list)
 
-        with self.assertRaises(TypeError, msg="[TK006] trie.remove('abc')"):
-            trie.remove(set('abc'))  # type: ignore[reportGeneralTypeIssues]
+        with self.assertRaises(TypeError, msg="[TK006] trie.remove(set('abc')) (invalid key type)"):
+            # mypy: disable=arg-type
+            trie.remove(set('abc'))  # type: ignore[reportGeneralTypeIssues, arg-type]
 
         with self.subTest(msg="[TK007] trie.remove(TrieId(1))"):
             trie.remove(TrieId(1))

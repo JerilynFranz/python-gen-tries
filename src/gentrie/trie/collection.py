@@ -4,7 +4,6 @@
 from typing import Generator
 
 from ..types import TrieEntry, TrieId
-
 from .trie_mixins import TrieMixinsInterface
 
 

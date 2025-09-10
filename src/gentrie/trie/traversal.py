@@ -2,13 +2,12 @@
 """Traversal operations for GeneralizedTrie."""
 
 from collections import deque
-from typing import Iterable, TYPE_CHECKING
+from typing import Iterator, TYPE_CHECKING
 
 from ..exceptions import InvalidGeneralizedKeyError, ErrorTag, TrieTypeError, TrieValueError
 from ..protocols import GeneralizedKey
 from ..types import TrieEntry
 from ..validation import is_generalizedkey
-
 from .trie_mixins import TrieMixinsInterface
 
 
@@ -24,7 +23,7 @@ if TYPE_CHECKING:
 class TrieTraversalMixin:
     """Mixin providing traversal operations (prefixes, prefixed_by)."""
 
-    def prefixes(self: TrieMixinsInterface, key: GeneralizedKey) -> Iterable[TrieEntry]:
+    def prefixes(self: TrieMixinsInterface, key: GeneralizedKey) -> Iterator[TrieEntry]:
         """Yields TrieEntry instances for all keys in the trie that are a prefix of the passed key.
 
         Searches the trie for all keys that are prefix matches
@@ -89,7 +88,7 @@ class TrieTraversalMixin:
             yield self._trie_entries[current_node.ident]
 
     def prefixed_by(self: TrieMixinsInterface, key: GeneralizedKey, depth: int = -1
-                    ) -> Iterable[TrieEntry]:
+                    ) -> Iterator[TrieEntry]:
         """Yields all entries in the trie that are prefixed by the given key, up to a specified depth.
 
         Searches the trie for all keys that start with the provided key and yields their
