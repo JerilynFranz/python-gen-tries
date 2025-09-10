@@ -1420,6 +1420,25 @@ class TestGeneralizedTrie(unittest.TestCase):
         ]
         run_tests_list(self, tests)
 
+        # New untouched trie for the next sequence of tests
+        # Not using clear() here to keep the clear() tests cleanly separated
+        # from the prefixed_by() tests.
+        trie = GeneralizedTrie()
+        entries = [
+            ('abcdef', 'value1'),
+            ('abc', 'value2'),
+            ('abcd', 'value3'),
+            ('qrf', 'value4'),
+            ('xyz', ['lists', 'are', 'also', 'supported']),
+            ('xy', 'value6'),
+        ]
+        for key, value in entries:
+            trie.add(key, value)
+        with self.subTest(msg='[TGT_TPB013] trie.prefixed_by("xy")'):
+            expected = tuple([trie['xy'], trie['xyz']])
+            found = tuple(trie.prefixed_by('xy'))
+            self.assertEqual(expected, found, msg=f'Expected {expected}, found {found}')
+
     @pytest.mark.order(after=['test_create_trie', 'test_add', 'test_trieid_class', 'test_contains_dunder'])
     @pytest.mark.dependency(
         name='test_deeply_nested_keys',
