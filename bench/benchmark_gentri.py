@@ -1449,7 +1449,7 @@ def get_benchmark_cases() -> list[BenchCase]:
     symbols: str = '0123'  # Define the symbols for the trie
 
     test_data: dict[int, list[str]] = {}
-    test_depths: list[int] = [3, 4, 5, 6, 7, 8, 9, 10]  # Depths to test - 1 and 2 are omitted due to low key counts
+    test_depths: list[int] = [3, 4, 5, 6, 7, 8, 9]  # Depths to test - 1 and 2 are omitted due to low key counts
     for gen_depth in test_depths:
         max_keys_for_depth = len(symbols) ** gen_depth  # pylint: disable=invalid-name
         test_data[gen_depth] = generate_test_data(gen_depth, symbols, max_keys=max_keys_for_depth)
