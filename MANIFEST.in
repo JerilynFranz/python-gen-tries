@@ -1,0 +1,3 @@
+include *.in
+prune coverage_html_report
+prune .trunk

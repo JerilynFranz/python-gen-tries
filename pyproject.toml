@@ -16,10 +16,19 @@ exclude = [
 ]
 [tool.hatch.build.targets.sdist]
 exclude = [
-    ".trunk/",
-    ".git/",
-    ".gitignore",
-    "coverage/",
+    "/.trunk/",
+    "/.git/",
+    "/.github/",
+    ".python-version",
+    ".readthedocs.yaml",
+    "/.vscode/",
+    "/coverage/",
+    "/coverage_html_report/",
+    "/bench/",
+    "/examples/",
+    "/docs/",
+    "python-gen-tries.code-workspace",
+    "uv.lock",
 ]
 [tool.pyright]
 include = ["src", "tests", "bench"]
@@ -46,7 +55,7 @@ description = "Generalized trie implementation"
 readme = "README.md"
 keywords = ["trie"]
 license = { file = "LICENSE" }
-version = "0.9.6"
+version = "0.9.7"
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Developers",
