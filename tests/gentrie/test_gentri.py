@@ -16,7 +16,7 @@ import os
 import sys
 import pytest
 
-from gentrie import (
+from src.gentrie import (
     DuplicateKeyError,
     ErrorTag,
     GeneralizedTrie,
