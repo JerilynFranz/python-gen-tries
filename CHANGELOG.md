@@ -28,3 +28,4 @@
 * 0.9.4 - Addition of tests for is_triekeytoke(), is_hashable(), get() methods and for TrieEntry(). Fixed bugs in TrieEntry __eq__ and __hash__ dunder methods. Rewrote __getitem__ and __contains__ dunder tests, added __delitem__ dunder tests. Excluded test_play.py and testspec.py from coverage measurements. Changed Nodes class to use __slots__ for attributes. Added tuplization of keys when creating TrieEntrys' to aid in immutability preservation.
 * 0.9.5 - Benchmarking code, addition of py.typed for type support
 * 0.9.6 - mypy types cleanup, addition of sphinxawesome-theme to \[dependency-groups.dev\]
+* 0.9.7 - Added MANIFEST.in to exclude various things from distribution tarball
