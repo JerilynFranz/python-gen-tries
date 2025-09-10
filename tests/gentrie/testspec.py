@@ -95,8 +95,10 @@ def run_test(test_case: unittest.TestCase, spec: TestSpec) -> None:  # pylint: d
                     errors.append(f"failed object validation: obj={spec.obj}")
                 if spec.expected is not NO_EXPECTED_VALUE and spec.expected != found:
                     errors.append(f"expected={spec.expected}, found={found}")
-                    if isinstance(spec.display_on_fail, Callable):
+                    if callable(spec.display_on_fail):
                         errors.append(spec.display_on_fail())
+                    elif isinstance(spec.display_on_fail, str):
+                        errors.append(spec.display_on_fail)
         except Exception as err:  # pylint: disable=broad-exception-caught
             if spec.exception is None:
                 errors.append(f"Did not expect exception. Caught exception {repr(err)}")

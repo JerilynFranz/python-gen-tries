@@ -6,6 +6,7 @@
 # pylint: disable=invalid-name
 # pylint: disable=wrong-import-order
 # pylint: disable=wrong-import-position
+# mypy: disable=import-error, dict-item, list-item
 
 
 import unittest
@@ -2155,8 +2156,8 @@ class TestGeneralizedTrie(unittest.TestCase):
             self.assertEqual(found_id, expect_id)
 
         with self.subTest(msg="[TK003] trie.keys()"):
-            expect_id_list: list[TrieId] = [TrieId(1)]
-            found_id_list: list[TrieId] = list(trie.keys())
+            expect_id_list = [TrieId(1)]
+            found_id_list = list(trie.keys())
             self.assertEqual(found_id_list, expect_id_list)
 
         with self.subTest(msg="[TK004] trie.add('abc')"):
@@ -2314,8 +2315,8 @@ class TestGeneralizedTrie(unittest.TestCase):
             self.assertEqual(found_id, expect_id)
 
         with self.subTest(msg="[TITER005] for entry in trie:"):
-            expect_ids_list: list[TrieId] = [TrieId(1), TrieId(2)]
-            found_ids_list: list[TrieId] = []
+            expect_ids_list = [TrieId(1), TrieId(2)]
+            found_ids_list = []
             for entry in trie:
                 found_ids_list.append(entry)
             self.assertEqual(sorted(found_ids_list), expect_ids_list)
