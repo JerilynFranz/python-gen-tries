@@ -4,6 +4,14 @@
 Benchmark for the Generalized Trie implementation.
 This script runs a series of tests to measure the performance of the Generalized Trie
 against a set of predefined test cases.
+
+The Generalized Trie is a data structure that allows for efficient storage and retrieval
+of keys that can be composed of various types of tokens, not just strings.
+
+
+The benchmark includes tests for insertion, search, and deletion operations,
+as well as tests for different key depths and symbol sets.
+
 '''
 # pylint: disable=wrong-import-position, too-many-instance-attributes
 # pylint: disable=too-many-positional-arguments, too-many-arguments, too-many-locals
@@ -636,7 +644,7 @@ class BenchCase:
     graph_y_starts_at_zero: bool = True
     graph_x_labels_rotation: float = 0.0
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.results: list[BenchResults] = []
 
     @property
@@ -650,7 +658,7 @@ class BenchCase:
         values = [self.kwargs_variations[key] for key in keys]
         return [dict(zip(keys, v)) for v in itertools.product(*values)]
 
-    def run(self):
+    def run(self) -> None:
         """Run the benchmark tests.
 
         This method will execute the benchmark for each combination of
@@ -1042,7 +1050,7 @@ class BenchmarkRunner():
                             description=f'[green] Benchmarking {group} (iteration {iteration_pass:<6d}; '
                                         f'time {0.00:<3.2f}s)')
             PROGRESS.start_task(TASKS[tasks_name])
-        total_elapsed: float = 0
+        total_elapsed: int = 0
         iterations_list: list[BenchIteration] = []
         while ((iteration_pass <= iterations_min or wall_time < min_stop_at)
                 and wall_time < max_stop_at):
@@ -1050,7 +1058,7 @@ class BenchmarkRunner():
             iteration_result = BenchIteration()
             iteration_result.elapsed = 0
 
-            if isinstance(setup, Callable):
+            if callable(setup):
                 setup()
 
             # Timer for benchmarked code
@@ -1058,7 +1066,7 @@ class BenchmarkRunner():
             action()
             timer_end: int = DEFAULT_TIMER()
 
-            if isinstance(teardown, Callable):
+            if callable(teardown):
                 teardown()
 
             if iteration_pass == 1:
@@ -1724,13 +1732,13 @@ def run_benchmarks(args: Namespace):
             if case.results:
                 if args.json or args.json_data:
                     data_export.append(case.as_dict(args=args))
-
+                graph_file: Path
                 if args.graph:
                     if args.ops:
-                        graph_file: Path = benchmark_run_dir.joinpath(f'benchmark_graph_ops_{case.group[:60]}.svg')
+                        graph_file = benchmark_run_dir.joinpath(f'benchmark_graph_ops_{case.group[:60]}.svg')
                         case.plot_ops_results(graph_file)
                     if args.timing:
-                        graph_file: Path = benchmark_run_dir.joinpath(f'benchmark_graph_timing_{case.group[:60]}.svg')
+                        graph_file = benchmark_run_dir.joinpath(f'benchmark_graph_timing_{case.group[:60]}.svg')
                         case.plot_timing_results(graph_file)
 
                 if args.csv:
@@ -1782,7 +1790,7 @@ def run_benchmarks(args: Namespace):
                 PROGRESS.remove_task(task)
 
 
-def main():
+def main() -> None:
     """Main entry point for running benchmarks."""
     parser = ArgumentParser(description='Run GeneralizedTrie benchmarks.')
     parser.add_argument('--verbose', action='store_true', help='Enable verbose output')

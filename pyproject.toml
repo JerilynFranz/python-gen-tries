@@ -148,6 +148,7 @@ dev = [
     "pandas>=2.3.2",
     "matplotlib>=3.10.6",
     "seaborn>=0.13.2",
+    "types-seaborn>=0.13.2",
     "pytest-benchmark>=5.1.0",
     "rich>=14.1.0",
     "sphinx>=8.1.3",
