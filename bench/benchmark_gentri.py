@@ -613,6 +613,7 @@ class BenchCase:
         graph_aspect_ratio (float): The aspect ratio of the graph (default: 1.0).
         graph_style (Literal['default', 'dark_background']): The style of the graph (default: 'default').
         graph_y_starts_at_zero (bool): Whether the y-axis of the graph starts at zero (default: True).
+        graph_x_labels_rotation (float): The rotation angle of the x-axis tick labels (default: 0.0).
 
     Properties:
         results (list[BenchResults]): The benchmark results for the case.
@@ -633,6 +634,7 @@ class BenchCase:
     graph_aspect_ratio: float = 1.0
     graph_style: Literal['default', 'dark_background'] = 'default'
     graph_y_starts_at_zero: bool = True
+    graph_x_labels_rotation: float = 0.0
 
     def __post_init__(self):
         self.results: list[BenchResults] = []
@@ -884,14 +886,17 @@ class BenchCase:
         if not plot_data:
             return
 
+        # See https://matplotlib.org/stable/users/explain/customizing.html#the-matplotlibrc-file
         benchmarking_theme = {
             'axes.grid': True,
+            'grid.linestyle': '-',
+            'grid.color': '#444444',
             'legend.framealpha': 1,
             'legend.shadow': True,
             'legend.fontsize': 14,
             'legend.title_fontsize': 16,
-            'xtick.labelsize': 14,
-            'ytick.labelsize': 14,
+            'xtick.labelsize': 12,
+            'ytick.labelsize': 12,
             'axes.labelsize': 16,
             'axes.titlesize': 20,
             'figure.dpi': 100}
@@ -899,14 +904,14 @@ class BenchCase:
         df = pd.DataFrame(plot_data)
 
         # Create the plot
-        plt.style.use('dark_background')
+        plt.style.use(self.graph_style)
         g = sns.relplot(data=df, y=target_name, x=x_axis_legend)
         g.figure.suptitle(self.title, fontsize='large', weight='bold')
         g.figure.subplots_adjust(top=.9)
         g.figure.set_dpi(160)
         g.figure.set_figheight(10)
         g.figure.set_figwidth(10 * self.graph_aspect_ratio)
-        g.tick_params("x", rotation=45)
+        g.tick_params("x", rotation=self.graph_x_labels_rotation)
         # format the labels with f-strings
         for ax in g.axes.flat:
             ax.yaxis.set_major_formatter('{x}' + f' {common_unit}')
@@ -1444,7 +1449,7 @@ def get_benchmark_cases() -> list[BenchCase]:
     symbols: str = '0123'  # Define the symbols for the trie
 
     test_data: dict[int, list[str]] = {}
-    test_depths: list[int] = [3, 4, 5, 6, 7, 8, 9]  # Depths to test - 1 and 2 are omitted due to low key counts
+    test_depths: list[int] = [3, 4, 5, 6, 7, 8, 9, 10]  # Depths to test - 1 and 2 are omitted due to low key counts
     for gen_depth in test_depths:
         max_keys_for_depth = len(symbols) ** gen_depth  # pylint: disable=invalid-name
         test_data[gen_depth] = generate_test_data(gen_depth, symbols, max_keys=max_keys_for_depth)
@@ -1487,7 +1492,8 @@ def get_benchmark_cases() -> list[BenchCase]:
                 'test_tries': [test_tries],
                 'test_data': [test_data],
                 'dataset': test_depths,
-            }
+            },
+            graph_aspect_ratio=2.0
         ),
         BenchCase(
             group='str-synthetic-key-in-trie',
@@ -1501,7 +1507,8 @@ def get_benchmark_cases() -> list[BenchCase]:
                 'test_tries': [test_tries],
                 'test_data': [test_data],
                 'dataset': test_depths,
-            }
+            },
+            graph_aspect_ratio=2.0
         ),
         BenchCase(
             group='str-english-dictionary-id-in-trie',
