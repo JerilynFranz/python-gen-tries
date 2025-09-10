@@ -1,0 +1,2 @@
+prune .trunk
+prune coverage_html_report
